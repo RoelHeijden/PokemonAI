@@ -1,0 +1,75 @@
+----------------------------------------------------------------------------------------------------------------
+DO AT SOME POINT
+
+update speed range after instruction (e.g. when checking the case where the bot outspeeds, update speed range in that branch)?
+
+do something with hidden_power_type in battler.from_team_json()
+
+Keep track of potential choice scarf speed_range -- you might know a mon is not max speed scarf before choice scarf is revealed
+
+for bo3 module: update speed_range_check() and others on final turn as well.
+
+find edge case mistakes (like burned pokemon with guts having attack halved), abilities not working in state instructions (Download)
+
+fix terrain multiplier location in _calculate_damage()
+
+fix ability order for turn 1 in instruction generator
+
+----------------------------------------------------------------------------------------------------------------
+
+
+STATE INSTRUCTIONS
+    1. add terrain healing to get_end_of_turn_instructions()
+    2. fix how switching moves (flipturn/u-turn) are done in the instruction generator
+    3. Use previous turn probabilities when deciding the switching-move switch (or not? you'd know if the opp switched or not)
+    4. fix damage calculation being calced too often in find_all_state_instructions()
+
+
+SPEED ORDERS
+    1. fix user effective speed in check_speed_ranges() -- opposing max speed gets set too low (as if the user didnt have 2x speed via e.g. sand rush)
+    2. add terrain healing, intimidate, weather and status damage order to speed_range checker
+    3. add probabilities to outspeeding/underspeeding
+
+
+DAMAGE ROLLS
+    4. Create Bayesian model for "bulk" and "offense" initialized via usage stats
+
+
+PAYOFF MATRIX
+    3. extend the function
+        - for each ability
+            - how to accumulate state_instructions (all prob*0.5, and add concatonate instructions to same list?)
+        - for each item
+            - how to initiate the item list (and probabilities?)
+            - how to remove (via deduction) items from this list as the game progresses
+        - for each spread??
+        - for crit / no crit
+    4. explore 2-deep tree search using NE to get scores for each depth
+
+
+INFO MANAGEMENT
+    1. Keep track of revealed abilities (e.g. Grassy surge)
+    2. Choice item move locks should work (AI knows opponent has Choice band, but doesn't know the move is locked)
+    3. Moves like whirlpool should work (e.g. AI doesn't know the opponent is trapped)
+
+
+NASH EQUILIBRIUM
+    1. find the 'best' NE (check if this is being done in Quantecon)
+    2. Figure out if Bayesian NE is possible with Quantecon
+
+
+
+
+50 games vs 'Safest'
+W: 35, L: 15
+50 games with teams switched around:
+W: 3 , L: 37
+;_;
+
+
+VRAGEN AAN JOHAN
+    - Bayesian Nash equilibrium
+    - Bayesian model for opp stats
+    - Schrijven (deadline first draft)
+    - Value network input layer
+    - git?
