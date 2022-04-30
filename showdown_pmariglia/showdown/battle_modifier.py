@@ -601,7 +601,6 @@ def remove_item(battle, split_msg):
                                             min=max(side.active.min_speed, math.floor(side.active.speed_range.min / 1.5)))
 
 
-
 def set_ability(battle, split_msg):
     if is_opponent(battle, split_msg):
         side = battle.opponent
@@ -1237,7 +1236,6 @@ def update_battle(battle, msg):
             function_to_call(battle, split_msg)
 
         if action == 'move' and is_opponent(battle, split_msg):
-            # check_choicescarf(battle, msg_lines)
             damage_dealt = get_damage_dealt(battle, split_msg, msg_lines[i + 1:])
             if damage_dealt:
                 check_choice_band_or_specs(battle, damage_dealt)

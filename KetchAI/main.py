@@ -30,19 +30,32 @@ class BattleBot(Battle):
         best_move = user_options[np.random.randint(0, len(user_options))]
         user_options, opponent_options = self.get_switch_move_options(user_options, opponent_options)
 
-        # attacking_pokemon = state.opponent.active
-        # defending_pokemon = state.self.active
-        # attacking_move = 'flareblitz'
-        # conditions = {
-        #     constants.REFLECT: self.user.side_conditions[constants.REFLECT],
-        #     constants.LIGHT_SCREEN: self.user.side_conditions[constants.LIGHT_SCREEN],
-        #     constants.AURORA_VEIL: self.user.side_conditions[constants.AURORA_VEIL],
-        #     constants.WEATHER: self.weather,
-        #     constants.TERRAIN: self.field
-        # }
-        # damage_rolls = _calculate_damage(attacking_pokemon, defending_pokemon, attacking_move, conditions=conditions, calc_type='all', critical_hit=False)
-        # print(attacking_pokemon.id, attacking_move, "against", defending_pokemon.id)
-        # print(damage_rolls)
+        # if self.turn:
+        #     attacking_pokemon = state.opponent.active
+        #     defending_pokemon = state.self.active
+        #     attacking_move = 'flareblitz'
+        #     defending_move = 'splash'
+        #     conditions = {
+        #         constants.REFLECT: self.user.side_conditions[constants.REFLECT],
+        #         constants.LIGHT_SCREEN: self.user.side_conditions[constants.LIGHT_SCREEN],
+        #         constants.AURORA_VEIL: self.user.side_conditions[constants.AURORA_VEIL],
+        #         constants.WEATHER: self.weather,
+        #         constants.TERRAIN: self.field
+        #     }
+        #
+        #     attacking_move = update_attacking_move(
+        #         attacking_pokemon,
+        #         defending_pokemon,
+        #         lookup_move(attacking_move),
+        #         lookup_move(defending_move),
+        #         True,
+        #         mutator.state.weather,
+        #         mutator.state.field
+        #     )
+        #
+        #     damage_rolls = _calculate_damage(attacking_pokemon, defending_pokemon, attacking_move, conditions=conditions, calc_type='all', critical_hit=False)
+        #     print(attacking_pokemon.id, attacking_move['id'], "against", defending_pokemon.id)
+        #     print(damage_rolls)
 
         payoff_matrix, bimatrix = self.sim.get_payoff_matrix(mutator, user_options, opponent_options)
         game = NormalFormGame(bimatrix)
@@ -50,7 +63,6 @@ class BattleBot(Battle):
         # user_strategy, opp_strategy = mclennan_tourky(game, init=None, epsilon=0.001, max_iter=200, full_output=False)
         user_strategy = [prob if prob >= 0 else 0 for prob in user_strategy]
         self.sim.display_payoff_matrix(payoff_matrix, user_options, opponent_options, user_strategy, opp_strategy)
-
         best_move = np.random.choice(a=user_options, p=user_strategy)
         best_move = best_move.split("-")[0]
 
@@ -81,17 +93,19 @@ class TurnSimulator:
         pass
 
     def get_payoff_matrix(self, mutator, user_options, opponent_options):
-        payoff_matrix = {}
-        bimatrix = np.empty((len(user_options), len(opponent_options), 2))
+        user_outspeeds_payoff_matrix = np.zeros((len(user_options), len(opponent_options)))
+        user_outspeeds_probability_matrix = np.zeros((len(user_options), len(opponent_options)))
+
+        opp_outspeeds_payoff_matrix = np.zeros((len(user_options), len(opponent_options)))
+        opp_outspeeds_probability_matrix = np.zeros((len(user_options), len(opponent_options)))
 
         user_mon = mutator.state.self.active
         opp_mon = mutator.state.opponent.active
 
         # for each move the bot could use
-        for i, user_move_str in enumerate(user_options):
+        for i, full_user_move_str in enumerate(user_options):
             # for each move the opponent could use
-            for j, opponent_move_str in enumerate(opponent_options):
-
+            for j, full_opponent_move_str in enumerate(opponent_options):
                 # if opp_mon.ability is None and mutator.state.turn:
                 #     possible_abilities = [ability for _, ability in pokedex[opp_mon.id]['abilities'].items()]
                 # else:
@@ -102,20 +116,116 @@ class TurnSimulator:
                 # for opp_item, probability in opp_mon.possible_items:
                 #     pass
 
-                score = 0
-                state_instructions = self.get_all_state_instructions(mutator, user_move_str, opponent_move_str)
+                # switching moves are paired together with their switch-in pokemon in a string, separated by a dash
 
-                print()
-                print(user_move_str, opponent_move_str)
-                for instructions in state_instructions:
-                    print(instructions)
-                    mutator.apply(instructions.instructions)
-                    t_score = evaluate(mutator.state)
-                    score += (t_score * instructions.percentage)
-                    mutator.reverse(instructions.instructions)
+                # switching moves are paired with their switch choice in a string separated by a dash
+                user_switch, opp_switch = False, False
+                if len(full_user_move_str.split("-")) == 2:
+                    user_move_str, user_switch = full_user_move_str.split("-")
+                else:
+                    user_move_str = full_user_move_str
+                if len(full_opponent_move_str.split("-")) == 2:
+                    opponent_move_str, opp_switch = full_opponent_move_str.split("-")
+                else:
+                    opponent_move_str = full_opponent_move_str
 
+                # get possible speed orders
+                user_move = lookup_move(user_move_str)
+                opponent_move = lookup_move(opponent_move_str)
+                user_can_outspeed, opp_can_outspeed = self.possible_move_order(mutator.state, user_move, opponent_move)
 
-                payoff_matrix[(user_move_str, opponent_move_str)] = score
+                # runs scenario where the user outspeeds, given that it can outspeed
+                if user_can_outspeed:
+                    score = 0
+                    state_instructions = self.get_all_state_instructions(mutator, user_move_str, opponent_move_str, user_move, opponent_move, user_switch, opp_switch, user_outspeeds=True)
+                    for instructions in state_instructions:
+                        mutator.apply(instructions.instructions)
+                        t_score = evaluate(mutator.state)
+                        score += (t_score * instructions.percentage)
+                        mutator.reverse(instructions.instructions)
+                    user_outspeeds_payoff_matrix[i][j] = score
+
+                # runs scenario where the opponent outspeeds, given that it can outspeed
+                if opp_can_outspeed:
+                    score = 0
+                    state_instructions = self.get_all_state_instructions(mutator, user_move_str, opponent_move_str, user_move, opponent_move, user_switch, opp_switch, user_outspeeds=False)
+                    for instructions in state_instructions:
+                        mutator.apply(instructions.instructions)
+                        t_score = evaluate(mutator.state)
+                        score += (t_score * instructions.percentage)
+                        mutator.reverse(instructions.instructions)
+                    opp_outspeeds_payoff_matrix[i][j] = score
+
+                # set the probabilities for the probability matrix. Will eventually be based on a model
+                if user_can_outspeed and opp_can_outspeed:
+                    user_outspeeds_probability_matrix[i][j] = 0.5
+                    opp_outspeeds_probability_matrix[i][j] = 0.5
+                elif user_can_outspeed:
+                    user_outspeeds_probability_matrix[i][j] = 1
+                    opp_outspeeds_probability_matrix[i][j] = 0
+                else:
+                    user_outspeeds_probability_matrix[i][j] = 0
+                    opp_outspeeds_probability_matrix[i][j] = 1
+
+        # select best values for the opponent's switching moves in the case where the user outspeeds
+        opp_switching_moves = list(set([move.split("-")[0] for move in opponent_options if len(move.split("-")) == 2]))
+        for switching_move in opp_switching_moves:
+            for i, full_user_move_str in enumerate(user_options):
+                best_value = float('inf')
+
+                for j, full_opponent_move_str in enumerate(opponent_options):
+                    if full_opponent_move_str.startswith(switching_move):
+                        best_value = user_outspeeds_payoff_matrix[i][j] if user_outspeeds_payoff_matrix[i][j] < best_value else best_value
+
+                for j, full_opponent_move_str in enumerate(opponent_options):
+                    if full_opponent_move_str.startswith(switching_move):
+                        user_outspeeds_payoff_matrix[i][j] = best_value
+
+        # select best values for the user's switching moves in the case where the opponent outspeeds
+        user_switching_moves = list(set([move.split("-")[0] for move in user_options if len(move.split("-")) == 2]))
+        for switching_move in user_switching_moves:
+            for j, full_opponent_move_str in enumerate(opponent_options):
+                best_value = -float('inf')
+
+                for i, full_user_move_str in enumerate(user_options):
+                    if full_user_move_str.startswith(switching_move):
+                        best_value = opp_outspeeds_payoff_matrix[i][j] if opp_outspeeds_payoff_matrix[i][j] > best_value else best_value
+
+                for i, full_user_move_str in enumerate(user_options):
+                    if full_user_move_str.startswith(switching_move):
+                        opp_outspeeds_payoff_matrix[i][j] = best_value
+
+        # create full weighted matrix
+        user_outspeeds_weighted_matrix = np.multiply(user_outspeeds_payoff_matrix, user_outspeeds_probability_matrix)
+        opp_outspeeds_weighted_matrix = np.multiply(opp_outspeeds_payoff_matrix, opp_outspeeds_probability_matrix)
+        full_weighted_matrix = user_outspeeds_weighted_matrix + opp_outspeeds_weighted_matrix
+
+        # TESTING
+        # payoff_test1 = {}
+        # bimatrix_test1 = np.zeros((len(user_options), len(opponent_options), 2))
+        # for i, full_user_move_str in enumerate(user_options):
+        #     for j, full_opponent_move_str in enumerate(opponent_options):
+        #         score = user_outspeeds_weighted_matrix[i][j]
+        #         payoff_test1[(full_user_move_str, full_opponent_move_str)] = score
+        #         bimatrix_test1[i][j][0], bimatrix_test1[i][j][1] = score, -score
+        #
+        # payoff_test2 = {}
+        # bimatrix_test2 = np.zeros((len(user_options), len(opponent_options), 2))
+        # for i, full_user_move_str in enumerate(user_options):
+        #     for j, full_opponent_move_str in enumerate(opponent_options):
+        #         score = opp_outspeeds_weighted_matrix[i][j]
+        #         payoff_test2[(full_user_move_str, full_opponent_move_str)] = score
+        #         bimatrix_test2[i][j][0], bimatrix_test2[i][j][1] = score, -score
+        #
+        # return payoff_test1, payoff_test2, bimatrix_test1, bimatrix_test2
+
+        # convert numpy matrix to dict with (user_move, opp_move) as key, as well as a bimatrix, used for NE calculation
+        payoff_matrix = {}
+        bimatrix = np.zeros((len(user_options), len(opponent_options), 2))
+        for i, full_user_move_str in enumerate(user_options):
+            for j, full_opponent_move_str in enumerate(opponent_options):
+                score = full_weighted_matrix[i][j]
+                payoff_matrix[(full_user_move_str, full_opponent_move_str)] = score
                 bimatrix[i][j][0], bimatrix[i][j][1] = score, -score
 
         return payoff_matrix, bimatrix
@@ -170,7 +280,8 @@ class TurnSimulator:
 
             # print values
             for x, user_move_str in enumerate(user_options):
-                value = round(payoff_matrix[(user_move_str, opponent_move_str)], 2)
+                value = payoff_matrix.get((user_move_str, opponent_move_str))
+                value = round(value, 2)
                 if value < 0:
                     print(Color.BLUE + str(value) + Color.END, end=" ")
                 else:
@@ -284,52 +395,37 @@ class TurnSimulator:
         else:
             return False, True
 
-    def get_all_state_instructions(self, mutator, user_move_string, opponent_move_string):
-        # switching moves are paired together with their switch-in pokemon in a string, separated by a dash
-        user_switch, opp_switch = False, False
-        if len(user_move_string.split("-")) == 2:
-            user_move_string, user_switch = user_move_string.split("-")
-        if len(opponent_move_string.split("-")) == 2:
-            opponent_move_string, opp_switch = opponent_move_string.split("-")
-
-        user_move = lookup_move(user_move_string)
-        opponent_move = lookup_move(opponent_move_string)
-
-        user_can_outspeed, opp_can_outspeed = self.possible_move_order(mutator.state, user_move, opponent_move)
+    def get_all_state_instructions(self, mutator,  user_move_str, opponent_move_str, user_move, opponent_move, user_switch, opp_switch, user_outspeeds):
+        """ gets all possible state instructions for a given speed order """
         all_instructions = []
 
-        # branches the scenario's where the user outspeeds
-        if user_can_outspeed:
+        # branches the scenarios where the user outspeeds
+        if user_outspeeds:
             instructions = TransposeInstruction(1.0, [], False)
             instructions = self.get_state_instructions_from_move(mutator, user_move, opponent_move, constants.SELF, constants.OPPONENT, True, instructions, user_switch)
             for instruction in instructions:
                 all_instructions += self.get_state_instructions_from_move(mutator, opponent_move, user_move, constants.OPPONENT, constants.SELF, False, instruction, opp_switch)
 
             # gets the instructions for things like weather damage, status damage, etc..
-            if end_of_turn_triggered(user_move_string, opponent_move_string):
+            if end_of_turn_triggered(user_move_str, opponent_move_str):
                 temp_instructions = []
                 for instruction_set in all_instructions:
                     temp_instructions += instruction_generator.get_end_of_turn_instructions(mutator, instruction_set, user_move, opponent_move, bot_moves_first=True)
                 all_instructions = temp_instructions
 
         # branches the scenarios where the opponent outspeeds
-        if opp_can_outspeed:
+        else:
             instructions = TransposeInstruction(1.0, [], False)
             instructions = self.get_state_instructions_from_move(mutator, opponent_move, user_move, constants.OPPONENT, constants.SELF, True, instructions, opp_switch)
             for instruction in instructions:
                 all_instructions += self.get_state_instructions_from_move(mutator, user_move, opponent_move, constants.SELF, constants.OPPONENT, False, instruction, user_switch)
 
             # gets the instructions for things like weather damage, status damage, etc..
-            if end_of_turn_triggered(user_move_string, opponent_move_string):
+            if end_of_turn_triggered(user_move_str, opponent_move_str):
                 temp_instructions = []
                 for instruction_set in all_instructions:
                     temp_instructions += instruction_generator.get_end_of_turn_instructions(mutator, instruction_set, user_move, opponent_move, bot_moves_first=False)
                 all_instructions = temp_instructions
-
-        # if both speed orders are possible: halve all probabilities, so it doesn't sum to 2.0
-        if user_can_outspeed and opp_can_outspeed:
-            for instruction in all_instructions:
-                instruction.percentage *= 0.5
 
         all_instructions = remove_duplicate_instructions(all_instructions)
         return all_instructions
@@ -572,3 +668,6 @@ class TurnSimulator:
             all_instructions = temp_instructions
 
         return all_instructions
+
+
+

@@ -9,18 +9,18 @@ Keep track of potential choice scarf speed_range -- you might know a mon is not 
 
 for bo3 module: update speed_range_check() and others on final turn as well.
 
-find edge case mistakes (like burned pokemon with guts having attack halved), abilities not working in state instructions (Download)
+find edge case mistakes (like burned pokemon with guts having attack halved), abilities not working in state instructions (Download, synchronize)
 
 fix ability order for turn 1 in instruction generator
 
 extend program to random battles
 
+fix UNKNOWN_POKEMON_FORMS causing opposing mons to be reset on switch in
+
 ----------------------------------------------------------------------------------------------------------------
 
 
 STATE INSTRUCTIONS
-    1. fix how switching moves (flipturn/u-turn) are done in the instruction generator
-        - correctly collect values from switching moves
     2. add terrain healing to get_end_of_turn_instructions()
     3. Use previous turn probabilities when deciding the switching-move switch (or not? you'd know if the opp switched or not)
 
@@ -35,8 +35,6 @@ SPEED ORDERS
 
 
 DAMAGE ROLLS
-    3. Implement item effects in damage calculation
-
     4. Create Bayesian model for "bulk" and "offense" initialized via usage stats
 
 
@@ -59,8 +57,10 @@ INFO MANAGEMENT
 
 
 NASH EQUILIBRIUM
-    1. find the 'best' NE (check if this is being done in Quantecon)
-    2. Figure out if Bayesian NE is possible with Quantecon
+    1. randomize user move when NE is uniform
+    2. find the 'best' NE (check if this is being done in Quantecon)
+    3. Figure out if Bayesian NE is possible with Quantecon
+
 
 
 
