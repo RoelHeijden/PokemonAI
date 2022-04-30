@@ -139,12 +139,16 @@ def _calculate_damage(attacker, defender, move, conditions=None, calc_type='aver
     except KeyError:
         pass
 
-    base_damage = int(int((2 * attacker.level) / 5) + 2) * attacking_move[constants.BASE_POWER]
+    bp_modifier = terrain_modifier(attacker, defender, attacking_move, conditions.get(constants.TERRAIN))
+    base_power = round(bp_modifier * attacking_move[constants.BASE_POWER])
+
+    base_damage = int(int((2 * attacker.level) / 5) + 2) * base_power
     base_damage = int(base_damage * effective_attack / effective_defense)
     base_damage = int(base_damage / 50) + 2
 
     damage = base_damage
     # spread damage reduction is currently left out, but would be done at this location
+
     # weather
     damage = int(damage * weather_modifier(attacking_move, conditions.get(constants.WEATHER)))
     # critical hit
@@ -176,7 +180,6 @@ def _calculate_damage(attacker, defender, move, conditions=None, calc_type='aver
     # burn
     damage_rolls = (damage_rolls * burn_modifier(attacker, attacking_move)).astype(int)
     # other
-    damage_rolls = (damage_rolls * terrain_modifier(attacker, defender, attacking_move, conditions.get(constants.TERRAIN))).astype(int)
     damage_rolls = (damage_rolls * volatile_status_modifier(attacking_move, attacker, defender)).astype(int)
 
     if attacker.ability != 'infiltrator' and not critical_hit:

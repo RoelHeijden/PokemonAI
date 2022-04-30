@@ -20,6 +20,8 @@ timer_on = True
 use_relative_weights = False
 damage_calc_type = None
 damage_calc_crit_type = None
+check_critical_hits = False
+
 search_depth = 2
 dynamic_search_depth = False
 

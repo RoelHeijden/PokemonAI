@@ -30,6 +30,20 @@ class BattleBot(Battle):
         best_move = user_options[np.random.randint(0, len(user_options))]
         user_options, opponent_options = self.get_switch_move_options(user_options, opponent_options)
 
+        # attacking_pokemon = state.opponent.active
+        # defending_pokemon = state.self.active
+        # attacking_move = 'flareblitz'
+        # conditions = {
+        #     constants.REFLECT: self.user.side_conditions[constants.REFLECT],
+        #     constants.LIGHT_SCREEN: self.user.side_conditions[constants.LIGHT_SCREEN],
+        #     constants.AURORA_VEIL: self.user.side_conditions[constants.AURORA_VEIL],
+        #     constants.WEATHER: self.weather,
+        #     constants.TERRAIN: self.field
+        # }
+        # damage_rolls = _calculate_damage(attacking_pokemon, defending_pokemon, attacking_move, conditions=conditions, calc_type='all', critical_hit=False)
+        # print(attacking_pokemon.id, attacking_move, "against", defending_pokemon.id)
+        # print(damage_rolls)
+
         payoff_matrix, bimatrix = self.sim.get_payoff_matrix(mutator, user_options, opponent_options)
         game = NormalFormGame(bimatrix)
         user_strategy, opp_strategy = lemke_howson(game, init_pivot=0, max_iter=1000000, capping=None, full_output=False)
@@ -91,11 +105,15 @@ class TurnSimulator:
                 score = 0
                 state_instructions = self.get_all_state_instructions(mutator, user_move_str, opponent_move_str)
 
+                print()
+                print(user_move_str, opponent_move_str)
                 for instructions in state_instructions:
+                    print(instructions)
                     mutator.apply(instructions.instructions)
                     t_score = evaluate(mutator.state)
                     score += (t_score * instructions.percentage)
                     mutator.reverse(instructions.instructions)
+
 
                 payoff_matrix[(user_move_str, opponent_move_str)] = score
                 bimatrix[i][j][0], bimatrix[i][j][1] = score, -score
@@ -267,7 +285,7 @@ class TurnSimulator:
             return False, True
 
     def get_all_state_instructions(self, mutator, user_move_string, opponent_move_string):
-        # switching moves are paired with their switch in a string separated by a dash
+        # switching moves are paired together with their switch-in pokemon in a string, separated by a dash
         user_switch, opp_switch = False, False
         if len(user_move_string.split("-")) == 2:
             user_move_string, user_switch = user_move_string.split("-")
@@ -283,9 +301,9 @@ class TurnSimulator:
         # branches the scenario's where the user outspeeds
         if user_can_outspeed:
             instructions = TransposeInstruction(1.0, [], False)
-            instructions = self.get_state_instructions_from_move(mutator, user_move, opponent_move, constants.SELF, constants.OPPONENT, True, instructions)
+            instructions = self.get_state_instructions_from_move(mutator, user_move, opponent_move, constants.SELF, constants.OPPONENT, True, instructions, user_switch)
             for instruction in instructions:
-                all_instructions += self.get_state_instructions_from_move(mutator, opponent_move, user_move, constants.OPPONENT, constants.SELF, False, instruction)
+                all_instructions += self.get_state_instructions_from_move(mutator, opponent_move, user_move, constants.OPPONENT, constants.SELF, False, instruction, opp_switch)
 
             # gets the instructions for things like weather damage, status damage, etc..
             if end_of_turn_triggered(user_move_string, opponent_move_string):
@@ -297,9 +315,9 @@ class TurnSimulator:
         # branches the scenarios where the opponent outspeeds
         if opp_can_outspeed:
             instructions = TransposeInstruction(1.0, [], False)
-            instructions = self.get_state_instructions_from_move(mutator, opponent_move, user_move, constants.OPPONENT, constants.SELF, True, instructions)
+            instructions = self.get_state_instructions_from_move(mutator, opponent_move, user_move, constants.OPPONENT, constants.SELF, True, instructions, opp_switch)
             for instruction in instructions:
-                all_instructions += self.get_state_instructions_from_move(mutator, user_move, opponent_move, constants.SELF, constants.OPPONENT, False, instruction)
+                all_instructions += self.get_state_instructions_from_move(mutator, user_move, opponent_move, constants.SELF, constants.OPPONENT, False, instruction, user_switch)
 
             # gets the instructions for things like weather damage, status damage, etc..
             if end_of_turn_triggered(user_move_string, opponent_move_string):
@@ -316,7 +334,7 @@ class TurnSimulator:
         all_instructions = remove_duplicate_instructions(all_instructions)
         return all_instructions
 
-    def get_state_instructions_from_move(self, mutator, attacking_move, defending_move, attacker, defender, first_move, instructions):
+    def get_state_instructions_from_move(self, mutator, attacking_move, defending_move, attacker, defender, first_move, instructions, switching_move_switch):
         instructions.frozen = False
 
         if constants.SWITCH_STRING in attacking_move:
@@ -405,7 +423,8 @@ class TurnSimulator:
             n_regular_rolls = len(damage_amounts)
 
             # checks critical hits
-            damage_amounts += _calculate_damage(attacking_pokemon, defending_pokemon, attacking_move, conditions=conditions, calc_type=config.damage_calc_crit_type, critical_hit=True)
+            if config.check_critical_hits:
+                damage_amounts += _calculate_damage(attacking_pokemon, defending_pokemon, attacking_move, conditions=conditions, calc_type=config.damage_calc_crit_type, critical_hit=True)
 
             attacking_move_secondary = attacking_move[constants.SECONDARY]
             attacking_move_self = attacking_move.get(constants.SELF)
@@ -465,15 +484,20 @@ class TurnSimulator:
             temp_instructions += instruction_generator.get_instructions_from_move_special_effect(mutator, attacker, attacking_pokemon, defending_pokemon, attacking_move[constants.ID], instruction_set)
         all_instructions = temp_instructions
 
+        if config.check_critical_hits:
+            crit_chance = 1/24
+        else:
+            crit_chance = 0
+
         if damage_amounts is not None:
             temp_instructions = []
             for instruction_set in all_instructions:
                 for i, dmg in enumerate(damage_amounts):
                     these_instructions = copy(instruction_set)
                     if i < n_regular_rolls:
-                        these_instructions.update_percentage(1 / n_regular_rolls * 23/24)
+                        these_instructions.update_percentage(1 / n_regular_rolls * (1 - crit_chance))
                     else:
-                        these_instructions.update_percentage(1 / (len(damage_amounts) - n_regular_rolls) * 1/24)
+                        these_instructions.update_percentage(1 / (len(damage_amounts) - n_regular_rolls) * crit_chance)
                     temp_instructions += instruction_generator.get_states_from_damage(mutator, defender, dmg, move_accuracy, attacking_move, these_instructions)
 
             all_instructions = temp_instructions
@@ -540,12 +564,11 @@ class TurnSimulator:
 
         if switch_out_move_triggered(attacking_move, damage_amounts):
             temp_instructions = []
-            for i in all_instructions:
-                best_switch = get_best_switch_pokemon(mutator, i, attacker, attacking_side, defending_move, first_move)
-                if best_switch is not None:
-                    temp_instructions += instruction_generator.get_instructions_from_switch(mutator, attacker, best_switch, i)
+            for inst in all_instructions:
+                if switching_move_switch:
+                    temp_instructions += instruction_generator.get_instructions_from_switch(mutator, attacker, switching_move_switch, inst)
                 else:
-                    temp_instructions.append(i)
+                    temp_instructions.append(inst)
             all_instructions = temp_instructions
 
         return all_instructions

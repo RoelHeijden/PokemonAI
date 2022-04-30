@@ -11,27 +11,32 @@ for bo3 module: update speed_range_check() and others on final turn as well.
 
 find edge case mistakes (like burned pokemon with guts having attack halved), abilities not working in state instructions (Download)
 
-fix terrain multiplier location in _calculate_damage()
-
 fix ability order for turn 1 in instruction generator
+
+extend program to random battles
 
 ----------------------------------------------------------------------------------------------------------------
 
 
 STATE INSTRUCTIONS
-    1. add terrain healing to get_end_of_turn_instructions()
-    2. fix how switching moves (flipturn/u-turn) are done in the instruction generator
+    1. fix how switching moves (flipturn/u-turn) are done in the instruction generator
+        - correctly collect values from switching moves
+    2. add terrain healing to get_end_of_turn_instructions()
     3. Use previous turn probabilities when deciding the switching-move switch (or not? you'd know if the opp switched or not)
+
     4. fix damage calculation being calced too often in find_all_state_instructions()
 
 
 SPEED ORDERS
     1. fix user effective speed in check_speed_ranges() -- opposing max speed gets set too low (as if the user didnt have 2x speed via e.g. sand rush)
+
     2. add terrain healing, intimidate, weather and status damage order to speed_range checker
     3. add probabilities to outspeeding/underspeeding
 
 
 DAMAGE ROLLS
+    3. Implement item effects in damage calculation
+
     4. Create Bayesian model for "bulk" and "offense" initialized via usage stats
 
 
@@ -72,4 +77,4 @@ VRAGEN AAN JOHAN
     - Bayesian model for opp stats
     - Schrijven (deadline first draft)
     - Value network input layer
-    - git?
+    - hoeveel stop je in de paper? Uitleg van het spel? Edge cases? Bugs?

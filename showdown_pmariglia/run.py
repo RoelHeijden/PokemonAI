@@ -45,6 +45,7 @@ def parse_configs():
     config.opp_team_name = env('OPP_TEAM_NAME', None)
     config.damage_calc_type = env('DAMAGE_CALC_TYPE', 'average')
     config.damage_calc_crit_type = env('DAMAGE_CALC_CRIT_TYPE', 'average')
+    config.check_critical_hits = env('CHECK_CRITIAL_HITS', config.check_critical_hits) == 'True'
 
     if config.bot_mode == constants.CHALLENGE_USER:
         config.user_to_challenge = env("USER_TO_CHALLENGE")
