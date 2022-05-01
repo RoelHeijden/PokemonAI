@@ -1,7 +1,6 @@
 import numpy as np
 import math
 from quantecon.game_theory.lemke_howson import lemke_howson
-from quantecon.game_theory.mclennan_tourky import mclennan_tourky
 from quantecon.game_theory.normal_form_game import NormalFormGame
 
 from showdown_pmariglia import config
@@ -21,6 +20,7 @@ class BattleBot(Battle):
     def __init__(self, *args, **kwargs):
         super(BattleBot, self).__init__(*args, **kwargs)
         self.sim = TurnSimulator()
+        self.nashCalc = NashCalculator(self.sim)
 
     def find_best_move(self):
         print("\n" + "".rjust(50, "-"), "\033[1mTURN:", self.turn, "".ljust(50, "-"), "\033[0m\n")
@@ -28,71 +28,141 @@ class BattleBot(Battle):
         mutator = StateMutator(state)
         user_options, opponent_options = self.get_all_options()
         best_move = user_options[np.random.randint(0, len(user_options))]
-        user_options, opponent_options = self.get_switch_move_options(user_options, opponent_options)
 
-        # if self.turn:
-        #     attacking_pokemon = state.opponent.active
-        #     defending_pokemon = state.self.active
-        #     attacking_move = 'flareblitz'
-        #     defending_move = 'splash'
-        #     conditions = {
-        #         constants.REFLECT: self.user.side_conditions[constants.REFLECT],
-        #         constants.LIGHT_SCREEN: self.user.side_conditions[constants.LIGHT_SCREEN],
-        #         constants.AURORA_VEIL: self.user.side_conditions[constants.AURORA_VEIL],
-        #         constants.WEATHER: self.weather,
-        #         constants.TERRAIN: self.field
-        #     }
-        #
-        #     attacking_move = update_attacking_move(
-        #         attacking_pokemon,
-        #         defending_pokemon,
-        #         lookup_move(attacking_move),
-        #         lookup_move(defending_move),
-        #         True,
-        #         mutator.state.weather,
-        #         mutator.state.field
-        #     )
-        #
-        #     damage_rolls = _calculate_damage(attacking_pokemon, defending_pokemon, attacking_move, conditions=conditions, calc_type='all', critical_hit=False)
-        #     print(attacking_pokemon.id, attacking_move['id'], "against", defending_pokemon.id)
-        #     print(damage_rolls)
+        self.nashCalc.create_game(self, mutator, user_options, opponent_options)
+        best_move = self.nashCalc.nash_equilibrium_move()
 
-        payoff_matrix, bimatrix = self.sim.get_payoff_matrix(mutator, user_options, opponent_options)
-        game = NormalFormGame(bimatrix)
-        user_strategy, opp_strategy = lemke_howson(game, init_pivot=0, max_iter=1000000, capping=None, full_output=False)
-        # user_strategy, opp_strategy = mclennan_tourky(game, init=None, epsilon=0.001, max_iter=200, full_output=False)
-        user_strategy = [prob if prob >= 0 else 0 for prob in user_strategy]
-        self.sim.display_payoff_matrix(payoff_matrix, user_options, opponent_options, user_strategy, opp_strategy)
-        best_move = np.random.choice(a=user_options, p=user_strategy)
-        best_move = best_move.split("-")[0]
-
-        print(f'\nMove: {best_move}')
+        self.nashCalc.display_payoff_matrix()
+        print(f'\nChosen move: {best_move}')
         return format_decision(self, best_move)
 
-    def get_switch_move_options(self, user_options, opponent_options):
-        """ pairs a switching move with its possible switches, treating each combination as separate move """
-        edited_user_options = []
-        for move in user_options:
-            if move in constants.SWITCH_OUT_MOVES:
-                edited_user_options += [move + "-" + pkmn.name for pkmn in self.user.reserve if pkmn.hp > 0]
-            else:
-                edited_user_options.append(move)
 
-        edited_opponent_options = []
-        for move in opponent_options:
-            if move in constants.SWITCH_OUT_MOVES:
-                edited_opponent_options += [move + "-" + pkmn.name for pkmn in self.opponent.reserve if pkmn.hp > 0]
-            else:
-                edited_opponent_options.append(move)
+class NashCalculator:
+    def __init__(self, turnSimulator):
+        self.sim = turnSimulator
+        self.game = None
+        self.payoff_matrix = {}
+        self.user_strategy = []
+        self.opp_strategy = []
+        self.user_options = []
+        self.opponent_options = []
 
-        return edited_user_options, edited_opponent_options
+    def create_game(self, battle, mutator, user_options, opponent_options):
+        """ Creates a NormalFormGame to run Nash Equilibrium calculations with
+
+        Also set:
+            - payoff matrix
+            - user_options
+            - opponent_options
+        """
+        # user_options, opponent_options = self.sim.get_switch_move_options(user_options, opponent_options, battle.user.reserve, battle.opponent.reserve)
+        payoff_matrix, bimatrix = self.sim.get_payoff_matrix(battle, mutator, user_options, opponent_options)
+
+        self.payoff_matrix = payoff_matrix
+        self.user_options, self.opponent_options = user_options, opponent_options
+        self.game = NormalFormGame(bimatrix)
+
+    def nash_equilibrium_move(self):
+        """ Generates a move based on a Nash equilibrium strategy """
+        user_strategy, opp_strategy = lemke_howson(self.game, init_pivot=0, max_iter=1000000, capping=None, full_output=False)
+        user_strategy = [prob if prob >= 0 else 0 for prob in user_strategy]
+
+        best_responses = self.game.players[0].best_response(opp_strategy, tie_breaking=False)
+        if np.count_nonzero(user_strategy) == 1 and len(best_responses) > 1:
+            response = self.game.players[0].best_response(opp_strategy, tie_breaking='random')
+            user_strategy = np.zeros(len(user_strategy))
+            user_strategy[response] = 1
+
+        best_move = np.random.choice(a=self.user_options, p=user_strategy)
+        self.user_strategy, self.opp_strategy = user_strategy, opp_strategy
+
+        return best_move.split("-")[0]
+
+    def display_payoff_matrix(self):
+        class Color:
+            PURPLE = '\033[95m'
+            CYAN = '\033[96m'
+            DARKCYAN = '\033[36m'
+            BLUE = '\033[94m'
+            GREEN = '\033[92m'
+            YELLOW = '\033[93m'
+            RED = '\033[91m'
+            BOLD = '\033[1m'
+            END = '\033[0m'
+
+        line = " | "
+        prob_decimals = 3
+        longest_str_user = max(self.user_options, key=len)
+        longest_str_opp = max(self.opponent_options, key=len)
+
+        # print column probabilities
+        print("".rjust(prob_decimals + 2 + 1 + len(longest_str_opp) + len(line), ' '), end="")
+        for prob in self.user_strategy:
+            prob = round(prob, prob_decimals)
+            if prob > 0:
+                print(Color.GREEN + format(prob, "." + str(prob_decimals) + "f") + Color.END, end="")
+            else:
+                print("".rjust(len(str(prob)), " "), end="")
+            print("  ".rjust(len(longest_str_user) - len(str(prob)) + len(line), ' '), end="")
+        print()
+
+        # print column labels
+        print(line.rjust(prob_decimals + 2 + 1 + len(longest_str_opp) + len(line), ' '), end="")
+        for label in self.user_options:
+            print(Color.BOLD + label + Color.END, end="")
+            print(line.rjust(len(longest_str_user) - len(label) + len(line), ' '), end="")
+        print()
+
+        for y, opponent_move_str in enumerate(self.opponent_options):
+
+            # print row probabilities
+            prob = round(self.opp_strategy[y], prob_decimals)
+            if prob > 0:
+                print(Color.GREEN + format(prob, "." + str(prob_decimals) + "f") + Color.END, end=" ")
+            else:
+                print("".rjust(prob_decimals + 2, " "), end=" ")
+
+            # print row labels
+            print(Color.BOLD + opponent_move_str + Color.END, end="")
+            print(line[0:2].rjust(len(longest_str_opp) - len(opponent_move_str) + len(line[0:2]), ' '), end="")
+
+            # print values
+            for x, user_move_str in enumerate(self.user_options):
+                value = self.payoff_matrix.get((user_move_str, opponent_move_str))
+                value = round(value, 2)
+                if value < 0:
+                    print(Color.BLUE + str(value) + Color.END, end=" ")
+                else:
+                    print(Color.BLUE + " " + str(value) + Color.END, end="")
+
+                print(line[0:2].rjust(len(longest_str_user) - len(str(value)) + len(line[0:2]), ' '), end="")
+            print()
 
 
 class TurnSimulator:
     def __init__(self):
         pass
 
-    def get_payoff_matrix(self, mutator, user_options, opponent_options):
+    def get_switch_move_options(self, user_options, opponent_options, user_reserve, opponent_reserve):
+        """ pairs a switching move with its possible switches, treating each combination as separate move """
+        edited_user_options = []
+        for move in user_options:
+            if move in constants.SWITCH_OUT_MOVES:
+                edited_user_options += [move + "-" + pkmn.name for pkmn in user_reserve if pkmn.hp > 0]
+            else:
+                edited_user_options.append(move)
+
+        edited_opponent_options = []
+        for move in opponent_options:
+            if move in constants.SWITCH_OUT_MOVES:
+                edited_opponent_options += [move + "-" + pkmn.name for pkmn in opponent_reserve if pkmn.hp > 0]
+            else:
+                edited_opponent_options.append(move)
+
+        return edited_user_options, edited_opponent_options
+
+    def get_payoff_matrix(self, battle, mutator, user_options, opponent_options):
+        user_options, opponent_options = self.get_switch_move_options(user_options, opponent_options, battle.user.reserve, battle.opponent.reserve)
         user_outspeeds_payoff_matrix = np.zeros((len(user_options), len(opponent_options)))
         user_outspeeds_probability_matrix = np.zeros((len(user_options), len(opponent_options)))
 
@@ -229,66 +299,6 @@ class TurnSimulator:
                 bimatrix[i][j][0], bimatrix[i][j][1] = score, -score
 
         return payoff_matrix, bimatrix
-
-    def display_payoff_matrix(self, payoff_matrix, user_options, opponent_options, user_strategy, opp_strategy):
-        class Color:
-            PURPLE = '\033[95m'
-            CYAN = '\033[96m'
-            DARKCYAN = '\033[36m'
-            BLUE = '\033[94m'
-            GREEN = '\033[92m'
-            YELLOW = '\033[93m'
-            RED = '\033[91m'
-            BOLD = '\033[1m'
-            END = '\033[0m'
-
-        line = " | "
-        prob_decimals = 3
-        longest_str_user = max(user_options, key=len)
-        longest_str_opp = max(opponent_options, key=len)
-
-        # print column probabilities
-        print("".rjust(prob_decimals + 2 + 1 + len(longest_str_opp) + len(line), ' '), end="")
-        for prob in user_strategy:
-            prob = round(prob, prob_decimals)
-            if prob > 0:
-                print(Color.GREEN + format(prob, "." + str(prob_decimals) + "f") + Color.END, end="")
-            else:
-                print("".rjust(len(str(prob)), " "), end="")
-            print("  ".rjust(len(longest_str_user) - len(str(prob)) + len(line), ' '), end="")
-        print()
-
-        # print column labels
-        print(line.rjust(prob_decimals + 2 + 1 + len(longest_str_opp) + len(line), ' '), end="")
-        for label in user_options:
-            print(Color.BOLD + label + Color.END, end="")
-            print(line.rjust(len(longest_str_user) - len(label) + len(line), ' '), end="")
-        print()
-
-        for y, opponent_move_str in enumerate(opponent_options):
-
-            # print row probabilities
-            prob = round(opp_strategy[y], prob_decimals)
-            if prob > 0:
-                print(Color.GREEN + format(prob, "." + str(prob_decimals) + "f") + Color.END, end=" ")
-            else:
-                print("".rjust(prob_decimals + 2, " "), end=" ")
-
-            # print row labels
-            print(Color.BOLD + opponent_move_str + Color.END, end="")
-            print(line[0:2].rjust(len(longest_str_opp) - len(opponent_move_str) + len(line[0:2]), ' '), end="")
-
-            # print values
-            for x, user_move_str in enumerate(user_options):
-                value = payoff_matrix.get((user_move_str, opponent_move_str))
-                value = round(value, 2)
-                if value < 0:
-                    print(Color.BLUE + str(value) + Color.END, end=" ")
-                else:
-                    print(Color.BLUE + " " + str(value) + Color.END, end="")
-
-                print(line[0:2].rjust(len(longest_str_user) - len(str(value)) + len(line[0:2]), ' '), end="")
-            print()
 
     def get_effective_speed_range(self, state, side, user_is_bot):
         """ calculates the effective speed range of a pokemon given their speed stat or speed_range.
@@ -428,6 +438,7 @@ class TurnSimulator:
                 all_instructions = temp_instructions
 
         all_instructions = remove_duplicate_instructions(all_instructions)
+
         return all_instructions
 
     def get_state_instructions_from_move(self, mutator, attacking_move, defending_move, attacker, defender, first_move, instructions, switching_move_switch):

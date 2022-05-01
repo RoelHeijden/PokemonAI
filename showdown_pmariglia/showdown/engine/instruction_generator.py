@@ -898,6 +898,21 @@ def get_end_of_turn_instructions(mutator, instruction, bot_move, opponent_move, 
             mutator.apply_one(ice_damage_instruction)
             instruction.add_instruction(ice_damage_instruction)
 
+    # grassy terrain healing
+    for attacker in sides:
+        side = get_side_from_state(mutator.state, attacker)
+        pkmn = side.active
+
+        if mutator.state.field == constants.GRASSY_TERRAIN and not ('flying' in pkmn.types or pkmn.ability == 'levitate'):
+            if pkmn.hp < pkmn.maxhp:
+                grassy_healing_instruction = (
+                    constants.MUTATOR_HEAL,
+                    attacker,
+                    min(pkmn.maxhp - pkmn.hp, round(0.0625 * pkmn.maxhp))
+                )
+                mutator.apply_one(grassy_healing_instruction)
+                instruction.add_instruction(grassy_healing_instruction)
+
     # futuresight
     for attacker in sides:
         side = get_side_from_state(mutator.state, attacker)

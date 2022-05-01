@@ -17,3 +17,4 @@
 16. calculate_modifier() and get_damage_rolls() are turned off
 17. rounded down the stats in calculate_boosted_stats()
 18. created calculate_boosted_stats_for_crits()
+19. added Grassy terrain to end_of_turn_instructions()

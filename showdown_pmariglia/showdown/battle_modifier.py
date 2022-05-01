@@ -186,8 +186,6 @@ def switch_or_drag(battle, split_msg):
         side.reserve.append(side.active)
 
     side.active = pkmn
-    if side.active.name in constants.UNKOWN_POKEMON_FORMES:
-        side.active = Pokemon.from_switch_string(split_msg[3])
 
 
 def heal_or_damage(battle, split_msg):
@@ -810,6 +808,11 @@ def check_speed_ranges(battle, msg_lines):
     switching_move_used = len(moves) == 1 and normalize_name(moves[0][1]['name']) in constants.SWITCH_OUT_MOVES
     priorities_equal = len(moves) == 2 and moves[0][1][constants.PRIORITY] == moves[1][1][constants.PRIORITY]
 
+    # Focus punch ruins everything
+    for line in msg_lines:
+        if '|move: Focus Punch' in line:
+            return
+
     # check speed if both pokemon switch out
     if len(switches) == 2:
         bot_went_first = switches[0].split('|')[2].startswith(battle.user.name)
@@ -846,7 +849,6 @@ def check_speed_ranges(battle, msg_lines):
         return
 
     battle_copy = deepcopy(battle)
-    # battle_copy.user.from_json(battle_copy.request_json)
 
     speed_threshold = int(
         boost_multiplier_lookup[battle_copy.user.active.boosts[constants.SPEED]] *
@@ -868,6 +870,28 @@ def check_speed_ranges(battle, msg_lines):
 
     if battle.user.active.item == "choicescarf":
         speed_threshold = int(speed_threshold * 1.5)
+
+    if battle.user.active.ability == 'unburden' and battle.user.active.item is None:
+        speed_threshold = int(speed_threshold * 2)
+
+    if battle.user.active.ability == 'swiftswim' and battle.weather == constants.RAIN:
+        speed_threshold = int(speed_threshold * 2)
+
+    if battle.user.active.ability == 'chlorophyll' and battle.weather == constants.SUN:
+        speed_threshold = int(speed_threshold * 2)
+
+    if battle.user.active.ability == 'sandrush' and battle.weather == constants.SAND:
+        speed_threshold = int(speed_threshold * 2)
+
+    if battle.user.active.ability == 'slushrush' and battle.weather == constants.HAIL:
+        speed_threshold = int(speed_threshold * 2)
+
+    if battle.user.active.ability == 'surgesurfer' and battle.field == constants.ELECTRIC_TERRAIN:
+        speed_threshold = int(speed_threshold * 2)
+
+    if battle.user.active.ability == 'quickfeet' and battle.user.active.status == constants.PARALYZED:
+        speed_threshold = int(speed_threshold * 2)
+
 
     # we want to swap which attribute gets updated in trickroom because the slower pokemon goes first
     if battle.trick_room:

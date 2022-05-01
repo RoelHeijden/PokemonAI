@@ -17,19 +17,31 @@ extend program to random battles
 
 fix UNKNOWN_POKEMON_FORMS causing opposing mons to be reset on switch in
 
+determine if previous turn probabilities on switching-move turns should be used
+    # store previous opponent_strategy and opponent_options
+    # create game
+    # check if switching move turn
+    # remove unavailable options from previous opponent_strategy
+    # normalize opponent_strategy (create uniform distribution if all zeros)
+    # get best_response(tiebraking=false)
+
 ----------------------------------------------------------------------------------------------------------------
+join lobby chat
+check speed ranges:
+    - seismitoeds speed at 328 (Mew) and 475 (scarf lele) -- cuz choice items???
+mess in eval function
+more U-turn theory
+    - sum u-turn to one move when user outspeeds
+    - implement best strategy selection in U-turn phase (based on previous opponent strategy)
+
 
 
 STATE INSTRUCTIONS
-    2. add terrain healing to get_end_of_turn_instructions()
-    3. Use previous turn probabilities when deciding the switching-move switch (or not? you'd know if the opp switched or not)
-
+    3. further test whether switching moves are correctly implemented
     4. fix damage calculation being calced too often in find_all_state_instructions()
 
 
 SPEED ORDERS
-    1. fix user effective speed in check_speed_ranges() -- opposing max speed gets set too low (as if the user didnt have 2x speed via e.g. sand rush)
-
     2. add terrain healing, intimidate, weather and status damage order to speed_range checker
     3. add probabilities to outspeeding/underspeeding
 
@@ -57,7 +69,6 @@ INFO MANAGEMENT
 
 
 NASH EQUILIBRIUM
-    1. randomize user move when NE is uniform
     2. find the 'best' NE (check if this is being done in Quantecon)
     3. Figure out if Bayesian NE is possible with Quantecon
 
