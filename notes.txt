@@ -15,24 +15,16 @@ fix ability order for turn 1 in instruction generator
 
 extend program to random battles
 
-fix UNKNOWN_POKEMON_FORMS causing opposing mons to be reset on switch in
-
-determine if previous turn probabilities on switching-move turns should be used
-    # store previous opponent_strategy and opponent_options
-    # create game
-    # check if switching move turn
-    # remove unavailable options from previous opponent_strategy
-    # normalize opponent_strategy (create uniform distribution if all zeros)
-    # get best_response(tiebraking=false)
+Implement pressure for pp counting (in battle_modifier.move())
 
 ----------------------------------------------------------------------------------------------------------------
-join lobby chat
-check speed ranges:
-    - seismitoeds speed at 328 (Mew) and 475 (scarf lele) -- cuz choice items???
-mess in eval function
-more U-turn theory
-    - sum u-turn to one move when user outspeeds
-    - implement best strategy selection in U-turn phase (based on previous opponent strategy)
+
+test current mid-turn U-turn approach
+
+find a good team for the AI (mirror match-able)
+Request training data !!
+Experiment time
+
 
 
 
@@ -85,7 +77,17 @@ W: 3 , L: 37
 
 VRAGEN AAN JOHAN
     - Bayesian Nash equilibrium
+        - for elke mogelijke gamestate: columns van elke matrix*prior samenvoegen tot een matrix?
     - Bayesian model for opp stats
-    - Schrijven (deadline first draft)
+        -
+    - Schrijven
+        - hoe ver dan zijn met schrijven bij de first draft deadline?
+        - welke stukken moeten/mogen verwerkt worden:
+            - (relevante) uitleg over het spel/strategiën?
+            - details binnen de AI buiten de info models, NE en NN (speed range checker, damage calc, etc)?
+            - uitleg over (Bayesian) Nash equilibria. Theoretisch bewijs?
+            - Tekortkomingen van de AI (geen depth=2 search, geen belief van de tegenstander)?
+            -
+
     - Value network input layer
     - hoeveel stop je in de paper? Uitleg van het spel? Edge cases? Bugs?

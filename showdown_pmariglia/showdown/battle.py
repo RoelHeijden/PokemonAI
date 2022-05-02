@@ -42,7 +42,6 @@ from showdown.engine.helpers import common_pkmn_stat_calc
 
 logger = logging.getLogger(__name__)
 
-
 LastUsedMove = namedtuple('LastUsedMove', ['pokemon_name', 'move', 'turn'])
 DamageDealt = namedtuple('DamageDealt', ['attacker', 'defender', 'move', 'percent_damage', 'crit'])
 StatRange = namedtuple("Range", ["min", "max"])

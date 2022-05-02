@@ -18,3 +18,7 @@
 17. rounded down the stats in calculate_boosted_stats()
 18. created calculate_boosted_stats_for_crits()
 19. added Grassy terrain to end_of_turn_instructions()
+20. bot now joins lobby for CHALLENGE_USER mode
+21. challenge sleep timer set to 3 seconds
+22. can_have_speed_modified() now also checks for abilities the opp definitely has
+23. added a board position constraint to the evaluation function

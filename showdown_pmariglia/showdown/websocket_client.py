@@ -105,11 +105,14 @@ class PSWebsocketClient:
         message = ["/utm {}".format(team)]
         await self.send_message('', message)
 
-    async def challenge_user(self, user_to_challenge, battle_format, team):
+    async def challenge_user(self, user_to_challenge, battle_format, team, room_name):
+        if room_name is not None:
+            await self.join_room(room_name)
+
         logger.debug("Challenging {}...".format(user_to_challenge))
-        if time.time() - self.last_challenge_time < 2:
-            logger.info("Sleeping for 10 seconds because last challenge was less than 2 seconds ago")
-            await asyncio.sleep(2)
+        if time.time() - self.last_challenge_time < 3:
+            logger.info("Sleeping for 10 seconds because last challenge was less than 3 seconds ago")
+            await asyncio.sleep(3)
         await self.update_team(team)
         message = ["/challenge {},{}".format(user_to_challenge, battle_format)]
         await self.send_message('', message)

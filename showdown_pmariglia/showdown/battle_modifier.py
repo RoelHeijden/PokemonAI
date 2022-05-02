@@ -37,37 +37,74 @@ def can_have_speed_modified(battle, pokemon):
     return (
         (
             pokemon.item is None and
-            "unburden" in [normalize_name(a) for a in pokedex[pokemon.name][constants.ABILITIES].values()]
+            (
+                (
+                    pokemon.ability is None and
+                    "unburden" in [normalize_name(a) for a in pokedex[pokemon.name][constants.ABILITIES].values()]
+                ) or
+                pokemon.ability == "unburden"
+            )
+
         ) or
         (
             battle.weather == constants.RAIN and
-            pokemon.ability is None and
-            "swiftswim" in [normalize_name(a) for a in pokedex[pokemon.name][constants.ABILITIES].values()]
+            (
+                (
+                    pokemon.ability is None and
+                    "swiftswim" in [normalize_name(a) for a in pokedex[pokemon.name][constants.ABILITIES].values()]
+                ) or
+                pokemon.ability == "swiftswim"
+            )
         ) or
         (
             battle.weather == constants.SUN and
-            pokemon.ability is None and
-            "chlorophyll" in [normalize_name(a) for a in pokedex[pokemon.name][constants.ABILITIES].values()]
+            (
+                (
+                    pokemon.ability is None and
+                    "chlorophyll" in [normalize_name(a) for a in pokedex[pokemon.name][constants.ABILITIES].values()]
+                 ) or
+                pokemon.ability == "chlorophyll"
+            )
         ) or
         (
             battle.weather == constants.SAND and
-            pokemon.ability is None and
-            "sandrush" in [normalize_name(a) for a in pokedex[pokemon.name][constants.ABILITIES].values()]
+            (
+                (
+                    pokemon.ability is None and
+                    "sandrush" in [normalize_name(a) for a in pokedex[pokemon.name][constants.ABILITIES].values()]
+                ) or
+                pokemon.ability == "sandrush"
+            )
         ) or
         (
             battle.weather == constants.HAIL and
-            pokemon.ability is None and
-            "slushrush" in [normalize_name(a) for a in pokedex[pokemon.name][constants.ABILITIES].values()]
+            (
+                (
+                    pokemon.ability is None and
+                    "slushrush" in [normalize_name(a) for a in pokedex[pokemon.name][constants.ABILITIES].values()]
+                ) or
+                pokemon.ability == "slushrush"
+            )
         ) or
         (
             battle.field == constants.ELECTRIC_TERRAIN and
-            pokemon.ability is None and
-            "surgesurfer" in [normalize_name(a) for a in pokedex[pokemon.name][constants.ABILITIES].values()]
+            (
+                (
+                    pokemon.ability is None and
+                    "surgesurfer" in [normalize_name(a) for a in pokedex[pokemon.name][constants.ABILITIES].values()]
+                ) or
+                pokemon.ability == "surgesurfer"
+            )
         ) or
         (
             pokemon.status == constants.PARALYZED and
-            pokemon.ability is None and
-            "quickfeet" in [normalize_name(a) for a in pokedex[pokemon.name][constants.ABILITIES].values()]
+            (
+                (
+                    pokemon.ability is None and
+                    "quickfeet" in [normalize_name(a) for a in pokedex[pokemon.name][constants.ABILITIES].values()]
+                ) or
+                pokemon.ability == "quickfeet"
+            )
         )
     )
 
@@ -892,7 +929,6 @@ def check_speed_ranges(battle, msg_lines):
     if battle.user.active.ability == 'quickfeet' and battle.user.active.status == constants.PARALYZED:
         speed_threshold = int(speed_threshold * 2)
 
-
     # we want to swap which attribute gets updated in trickroom because the slower pokemon goes first
     if battle.trick_room:
         bot_went_first = not bot_went_first
@@ -922,49 +958,49 @@ def check_speed_ranges(battle, msg_lines):
         opp_pkmn.speed_range = StatRange(min=opp_pkmn.speed_range.min, max=math.floor(opp_pkmn.max_speed * 1.5))
 
 
-def check_choicescarf(battle, msg_lines):
-    def get_move_information(m):
-        try:
-            return m.split('|')[2], all_move_json[normalize_name(m.split('|')[3])]
-        except KeyError:
-            logger.debug("Unknown move {} - using standard 0 priority move".format(normalize_name(m.split('|')[3])))
-            return m.split('|')[2], {constants.ID: "unknown", constants.PRIORITY: 0}
-
-    moves = [get_move_information(m) for m in msg_lines if m.startswith('|move|')]
-
-    if len(moves) != 2 or moves[0][0].startswith(battle.user.name) or moves[0][1][constants.PRIORITY] != moves[1][1][constants.PRIORITY]:
-        return
-
-    if (
-        battle.opponent.active is None or
-        battle.opponent.active.item != constants.UNKNOWN_ITEM or
-        can_have_speed_modified(battle, battle.opponent.active) or
-        can_have_priority_modified(battle, battle.opponent.active, moves[0][1][constants.ID])
-    ):
-        return
-
-    battle_copy = deepcopy(battle)
-    battle_copy.user.from_json(battle_copy.request_json)
-    if battle.battle_type == constants.RANDOM_BATTLE:
-        battle_copy.opponent.active.set_spread('serious', '85,85,85,85,85,85')  # random battles have known spreads
-    else:
-        if battle.trick_room:
-            battle_copy.opponent.active.set_spread('quiet', '0,0,0,0,0,0')  # assume as slow as possible in trickroom
-        else:
-            battle_copy.opponent.active.set_spread('jolly', '0,0,0,0,0,252')  # assume as fast as possible
-    state = battle_copy.create_state()
-
-    opponent_effective_speed = get_effective_speed(state, state.opponent)
-    bot_effective_speed = get_effective_speed(state, state.self)
-
-    if battle.trick_room:
-        has_scarf = opponent_effective_speed > bot_effective_speed
-    else:
-        has_scarf = bot_effective_speed > opponent_effective_speed
-
-    if has_scarf:
-        logger.info("Opponent {} could not have gone first - setting it's item to choicescarf".format(battle.opponent.active.name))
-        battle.opponent.active.item = 'choicescarf'
+# def check_choicescarf(battle, msg_lines):
+#     def get_move_information(m):
+#         try:
+#             return m.split('|')[2], all_move_json[normalize_name(m.split('|')[3])]
+#         except KeyError:
+#             logger.debug("Unknown move {} - using standard 0 priority move".format(normalize_name(m.split('|')[3])))
+#             return m.split('|')[2], {constants.ID: "unknown", constants.PRIORITY: 0}
+#
+#     moves = [get_move_information(m) for m in msg_lines if m.startswith('|move|')]
+#
+#     if len(moves) != 2 or moves[0][0].startswith(battle.user.name) or moves[0][1][constants.PRIORITY] != moves[1][1][constants.PRIORITY]:
+#         return
+#
+#     if (
+#         battle.opponent.active is None or
+#         battle.opponent.active.item != constants.UNKNOWN_ITEM or
+#         can_have_speed_modified(battle, battle.opponent.active) or
+#         can_have_priority_modified(battle, battle.opponent.active, moves[0][1][constants.ID])
+#     ):
+#         return
+#
+#     battle_copy = deepcopy(battle)
+#     battle_copy.user.from_json(battle_copy.request_json)
+#     if battle.battle_type == constants.RANDOM_BATTLE:
+#         battle_copy.opponent.active.set_spread('serious', '85,85,85,85,85,85')  # random battles have known spreads
+#     else:
+#         if battle.trick_room:
+#             battle_copy.opponent.active.set_spread('quiet', '0,0,0,0,0,0')  # assume as slow as possible in trickroom
+#         else:
+#             battle_copy.opponent.active.set_spread('jolly', '0,0,0,0,0,252')  # assume as fast as possible
+#     state = battle_copy.create_state()
+#
+#     opponent_effective_speed = get_effective_speed(state, state.opponent)
+#     bot_effective_speed = get_effective_speed(state, state.self)
+#
+#     if battle.trick_room:
+#         has_scarf = opponent_effective_speed > bot_effective_speed
+#     else:
+#         has_scarf = bot_effective_speed > opponent_effective_speed
+#
+#     if has_scarf:
+#         logger.info("Opponent {} could not have gone first - setting it's item to choicescarf".format(battle.opponent.active.name))
+#         battle.opponent.active.item = 'choicescarf'
 
 
 def get_damage_dealt(battle, split_msg, next_messages):

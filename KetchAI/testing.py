@@ -3,6 +3,8 @@ from quantecon.game_theory.normal_form_game import NormalFormGame
 from quantecon.game_theory.lemke_howson import lemke_howson
 import numpy as np
 
+# best_move = user_options[np.random.randint(0, len(user_options))]
+
 
 def to_bimatrix(payoff_matrix):
     length, width = payoff_matrix.shape
@@ -20,34 +22,16 @@ bimatrix = to_bimatrix(payoff_matrix.T)
 game = NormalFormGame(bimatrix)
 user_strategy, opp_strategy = lemke_howson(game, init_pivot=0, max_iter=1000000, capping=None, full_output=False)
 
-print(payoff_matrix)
+print(user_strategy, opp_strategy)
 print()
 
+opp_strategy = [0.3, 0.7]
+best_responses = game.players[0].best_response(opp_strategy, tie_breaking=False)
+
+print(best_responses)
+
+user_strategy = [1/len(best_responses) if i in best_responses else 0 for i in range(3)]
 print(user_strategy)
-print("[")
-for i in opp_strategy:
-    print(f"{i},")
-print("]")
-print("\n")
-
-
-
-user_1 = 0
-user_2 = 0.5
-user_3 = 0.5
-
-opp_a = 0.17
-opp_b = 0.83
-
-a1 = user_1 * opp_a * 10
-a2 = user_2 * opp_a * 0
-a3 = user_3 * opp_a * 100
-
-b1 = user_1 * opp_b * 10
-b2 = user_2 * opp_b * 60
-b3 = user_3 * opp_b * 40
-
-print("Expected value:", a1+a2+a3+b1+b2+b3)
 
 
 

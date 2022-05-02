@@ -1,10 +1,15 @@
+import numpy as np
+
 import constants
+from .damage_calculator import pokemon_type_indicies, damage_multipication_array
+from .helpers import normalize_name
 
 
 class Scoring:
     POKEMON_ALIVE_STATIC = 75
     POKEMON_HP = 100  # 100 points for 100% hp, 0 points for 0% hp. This is in addition to being alive
     POKEMON_HIDDEN = 10
+    BOARD_POSITION_FACTOR = 5  # score += 5 * (offensive + defensive type advantages)
     POKEMON_BOOSTS = {
         constants.ATTACK: 15,
         constants.DEFENSE: 15,
@@ -131,4 +136,64 @@ def evaluate(state):
         elif condition in Scoring.POKEMON_COUNT_SCORED_SIDE_CONDITIONS:
             score -= count * Scoring.POKEMON_COUNT_SCORED_SIDE_CONDITIONS[condition] * opponent_alive_reserves_count
 
+    # evaluate board position based on pokemon typing
+    score += Scoring.BOARD_POSITION_FACTOR * evaluate_board_position(state)
+
     return int(score)
+
+
+def evaluate_board_position(state):
+    """Returns a value between -4 and 4 depending on the offensive/defensive type advantages"""
+    user_mon = state.self.active
+    opp_mon = state.opponent.active
+
+    user_types = [normalize_name(t) for t in user_mon.types]
+    opp_types = [normalize_name(t) for t in opp_mon.types]
+
+    # get the factors of hits dealth
+    dealth = []
+    for i, user_type in enumerate(user_types):
+        dealth_per_type = []
+        for j, opp_type in enumerate(opp_types):
+            opp_type_idx = pokemon_type_indicies[opp_type]
+            user_type_idx = pokemon_type_indicies[user_type]
+            dealth_per_type.append(damage_multipication_array[user_type_idx][opp_type_idx])
+        dealth.append(np.prod(dealth_per_type, dtype=float))
+    offensive_value = max(dealth)
+
+    if offensive_value == 0.25:
+        offensive_value = -2
+    elif offensive_value == 0.5:
+        offensive_value = -1
+    elif offensive_value == 1.0:
+        offensive_value = 0
+    elif offensive_value == 2.0:
+        offensive_value = 1
+    elif offensive_value == 4.0:
+        offensive_value = 2
+
+    # get the factors of hits taken
+    taken = []
+    for j, opp_type in enumerate(opp_types):
+        taken_per_type = []
+        for i, user_type in enumerate(user_types):
+            opp_type_idx = pokemon_type_indicies[opp_type]
+            user_type_idx = pokemon_type_indicies[user_type]
+            taken_per_type.append(damage_multipication_array[opp_type_idx][user_type_idx])
+        taken.append(np.prod(taken_per_type, dtype=float))
+    defensive_value = max(taken)
+
+    if defensive_value == 0.25:
+        defensive_value = 2
+    elif defensive_value == 0.5:
+        defensive_value = 1
+    elif defensive_value == 1.0:
+        defensive_value = 0
+    elif defensive_value == 2.0:
+        defensive_value = -1
+    elif defensive_value == 4.0:
+        defensive_value = -2
+
+    return defensive_value + offensive_value
+
+
