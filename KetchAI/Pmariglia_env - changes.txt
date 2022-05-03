@@ -1,0 +1,28 @@
+1. Added timer toggle
+2. Turned off usage stats lookup
+3. Set KetchAI (external folder) as standard battle bot
+4. added IVs to pokemon.set_spread()
+5. added IVs to team_converter.single_pokemon_export_to_dict()
+6. created battler.from_team_json()
+7. fixed a bug in calc_stats_from_nature: now it's *= 0.9 instead of /= 1.1
+8. opp_team_name is now passable via .env for team preview battles
+9. Edited object.pokemon, from_state_pokemon_dict() and pokemon.to_dict() to include speed ranges, min_speed and max_speed
+10. Turned off dynamax and z-moves as options
+11. extended/changed check_speed_ranges() -- it now checks during switch_out_moves and knockouts
+12. added self.turn to State class
+13. disabling check_choicescarf() and checking it via speed range in check_speed_range()
+14. extended remove_item() with speed_range update for choice scarf items
+15. changes in the damage formula (_calculate_damage()): effective attacking/defense rounded down, modifiers handled in order with correct rounding,
+    added crits, damage rolls added earlier, damage_rolls no longer a set().
+16. calculate_modifier() and get_damage_rolls() are turned off
+17. rounded down the stats in calculate_boosted_stats()
+18. created calculate_boosted_stats_for_crits()
+19. added Grassy terrain to end_of_turn_instructions()
+20. bot now joins lobby for CHALLENGE_USER mode
+21. challenge sleep timer set to 3 seconds
+22. can_have_speed_modified() now also checks for abilities the opp definitely has
+23. added a board position constraint to the evaluation function
+24. disabled attacker_moves_first in calculate_damage() (set it to None)
+25. added partiallytrapped to the volatile status checks in battle_modifier
+26. trapped flag and disabled moves updated in update_battle after |turn
+27. changed some stuff in check_choice_band_or_specs()

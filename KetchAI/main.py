@@ -11,8 +11,6 @@ from showdown_pmariglia.showdown.engine.objects import *
 from showdown_pmariglia.showdown.engine.find_state_instructions import *
 from showdown_pmariglia.showdown.engine.damage_calculator import _calculate_damage
 from showdown_pmariglia.showdown.engine.evaluate import evaluate
-from showdown_pmariglia.data import pokedex
-
 
 # data required to make a correct switching decision mid turn (caused by switching moves)
 # storing them here for now because the Battle class keeps getting reset each turn(?)
@@ -28,6 +26,13 @@ class BattleBot(Battle):
         self.NE = NashCalc()
 
     def find_best_move(self):
+        """ Finds the best move at a given turn
+
+        Currently uses:
+            - Tree search (depth=1)
+            - Pmariglia's handcrafted evaluation function
+            - Nash equilibria
+        """
         print("\n" + "".rjust(50, "-"), "\033[1mTURN:", self.turn, "".ljust(50, "-"), "\033[0m\n")
         state = self.create_state()
         mutator = StateMutator(state)
@@ -40,7 +45,7 @@ class BattleBot(Battle):
         payoff_matrix, bimatrix = self.sim.get_payoff_matrix(mutator, user_options, opponent_options)
 
         # select move based on a nash equilibrium strategy
-        best_move, user_strategy, opp_strategy = self.NE.pick_move(self, bimatrix, user_options, opponent_options)
+        best_move, user_strategy, opp_strategy = self.NE.nash_equilibrium_move(self, bimatrix, user_options, opponent_options)
 
         # display payoff matrix and strategies
         self.NE.display_payoff_matrix(payoff_matrix, user_options, opponent_options, user_strategy, opp_strategy)
@@ -52,12 +57,13 @@ class NashCalc:
     def __init__(self):
         pass
 
-    def pick_move(self, battle, bimatrix, user_options, opponent_options):
+    def nash_equilibrium_move(self, battle, bimatrix, user_options, opponent_options):
+        """ Picks the best move based on a Nash equilibrium strategy. Can be non-deterministic"""
         # checks if a mid-turn switch caused by a switching move needs to be picked
         if battle.force_switch and opponent_options != [constants.DO_NOTHING_MOVE] and battle.opponent.active.hp > 0:
             x, user_strategy, opp_strategy = self.select_mid_turn_switch(bimatrix, user_options, opponent_options)
         else:
-            user_strategy, opp_strategy = self.create_nash_equilibrium(bimatrix, user_options)
+            user_strategy, opp_strategy = self.create_nash_equilibrium(bimatrix)
 
         # set global variables, to potentially be used next turn
         global PrevOppStrategy, PrevOppOptions
@@ -68,7 +74,7 @@ class NashCalc:
         best_move = best_move.split("-")[0]
         return best_move, user_strategy, opp_strategy
 
-    def create_nash_equilibrium(self, bimatrix, user_options):
+    def create_nash_equilibrium(self, bimatrix):
         """ Generates a move based on a Nash equilibrium strategy """
         # get Nash equilibrium strategies
         game = NormalFormGame(bimatrix)
@@ -85,6 +91,7 @@ class NashCalc:
         return user_strategy, opp_strategy
 
     def select_mid_turn_switch(self, bimatrix, user_options, opp_options):
+        """ Decides what strategy to go off when having to select a (faster) switch mid-turn """
         # remove unavailable options from previous opponent_strategy
         opp_strategy = []
         for i, prev_option in enumerate(PrevOppOptions):
@@ -95,7 +102,7 @@ class NashCalc:
         #   if it doesn't: calc new Nash Equilibrium strategy for game state
         #   else: normalize opponent's new strategy and best reacting user strategy
         if sum(opp_strategy) == 0:
-            user_strategy, opp_strategy = self.create_nash_equilibrium(bimatrix, user_options)
+            user_strategy, opp_strategy = self.create_nash_equilibrium(bimatrix)
         else:
             game = NormalFormGame(bimatrix)
             opp_strategy = [float(i) / sum(opp_strategy) for i in opp_strategy]
@@ -106,6 +113,7 @@ class NashCalc:
         return best_move, user_strategy, opp_strategy
 
     def display_payoff_matrix(self, payoff_matrix, user_options, opponent_options, user_strategy, opp_strategy):
+        """ Displays a payoff matrix. The code may not be pretty but the matrix is """
         class Color:
             PURPLE = '\033[95m'
             CYAN = '\033[96m'
@@ -171,7 +179,7 @@ class TurnSimulator:
         pass
 
     def get_switch_move_options(self, user_options, opponent_options, user_reserve, opponent_reserve):
-        """ pairs a switching move with its possible switches, treating each combination as separate move """
+        """ Pairs a switching move with its possible switches, treating each combination as separate move """
 
         # create edited user_options
         edited_user_options = []
@@ -194,29 +202,17 @@ class TurnSimulator:
         return edited_user_options, edited_opponent_options
 
     def get_payoff_matrix(self, mutator, user_options, opponent_options):
+        """ Creates a payoff matrix by simulating the current turn and evaluating all future states """
         # initialize matrices
         user_outspeeds_matrix = np.zeros((len(user_options), len(opponent_options)))
         opp_outspeeds_matrix = np.zeros((len(user_options), len(opponent_options)))
         outspeed_probability_matrix = np.zeros((len(user_options), len(opponent_options)))
 
-        user_mon = mutator.state.self.active
-        opp_mon = mutator.state.opponent.active
-
         # for each move the bot could use
         for i, full_user_move_str in enumerate(user_options):
+
             # for each move the opponent could use
             for j, full_opponent_move_str in enumerate(opponent_options):
-                # if opp_mon.ability is None and mutator.state.turn:
-                #     possible_abilities = [ability for _, ability in pokedex[opp_mon.id]['abilities'].items()]
-                # else:
-                #     possible_abilities = [opp_mon.ability]
-                #
-                # for opp_ability in possible_abilities:
-                #     pass
-                # for opp_item, probability in opp_mon.possible_items:
-                #     pass
-
-                # switching moves are paired together with their switch-in pokemon in a string, separated by a dash
 
                 # switching moves are paired with their switch choice in a string separated by a dash
                 user_switch, opp_switch = False, False
@@ -318,11 +314,8 @@ class TurnSimulator:
         return payoff_matrix, bimatrix
 
     def get_effective_speed_range(self, state, side, user_is_bot):
-        """ calculates the effective speed range of a pokemon given their speed stat or speed_range.
+        """ Calculates the effective speed range of a pokemon given their speed stat or speed_range.
 
-        :param state: State
-        :param side: Side
-        :param user_is_bot: Bool
         :return: StatRange (collections.namedTuple)
         """
         pokemon = side.active
@@ -361,13 +354,10 @@ class TurnSimulator:
         return StatRange(min=boosted_speed[0], max=boosted_speed[1])
 
     def possible_move_order(self, state, user_move, opponent_move):
-        """ computes the possible speed orders of the turn. What is calculated:
+        """ Computes the possible speed orders of the turn. What is calculated:
             - whether the user can possibly outspeed the opponent
             - whether the opponent can possibly outspeed the user
 
-        :param state: State
-        :param user_move: Move
-        :param opponent_move: Move
         :return: (user_can_outspeed, opp_can_outspeed): (Bool, Bool)
         """
         user_effective_speed_range = self.get_effective_speed_range(state, state.self, user_is_bot=True)
@@ -423,7 +413,7 @@ class TurnSimulator:
             return False, True
 
     def get_all_state_instructions(self, mutator,  user_move_str, opponent_move_str, user_move, opponent_move, user_switch, opp_switch, user_outspeeds):
-        """ gets all possible state instructions for a given speed order """
+        """ Gets all possible state instructions for a given speed order """
         all_instructions = []
 
         # branches the scenarios where the user outspeeds
@@ -459,6 +449,7 @@ class TurnSimulator:
         return all_instructions
 
     def get_state_instructions_from_move(self, mutator, attacking_move, defending_move, attacker, defender, first_move, instructions, switching_move_switch):
+        """ Generates all state instructions from a combination of moves """
         instructions.frozen = False
 
         if constants.SWITCH_STRING in attacking_move:
@@ -696,6 +687,4 @@ class TurnSimulator:
             all_instructions = temp_instructions
 
         return all_instructions
-
-
 
