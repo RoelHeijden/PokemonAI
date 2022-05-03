@@ -100,16 +100,9 @@ class TurnSimulator:
         user_outspeeds_matrix = np.multiply(user_outspeeds_matrix, outspeed_probability_matrix)
         opp_outspeeds_matrix = np.multiply(opp_outspeeds_matrix, 1-outspeed_probability_matrix)
 
-        # the next part is about handling switching moves in the payoff matrix
-        # each switching move switch is treated as separate move when getting the original evaluations
-        # now they need to be merged back into one move, but the way it's done depends on the speed order
-        #   - if switch-move user is slower: select highest values (as the user gets to pick the best response switch)
-        #   - if switch move user is faster: compute weighted average
-        # tbh, this section got a bit out of hand lol.
+        # users's switch-move when the opponent outspeeds
+        # for each opposing move, every switch-move value = max([switch-move-switches])
         user_switching_moves = list(set([move.split("-")[0] for move in user_options if len(move.split("-")) == 2]))
-        opp_switching_moves = list(set([move.split("-")[0] for move in opponent_options if len(move.split("-")) == 2]))
-
-        # USER'S SWITCHING MOVE WHEN THE OPPONENT OUTSPEEDS
         for switching_move in user_switching_moves:
             new_values = np.array([-float('inf') for _ in range(len(opponent_options))])
             rows_to_replace = []
@@ -120,10 +113,13 @@ class TurnSimulator:
                     new_values = np.maximum(new_values, opp_outspeeds_matrix[i])
                     rows_to_replace.append(i)
 
+            # replace old values with the new values
             for idx in rows_to_replace:
                 opp_outspeeds_matrix[idx] = new_values
 
-        # OPPONENT'S SWITCHING MOVE WHEN THE USER OUTSPEEDS
+        # opponent's switch-move when the user outspeeds
+        # for each of the user's move, every switch-move value = min([switch-move-switches])
+        opp_switching_moves = list(set([move.split("-")[0] for move in opponent_options if len(move.split("-")) == 2]))
         for switching_move in opp_switching_moves:
             new_values = np.array([float('inf') for _ in range(len(user_options))])
             columns_to_replace = []
@@ -134,6 +130,7 @@ class TurnSimulator:
                     new_values = np.minimum(new_values, user_outspeeds_matrix[:, j])
                     columns_to_replace.append(j)
 
+            # replace old values with the new values
             for idx in columns_to_replace:
                 user_outspeeds_matrix[:, idx] = new_values
 
