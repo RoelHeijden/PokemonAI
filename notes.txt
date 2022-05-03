@@ -29,10 +29,8 @@ multi-hit moves KOing a pokemon can wrongfully cause the 'does not have choice b
 ----------------------------------------------------------------------------------------------------------------
 
 
-
-Request training data !!
 double check the teams
-double check Safest knowledge on opp team (check hp numbers for known and unknown pokemon)
+double check 'Safest' knowledge on opp team (check hp numbers for known and unknown pokemon)
 Experiment
 - FWG simple mirror
 - Simple competitive mirror
