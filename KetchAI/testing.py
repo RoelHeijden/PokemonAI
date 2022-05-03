@@ -16,23 +16,29 @@ def to_bimatrix(payoff_matrix):
 
 
 payoff_matrix = np.array([[10, 0, 100],
-                          [10, 60, 40]])
+                          [10, 60, 40],
+                          [40, 40, 0]])
 
 bimatrix = to_bimatrix(payoff_matrix.T)
 game = NormalFormGame(bimatrix)
 user_strategy, opp_strategy = lemke_howson(game, init_pivot=0, max_iter=1000000, capping=None, full_output=False)
 
-print(user_strategy, opp_strategy)
+print(payoff_matrix.T)
+print()
+print(user_strategy)
+print(opp_strategy)
+print()
+print("----------------")
 print()
 
-opp_strategy = [0.3, 0.7]
-best_responses = game.players[0].best_response(opp_strategy, tie_breaking=False)
+next_matrix = np.array([[10, 0],
+                        [10, 60]])
 
-print(best_responses)
+bimatrix = to_bimatrix(next_matrix.T)
+game = NormalFormGame(bimatrix)
+user_strategy, opp_strategy = lemke_howson(game, init_pivot=0, max_iter=1000000, capping=None, full_output=False)
 
-user_strategy = [1/len(best_responses) if i in best_responses else 0 for i in range(3)]
+print(next_matrix.T)
+print()
 print(user_strategy)
-
-
-
-
+print(opp_strategy)

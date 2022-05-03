@@ -435,7 +435,8 @@ def calculate_damage(state, attacking_side_string, attacking_move, defending_mov
         constants.TERRAIN: state.field
     }
 
-    attacker_moves_first = user_moves_first(state, attacking_move_dict, defending_move_dict)
+    # attacker_moves_first = user_moves_first(state, attacking_move_dict, defending_move_dict)
+    attacker_moves_first = None
 
     # a charge move doesn't need to charge when only calculating damage
     attacking_move_dict[constants.FLAGS].pop(constants.CHARGE, None)

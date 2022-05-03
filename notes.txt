@@ -1,5 +1,6 @@
 ----------------------------------------------------------------------------------------------------------------
-DO AT SOME POINT
+
+explore 2-deep tree search using NE to get scores for each depth
 
 update speed range after instruction (e.g. when checking the case where the bot outspeeds, update speed range in that branch)?
 
@@ -9,85 +10,65 @@ Keep track of potential choice scarf speed_range -- you might know a mon is not 
 
 for bo3 module: update speed_range_check() and others on final turn as well.
 
-find edge case mistakes (like burned pokemon with guts having attack halved), abilities not working in state instructions (Download, synchronize)
+find edge case mistakes (like burned pokemon with guts having attack halved), abilities not working in state instructions (Download, synchronize), rocky helmet
 
 fix ability order for turn 1 in instruction generator
 
 extend program to random battles
 
-Implement pressure for pp counting (in battle_modifier.move())
+Implement pressure for pp counting -- see battle_modifier.move()
+
+implement whirlpool trapping knowledge for state simulation (objects.py, side.trapped())
+
+fix damage calculation being calced too often in find_all_state_instructions()
+
+implement trapping knowledge of the opponent for: mean look, jaw lock, block, etc.. (moves that trap untill KO'd or switched)
+
+multi-hit moves KOing a pokemon can wrongfully cause the 'does not have choice band' flag to be set: compares max damage vs damage done by first hit
 
 ----------------------------------------------------------------------------------------------------------------
 
-test current mid-turn U-turn approach
 
-find a good team for the AI (mirror match-able)
+
 Request training data !!
-Experiment time
-
-
-
-
-STATE INSTRUCTIONS
-    3. further test whether switching moves are correctly implemented
-    4. fix damage calculation being calced too often in find_all_state_instructions()
-
-
-SPEED ORDERS
-    2. add terrain healing, intimidate, weather and status damage order to speed_range checker
-    3. add probabilities to outspeeding/underspeeding
-
-
-DAMAGE ROLLS
-    4. Create Bayesian model for "bulk" and "offense" initialized via usage stats
+double check the teams
+double check Safest knowledge on opp team (check hp numbers for known and unknown pokemon)
+Experiment
+- FWG simple mirror
+- Simple competitive mirror
+- Complex competitive mirror
+- Simple vs Complex
+- Complex vs simple
 
 
 PAYOFF MATRIX
-    3. extend the function
-        - for each ability
+    1. extend the function
+        - for each possible ability: get_possible_abilities()
             - how to accumulate state_instructions (all prob*0.5, and add concatonate instructions to same list?)
-        - for each item
+        - for each item: get_possible_items()
             - how to initiate the item list (and probabilities?)
             - how to remove (via deduction) items from this list as the game progresses
-        - for each spread??
-        - for crit / no crit
-    4. explore 2-deep tree search using NE to get scores for each depth
-
+        - for each bulk/offense
 
 INFO MANAGEMENT
     1. Keep track of revealed abilities (e.g. Grassy surge)
-    2. Choice item move locks should work (AI knows opponent has Choice band, but doesn't know the move is locked)
-    3. Moves like whirlpool should work (e.g. AI doesn't know the opponent is trapped)
+    2. add terrain healing, intimidate, weather and status damage order to speed_range checker
+    3. create has_boosting_item flag
+    4. double check choice band/specs detection
+    5. create hp range (currently set to 84 EVs hp I believe)
+    7. add probabilities to outspeeding/underspeeding
+    8. Create Bayesian model for "bulk" and "offense" initialized via usage stats
 
 
 NASH EQUILIBRIUM
+    1. when NE is uniform (doesn't matter which of the N options you pick), pick one with highest average if opp deviates off NE
     2. find the 'best' NE (check if this is being done in Quantecon)
     3. Figure out if Bayesian NE is possible with Quantecon
 
+VALUE NETWORK
+    1. research
+    2. create
+    3. check how u-turn decisions change with the value net
 
 
 
-
-50 games vs 'Safest'
-W: 35, L: 15
-50 games with teams switched around:
-W: 3 , L: 37
-;_;
-
-
-VRAGEN AAN JOHAN
-    - Bayesian Nash equilibrium
-        - for elke mogelijke gamestate: columns van elke matrix*prior samenvoegen tot een matrix?
-    - Bayesian model for opp stats
-        -
-    - Schrijven
-        - hoe ver dan zijn met schrijven bij de first draft deadline?
-        - welke stukken moeten/mogen verwerkt worden:
-            - (relevante) uitleg over het spel/strategiën?
-            - details binnen de AI buiten de info models, NE en NN (speed range checker, damage calc, etc)?
-            - uitleg over (Bayesian) Nash equilibria. Theoretisch bewijs?
-            - Tekortkomingen van de AI (geen depth=2 search, geen belief van de tegenstander)?
-            -
-
-    - Value network input layer
-    - hoeveel stop je in de paper? Uitleg van het spel? Edge cases? Bugs?

@@ -15,8 +15,7 @@ from showdown_pmariglia.data import pokedex
 
 
 # data required to make a correct switching decision mid turn (caused by switching moves)
-# storing them here for now cuz the Battle class keeps getting reset each turn(?)
-
+# storing them here for now because the Battle class keeps getting reset each turn(?)
 PrevOppOptions = []
 PrevOppStrategy = []
 
@@ -26,37 +25,50 @@ class BattleBot(Battle):
     def __init__(self, *args, **kwargs):
         super(BattleBot, self).__init__(*args, **kwargs)
         self.sim = TurnSimulator()
-        self.nash = NashEq()
+        self.NE = NashCalc()
 
     def find_best_move(self):
-        global PrevOppOptions, PrevOppStrategy
         print("\n" + "".rjust(50, "-"), "\033[1mTURN:", self.turn, "".ljust(50, "-"), "\033[0m\n")
         state = self.create_state()
         mutator = StateMutator(state)
         user_options, opponent_options = self.get_all_options()
 
+        # turns switching moves into separate moves: one for each switching option
+        user_options, opponent_options = self.sim.get_switch_move_options(user_options, opponent_options, self.user.reserve, self.opponent.reserve)
+
         # get payoff matrix via tree search and evaluation
-        payoff_matrix, bimatrix = self.sim.get_payoff_matrix(self, mutator, user_options, opponent_options)
+        payoff_matrix, bimatrix = self.sim.get_payoff_matrix(mutator, user_options, opponent_options)
 
-        # check if a mid-turn switch needs to be made
-        if self.force_switch and opponent_options != [constants.DO_NOTHING_MOVE]:
-            # select move based on the opp_strategy established at the start of the turn
-            best_move, user_strategy, opp_strategy = self.nash.select_mid_turn_switch(bimatrix, user_options, opponent_options)
-        else:
-            # select move based on a Nash equilibrium strategy
-            best_move, user_strategy, opp_strategy = self.nash.nash_equilibrium_move(bimatrix, user_options)
-        PrevOppStrategy, PrevOppOptions = opp_strategy, opponent_options
+        # select move based on a nash equilibrium strategy
+        best_move, user_strategy, opp_strategy = self.NE.pick_move(self, bimatrix, user_options, opponent_options)
 
-        self.nash.display_payoff_matrix(payoff_matrix, user_options, opponent_options, user_strategy, opp_strategy)
-        print(f'\nChosen move: {best_move}')
+        # display payoff matrix and strategies
+        self.NE.display_payoff_matrix(payoff_matrix, user_options, opponent_options, user_strategy, opp_strategy)
+        print(f'\nChosen move: \033[1m{best_move}\033[0m')
         return format_decision(self, best_move)
 
 
-class NashEq:
+class NashCalc:
     def __init__(self):
         pass
 
-    def nash_equilibrium_move(self, bimatrix, user_options):
+    def pick_move(self, battle, bimatrix, user_options, opponent_options):
+        # checks if a mid-turn switch caused by a switching move needs to be picked
+        if battle.force_switch and opponent_options != [constants.DO_NOTHING_MOVE] and battle.opponent.active.hp > 0:
+            x, user_strategy, opp_strategy = self.select_mid_turn_switch(bimatrix, user_options, opponent_options)
+        else:
+            user_strategy, opp_strategy = self.create_nash_equilibrium(bimatrix, user_options)
+
+        # set global variables, to potentially be used next turn
+        global PrevOppStrategy, PrevOppOptions
+        PrevOppStrategy, PrevOppOptions = opp_strategy, opponent_options
+
+        # select move based on calculated strategy
+        best_move = np.random.choice(a=user_options, p=user_strategy)
+        best_move = best_move.split("-")[0]
+        return best_move, user_strategy, opp_strategy
+
+    def create_nash_equilibrium(self, bimatrix, user_options):
         """ Generates a move based on a Nash equilibrium strategy """
         # get Nash equilibrium strategies
         game = NormalFormGame(bimatrix)
@@ -70,13 +82,9 @@ class NashEq:
             user_strategy = np.zeros(len(user_strategy))
             user_strategy[response] = 1
 
-        # select move based on calculated strategy
-        best_move = np.random.choice(a=user_options, p=user_strategy)
-        return best_move, user_strategy, opp_strategy
+        return user_strategy, opp_strategy
 
     def select_mid_turn_switch(self, bimatrix, user_options, opp_options):
-        game = NormalFormGame(bimatrix)
-
         # remove unavailable options from previous opponent_strategy
         opp_strategy = []
         for i, prev_option in enumerate(PrevOppOptions):
@@ -87,25 +95,15 @@ class NashEq:
         #   if it doesn't: calc new Nash Equilibrium strategy for game state
         #   else: normalize opponent's new strategy and best reacting user strategy
         if sum(opp_strategy) == 0:
-            user_strategy, opp_strategy = lemke_howson(game, init_pivot=0, max_iter=1000000, capping=None, full_output=False)
-            user_strategy = [prob if prob >= 0 else 0 for prob in user_strategy]
-
-            print("NEW NE STRAT COMPUTED")
-            print()
-            print("prev strat:", PrevOppStrategy)
-            print(PrevOppOptions)
-            print()
-            print("new strat:", opp_strategy)
-            print(opp_options)
-
+            user_strategy, opp_strategy = self.create_nash_equilibrium(bimatrix, user_options)
         else:
+            game = NormalFormGame(bimatrix)
             opp_strategy = [float(i) / sum(opp_strategy) for i in opp_strategy]
             best_responses = game.players[0].best_response(opp_strategy, tie_breaking=False)
             user_strategy = [1/len(best_responses) if i in best_responses else 0 for i in range(len(user_options))]
 
         best_move = np.random.choice(a=user_options, p=user_strategy)
         return best_move, user_strategy, opp_strategy
-
 
     def display_payoff_matrix(self, payoff_matrix, user_options, opponent_options, user_strategy, opp_strategy):
         class Color:
@@ -195,11 +193,8 @@ class TurnSimulator:
 
         return edited_user_options, edited_opponent_options
 
-    def get_payoff_matrix(self, battle, mutator, initial_user_options, initial_opponent_options):
-        # turn switching moves into separate moves: one for each switching option
-        user_options, opponent_options = self.get_switch_move_options(initial_user_options, initial_opponent_options, battle.user.reserve, battle.opponent.reserve)
-
-        # init matrices
+    def get_payoff_matrix(self, mutator, user_options, opponent_options):
+        # initialize matrices
         user_outspeeds_matrix = np.zeros((len(user_options), len(opponent_options)))
         opp_outspeeds_matrix = np.zeros((len(user_options), len(opponent_options)))
         outspeed_probability_matrix = np.zeros((len(user_options), len(opponent_options)))
@@ -285,89 +280,37 @@ class TurnSimulator:
         # USER'S SWITCHING MOVE WHEN THE OPPONENT OUTSPEEDS
         for switching_move in user_switching_moves:
             new_values = np.array([-float('inf') for _ in range(len(opponent_options))])
-            indices_to_delete = []
+            rows_to_replace = []
 
             # fill new_values with the highest values and remove the switching-move rows
             for i, full_user_move_str in enumerate(user_options):
                 if full_user_move_str.startswith(switching_move):
                     new_values = np.maximum(new_values, opp_outspeeds_matrix[i])
-                    indices_to_delete.append(i)
-            opp_outspeeds_matrix = np.delete(opp_outspeeds_matrix, indices_to_delete, axis=0)
+                    rows_to_replace.append(i)
 
-            # insert new_values as solo switching-move row
-            for i, user_move_str in enumerate(initial_user_options):
-                if user_move_str == switching_move:
-                    opp_outspeeds_matrix = np.insert(opp_outspeeds_matrix, i, new_values, axis=0)
-
-        # OPPONENT'S SWITCH MOVE WHEN THE OPPONENT OUTSPEEDS
-        for switching_move in opp_switching_moves:
-
-            # get array column indices to delete / average over, and track column averages
-            indices_to_delete = []
-            averages = []
-            for j, full_opponent_move_str in enumerate(opponent_options):
-                if full_opponent_move_str.startswith(switching_move):
-                    indices_to_delete.append(j)
-                    averages.append(np.average(opp_outspeeds_matrix[:, j]))
-
-            # create new switch-move values via weighted averages
-            weights = np.argsort(-1 * np.array(averages)) + 1
-            new_values = np.average(opp_outspeeds_matrix[:, indices_to_delete].T, axis=0, weights=weights)
-
-            # remove previous switch-move columns
-            opp_outspeeds_matrix = np.delete(opp_outspeeds_matrix, indices_to_delete, axis=1)
-
-            # insert new_values as solo switching-move column
-            for j, opp_move_str in enumerate(initial_opponent_options):
-                if opp_move_str == switching_move:
-                    opp_outspeeds_matrix = np.insert(opp_outspeeds_matrix, j, new_values, axis=1)
+            for idx in rows_to_replace:
+                opp_outspeeds_matrix[idx] = new_values
 
         # OPPONENT'S SWITCHING MOVE WHEN THE USER OUTSPEEDS
         for switching_move in opp_switching_moves:
             new_values = np.array([float('inf') for _ in range(len(user_options))])
-            indices_to_delete = []
+            columns_to_replace = []
 
-            # fill new_values with the lowest values and remove the switching-move rows
+            # fill new_values with the lowest values and remove the switching-move columns
             for j, full_opp_move_str in enumerate(opponent_options):
                 if full_opp_move_str.startswith(switching_move):
                     new_values = np.minimum(new_values, user_outspeeds_matrix[:, j])
-                    indices_to_delete.append(j)
-            user_outspeeds_matrix = np.delete(user_outspeeds_matrix, indices_to_delete, axis=1)
+                    columns_to_replace.append(j)
 
-            # insert new_values as solo switching-move row
-            for j, opp_move_str in enumerate(initial_opponent_options):
-                if opp_move_str == switching_move:
-                    user_outspeeds_matrix = np.insert(user_outspeeds_matrix, j, new_values, axis=1)
-
-        # USER'S SWITCH MOVE WHEN THE USER OUTSPEEDS
-        for switching_move in user_switching_moves:
-
-            # get array row indices to delete / average over, and track row averages
-            indices_to_delete = []
-            averages = []
-            for i, full_user_move_str in enumerate(user_options):
-                if full_user_move_str.startswith(switching_move):
-                    indices_to_delete.append(i)
-                    averages.append(np.average(user_outspeeds_matrix[i]))
-
-            # create new switch-move values via weighted average
-            weights = np.argsort(averages) + 1
-            new_values = np.average(user_outspeeds_matrix[indices_to_delete, :].T, axis=1, weights=weights)
-
-            # remove previous switch-move rows
-            user_outspeeds_matrix = np.delete(user_outspeeds_matrix, indices_to_delete, axis=0)
-
-            # insert new_values as solo switching-move rows
-            for i, user_move_str in enumerate(initial_user_options):
-                if user_move_str == switching_move:
-                    user_outspeeds_matrix = np.insert(user_outspeeds_matrix, i, new_values, axis=0)
+            for idx in columns_to_replace:
+                user_outspeeds_matrix[:, idx] = new_values
 
         # create full payoff dict, and a bimatrix to be used for NE calculation
         full_weighted_matrix = opp_outspeeds_matrix + user_outspeeds_matrix
         payoff_matrix = {}
-        bimatrix = np.zeros((len(initial_user_options), len(initial_opponent_options), 2))
-        for i, full_user_move_str in enumerate(initial_user_options):
-            for j, full_opponent_move_str in enumerate(initial_opponent_options):
+        bimatrix = np.zeros((len(user_options), len(opponent_options), 2))
+        for i, full_user_move_str in enumerate(user_options):
+            for j, full_opponent_move_str in enumerate(opponent_options):
                 score = full_weighted_matrix[i][j]
                 payoff_matrix[(full_user_move_str, full_opponent_move_str)] = score
                 bimatrix[i][j][0], bimatrix[i][j][1] = score, -score

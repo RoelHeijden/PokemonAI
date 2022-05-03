@@ -22,3 +22,7 @@
 21. challenge sleep timer set to 3 seconds
 22. can_have_speed_modified() now also checks for abilities the opp definitely has
 23. added a board position constraint to the evaluation function
+24. disabled attacker_moves_first in calculate_damage() (set it to None)
+25. added partiallytrapped to the volatile status checks in battle_modifier
+26. trapped flag and disabled moves updated in update_battle after |turn
+27. changed some stuff in check_choice_band_or_specs()

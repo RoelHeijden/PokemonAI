@@ -422,6 +422,13 @@ def activate(battle, split_msg):
         logger.debug("{} has the item {}".format(pkmn.name, item))
         pkmn.item = item
 
+    # check if pokemon is trapped
+    if 'move: ' in split_msg[3]:
+        move = normalize_name(split_msg[3].strip('move: '))
+        if move in constants.BINDING_MOVES:
+            pkmn.volatile_statuses.append(constants.PARTIALLY_TRAPPED)
+
+
 
 def prepare(battle, split_msg):
     if is_opponent(battle, split_msg):
@@ -445,6 +452,10 @@ def start_volatile_status(battle, split_msg):
         side = battle.user
 
     volatile_status = normalize_name(split_msg[3].split(":")[-1])
+
+    if volatile_status == 'ingrain' or volatile_status == 'noretreat' :
+        pkmn.volatile_statuses.append(constants.TRAPPED)
+        return
 
     # for some reason futuresight is sent with the `-start` message
     # `-start` is typically reserved for volatile statuses
@@ -485,6 +496,9 @@ def end_volatile_status(battle, split_msg):
         pkmn = battle.user.active
 
     volatile_status = normalize_name(split_msg[3].split(":")[-1])
+    if volatile_status in constants.BINDING_MOVES:
+        volatile_status = constants.PARTIALLY_TRAPPED
+
     if volatile_status not in pkmn.volatile_statuses:
         logger.warning("Pokemon '{}' does not have the volatile status '{}'".format(pkmn.to_dict(), volatile_status))
     else:
@@ -958,51 +972,6 @@ def check_speed_ranges(battle, msg_lines):
         opp_pkmn.speed_range = StatRange(min=opp_pkmn.speed_range.min, max=math.floor(opp_pkmn.max_speed * 1.5))
 
 
-# def check_choicescarf(battle, msg_lines):
-#     def get_move_information(m):
-#         try:
-#             return m.split('|')[2], all_move_json[normalize_name(m.split('|')[3])]
-#         except KeyError:
-#             logger.debug("Unknown move {} - using standard 0 priority move".format(normalize_name(m.split('|')[3])))
-#             return m.split('|')[2], {constants.ID: "unknown", constants.PRIORITY: 0}
-#
-#     moves = [get_move_information(m) for m in msg_lines if m.startswith('|move|')]
-#
-#     if len(moves) != 2 or moves[0][0].startswith(battle.user.name) or moves[0][1][constants.PRIORITY] != moves[1][1][constants.PRIORITY]:
-#         return
-#
-#     if (
-#         battle.opponent.active is None or
-#         battle.opponent.active.item != constants.UNKNOWN_ITEM or
-#         can_have_speed_modified(battle, battle.opponent.active) or
-#         can_have_priority_modified(battle, battle.opponent.active, moves[0][1][constants.ID])
-#     ):
-#         return
-#
-#     battle_copy = deepcopy(battle)
-#     battle_copy.user.from_json(battle_copy.request_json)
-#     if battle.battle_type == constants.RANDOM_BATTLE:
-#         battle_copy.opponent.active.set_spread('serious', '85,85,85,85,85,85')  # random battles have known spreads
-#     else:
-#         if battle.trick_room:
-#             battle_copy.opponent.active.set_spread('quiet', '0,0,0,0,0,0')  # assume as slow as possible in trickroom
-#         else:
-#             battle_copy.opponent.active.set_spread('jolly', '0,0,0,0,0,252')  # assume as fast as possible
-#     state = battle_copy.create_state()
-#
-#     opponent_effective_speed = get_effective_speed(state, state.opponent)
-#     bot_effective_speed = get_effective_speed(state, state.self)
-#
-#     if battle.trick_room:
-#         has_scarf = opponent_effective_speed > bot_effective_speed
-#     else:
-#         has_scarf = bot_effective_speed > opponent_effective_speed
-#
-#     if has_scarf:
-#         logger.info("Opponent {} could not have gone first - setting it's item to choicescarf".format(battle.opponent.active.name))
-#         battle.opponent.active.item = 'choicescarf'
-
-
 def get_damage_dealt(battle, split_msg, next_messages):
     move_name = normalize_name(split_msg[3])
     critical_hit = False
@@ -1071,31 +1040,22 @@ def check_choice_band_or_specs(battle, damage_dealt):
 
     min_damage_with_choice_item = float('inf')
     max_damage_without_choice_item = float('-inf')
-    potential_battles = battle.prepare_battles(guess_mega_evo_opponent=False, join_moves_together=True)
 
     battle_copy = deepcopy(battle)
-    battle_copy.user.from_json(battle.request_json)
-    for b in potential_battles:
+    battle_copy.opponent.active.set_spread(*spread)
 
-        # if the item is not the choice item - use it to find the max damage roll possible for all items
-        if b.opponent.active.item != choice_item:
-            b.opponent.active.set_spread(*spread)
-            b.user.active.stats = battle_copy.user.active.stats
+    # if the item is not the choice item - use it to find the max damage roll possible for all items
+    if battle_copy.opponent.active.item != choice_item:
+        state = battle_copy.create_state()
+        damage = calculate_damage(state, constants.OPPONENT, damage_dealt.move, battle.user.last_used_move.move, calc_type='max')[0]
+        max_damage_without_choice_item = max(max_damage_without_choice_item, damage)
 
-            state = b.create_state()
+    # also find the min damage roll possible for the choice-item
+    battle_copy.opponent.active.item = choice_item
+    state = battle_copy.create_state()
 
-            damage = calculate_damage(state, constants.OPPONENT, damage_dealt.move, battle.user.last_used_move.move, calc_type='max')[0]
-            max_damage_without_choice_item = max(max_damage_without_choice_item, damage)
-
-        # also find the min damage roll possible for the choice-item
-        b.opponent.active.item = choice_item
-        b.opponent.active.set_spread(*spread)
-        b.user.active.stats = battle_copy.user.active.stats
-
-        state = b.create_state()
-
-        damage = calculate_damage(state, constants.OPPONENT, damage_dealt.move, battle.user.last_used_move.move, calc_type='min')[0]
-        min_damage_with_choice_item = min(min_damage_with_choice_item, damage)
+    damage = calculate_damage(state, constants.OPPONENT, damage_dealt.move, battle.user.last_used_move.move, calc_type='min')[0]
+    min_damage_with_choice_item = min(min_damage_with_choice_item, damage)
 
     # dont infer if we did not find a damage amount
     if max_damage_without_choice_item == float('-inf') or min_damage_with_choice_item == float('inf'):
@@ -1105,7 +1065,7 @@ def check_choice_band_or_specs(battle, damage_dealt):
 
     # if the damage dealt is more than 1.2x the max-roll WITHOUT a choice item then the pkmn DOES have a choice-item
     if actual_damage_dealt > (max_damage_without_choice_item * 1.2):  # multiply to avoid rounding errors
-        logger.debug("{} has {}".format(battle.opponent.active.name, choice_item))
+        logger.info("{} has {}".format(battle.opponent.active.name, choice_item))
         battle.opponent.active.item = choice_item
 
     # if the damage dealt is less than 0.8x the min-roll given a choice-item then the pkmn DOES NOT have a choice-item
@@ -1115,7 +1075,16 @@ def check_choice_band_or_specs(battle, damage_dealt):
                                                            # if it did, we do not want to set this flag
                                                            # Check for greater than 1 to avoid rounding errors
     ):
-        logger.debug("{} did not do enough damage to have {}".format(battle.opponent.active.name, choice_item))
+
+        if choice_item == "choiceband" and not battle.opponent.active.can_not_have_band or \
+                choice_item == "choicespecs" and not battle.opponent.active.can_not_have_specs:
+            logger.info("{} did not do enough damage to have {}".format(battle.opponent.active.name, choice_item))
+
+            print("min choice item damage", min_damage_with_choice_item)
+            print("damage dealth:", actual_damage_dealt)
+            print("pokemon hp", battle.user.active.hp)
+            print("hp remaining", battle.user.active.hp - actual_damage_dealt)
+
         if choice_item == "choiceband":
             battle.opponent.active.can_not_have_band = True
         elif choice_item == "choicespecs":
@@ -1304,6 +1273,8 @@ def update_battle(battle, msg):
             check_heavydutyboots(battle, msg_lines[i+1:])
 
         if action == 'turn':
+            battle.opponent.check_if_trapped(battle)
+            battle.opponent.lock_moves()
             return True
 
     if action in ['inactive', 'updatesearch']:

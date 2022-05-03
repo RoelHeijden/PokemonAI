@@ -323,6 +323,10 @@ PSYCHIC_TERRAIN = "psychicterrain"
 # switch-out moves
 SWITCH_OUT_MOVES = {"uturn", "voltswitch", "partingshot", "teleport", 'flipturn'}
 
+# binding / partially trapping moves
+BINDING_MOVES = {"bind", "clamp", "firespin", "infestation", "magmastorm",
+                 "sandtomb", "whirlpool", "wrap", "thundercage", "snaptrap"}
+
 # volatile statuses
 FLINCH = "flinch"
 CONFUSION = "confusion"

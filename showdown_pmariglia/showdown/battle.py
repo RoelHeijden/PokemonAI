@@ -468,6 +468,33 @@ class Battler:
                 speed = math.floor(speed*1.5)
             pokemon.speed_range = StatRange(min=speed, max=speed)
 
+    def check_if_trapped(self, battle):
+        """ sets the 'trapped' flag"""
+        pkmn = self.active
+        opp_pkmn = battle.user.active
+
+        # check via items/abilities
+        if pkmn.item == 'shedshell' or 'ghost' in pkmn.types or pkmn.ability == 'shadowtag':
+            self.trapped = False
+            return
+        elif constants.PARTIALLY_TRAPPED in pkmn.volatile_statuses:
+            self.trapped = True
+            return
+        elif constants.TRAPPED in pkmn.volatile_statuses:
+            self.trapped = True
+            return
+        elif opp_pkmn.ability == 'shadowtag':
+            self.trapped = True
+            return
+        elif opp_pkmn.ability == 'magnetpull' and 'steel' in pkmn.types:
+            self.trapped = True
+            return
+        elif opp_pkmn.ability == 'arenatrap' and pkmn.is_grounded():
+            self.trapped = True
+            return
+        else:
+            self.trapped = False
+
 
 class Pokemon:
 
