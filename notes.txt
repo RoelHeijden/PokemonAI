@@ -26,47 +26,54 @@ implement trapping knowledge of the opponent for: mean look, jaw lock, block, et
 
 multi-hit moves KOing a pokemon can wrongfully cause the 'does not have choice band' flag to be set: compares max damage vs damage done by first hit
 
+
 ----------------------------------------------------------------------------------------------------------------
 
 
-double check the teams
-double check 'Safest' knowledge on opp team (check hp numbers for known and unknown pokemon)
-Experiment
-- FWG simple mirror
-- Simple competitive mirror
-- Complex competitive mirror
-- Simple vs Complex
-- Complex vs simple
 
+EXPERIMENT 1
+    0. double check 'Safest' knowledge on opp team (check hp numbers for known and unknown pokemon)
+    1. Finalize setup
+        - Two simplified teams
+        - Two regular OU teams
+    2. Finalize teams
+    3. Properly document
+    4. Actually do experiment
 
-PAYOFF MATRIX
-    1. extend the function
-        - for each possible ability: get_possible_abilities()
-            - how to accumulate state_instructions (all prob*0.5, and add concatonate instructions to same list?)
-        - for each item: get_possible_items()
-            - how to initiate the item list (and probabilities?)
-            - how to remove (via deduction) items from this list as the game progresses
-        - for each bulk/offense
 
 INFO MANAGEMENT
-    1. Keep track of revealed abilities (e.g. Grassy surge)
-    2. add terrain healing, intimidate, weather and status damage order to speed_range checker
-    3. create has_boosting_item flag
-    4. double check choice band/specs detection
-    5. create hp range (currently set to 84 EVs hp I believe)
-    7. add probabilities to outspeeding/underspeeding
-    8. Create Bayesian model for "bulk" and "offense" initialized via usage stats
+    1. Items
+        - check/create item deduction functions (e.g. cannot have Life orb, cannot have Leftovers, etc)
+        - create has_boosting_item flag (and create boosting item list in constants)
+    2. Abilities
+        - double check if tracking revealed abilities (e.g. Grassy surge) works well
+    3. Speed
+        - add terrain healing, intimidate, weather and status damage order to speed_range checker
+        - add probabilities to outspeeding/underspeeding
+    4. Bulk
+        - set hp value between 0-100 (max_hp currently set to 84 EVs hp I believe)
+        - create Bayesian model for "bulk" initialized via usage stats
+    5. Offense
+        - create Bayesian model for "offense" initialized via usage stats
+    6. Expand payoff matrix
+        - for each possible ability (temporarily set the ability)
+        - for each possible item (temporarily set the item)
+        - for each bulk/offense/speed range(?)
+
+
+VALUE NETWORK
+    1. Create own version of basic replay analyzer
+    2. Mess with Pytorch using those data
+    3. research evaluation network structures for non image-like games (e.g. Go board can be seen as pixels)
+    4. create first real draft
 
 
 NASH EQUILIBRIUM
     1. when NE is uniform (doesn't matter which of the N options you pick), pick one with highest average if opp deviates off NE
     2. find the 'best' NE (check if this is being done in Quantecon)
     3. Figure out if Bayesian NE is possible with Quantecon
+    4. check NE how u-turn decisions change once evaluation is proper
 
-VALUE NETWORK
-    1. research
-    2. create
-    3. check how u-turn decisions change with the value net
 
 
 
