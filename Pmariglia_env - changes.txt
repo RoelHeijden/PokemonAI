@@ -26,3 +26,4 @@
 25. added partiallytrapped to the volatile status checks in battle_modifier
 26. trapped flag and disabled moves updated in update_battle after |turn
 27. changed some stuff in check_choice_band_or_specs()
+28. prevented substitute to wrongfully be removed in the move() volatile status removal

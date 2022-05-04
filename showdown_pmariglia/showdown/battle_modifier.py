@@ -300,7 +300,7 @@ def move(battle, split_msg):
 
     # remove volatile status if they have it
     # this is for preparation moves like Phantom Force
-    if move_name in pkmn.volatile_statuses:
+    if move_name in pkmn.volatile_statuses and not move_name == 'substitute':
         logger.debug("Removing volatile status {} from {}".format(move_name, pkmn.name))
         pkmn.volatile_statuses.remove(move_name)
 
@@ -1079,11 +1079,6 @@ def check_choice_band_or_specs(battle, damage_dealt):
         if choice_item == "choiceband" and not battle.opponent.active.can_not_have_band or \
                 choice_item == "choicespecs" and not battle.opponent.active.can_not_have_specs:
             logger.info("{} did not do enough damage to have {}".format(battle.opponent.active.name, choice_item))
-
-            print("min choice item damage", min_damage_with_choice_item)
-            print("damage dealth:", actual_damage_dealt)
-            print("pokemon hp", battle.user.active.hp)
-            print("hp remaining", battle.user.active.hp - actual_damage_dealt)
 
         if choice_item == "choiceband":
             battle.opponent.active.can_not_have_band = True

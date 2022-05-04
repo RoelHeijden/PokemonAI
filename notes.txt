@@ -32,13 +32,16 @@ multi-hit moves KOing a pokemon can wrongfully cause the 'does not have choice b
 
 
 EXPERIMENT 1
-    0. double check 'Safest' knowledge on opp team (check hp numbers for known and unknown pokemon)
-    1. Finalize setup
-        - Two simplified teams
-        - Two regular OU teams
-    2. Finalize teams
-    3. Properly document
-    4. Actually do experiment
+    1. finalize setup
+        - two simplified teams
+            - extremely simplified mirror: 58-42, 52-48, 61, 39
+            - simplified mirror:
+        - two regular OU teams
+            - OU 1 vs OU 2
+            - OU 2 vs OU 1
+    2. finalize teams
+    3. properly document
+    4. actually do experiment
 
 
 INFO MANAGEMENT
