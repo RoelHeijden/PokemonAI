@@ -35,7 +35,6 @@ KO's when the knocked out pokemon was using a -priotiy move wrongfully sets the 
 
 
 VALUE NETWORK
-    2. Mess with Pytorch using old replay data
     3. research evaluation network structures for non image-like games (e.g. Go board can be seen as pixels)
     4. create first real draft
 
@@ -61,10 +60,10 @@ INFO MANAGEMENT
 
 
 NASH EQUILIBRIUM
-    1. when NE is uniform (doesn't matter which of the N options you pick), pick one with highest average if opp deviates off NE
+    1. when NE is uniform (doesn't matter which of the N options you pick), pick one with highest average in the case the opp deviates from calculated NE
     2. find the 'best' NE (check if this is being done in Quantecon)
-    3. Figure out if Bayesian NE is possible with Quantecon
-    4. check NE how u-turn decisions change once evaluation is proper
+    3. Figure out if Bayesian NE is possible via Quantecon
+    4. check how NE u-turn decisions change once evaluation is proper
 
 
 
