@@ -35,8 +35,7 @@ KO's when the knocked out pokemon was using a -priotiy move wrongfully sets the 
 
 
 VALUE NETWORK
-    1. Create own version of basic replay analyzer
-    2. Mess with Pytorch using those data
+    2. Mess with Pytorch using old replay data
     3. research evaluation network structures for non image-like games (e.g. Go board can be seen as pixels)
     4. create first real draft
 
