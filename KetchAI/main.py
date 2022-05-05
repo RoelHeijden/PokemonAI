@@ -21,7 +21,7 @@ class BattleBot(Battle):
 
     def find_best_move(self):
         """ Finds the best move at a given turn """
-        print("\n" + "".rjust(50, "-"), "\033[1mTURN:", self.turn, "".ljust(50, "-"), "\033[0m\n")
+        # print("\n" + "".rjust(50, "-"), "\033[1mTURN:", self.turn, "".ljust(50, "-"), "\033[0m\n")
         state = self.create_state()
         mutator = StateMutator(state)
         user_options, opponent_options = self.get_all_options()
@@ -35,9 +35,8 @@ class BattleBot(Battle):
         # select move based on a nash equilibrium strategy
         best_move, user_strategy, opp_strategy = self.NE.nash_equilibrium_move(self, bimatrix, user_options, opponent_options)
 
-        # display payoff matrix and strategies
-        self.NE.display_payoff_matrix(payoff_matrix, user_options, opponent_options, user_strategy, opp_strategy)
-        print(f'\nChosen move: \033[1m{best_move}\033[0m')
+        # self.NE.display_payoff_matrix(payoff_matrix, user_options, opponent_options, user_strategy, opp_strategy)
+        # print(f'\nChosen move: \033[1m{best_move}\033[0m')
 
         return format_decision(self, best_move)
 

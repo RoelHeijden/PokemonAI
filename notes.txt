@@ -14,34 +14,31 @@ find edge case mistakes (like burned pokemon with guts having attack halved), ab
 
 fix ability order for turn 1 in instruction generator
 
-extend program to random battles
+extend Bot to random battles
 
 Implement pressure for pp counting -- see battle_modifier.move()
 
-implement whirlpool trapping knowledge for state simulation (objects.py, side.trapped())
-
 fix damage calculation being calced too often in find_all_state_instructions()
+
+implement whirlpool trapping knowledge for state simulation (objects.py, side.trapped())
 
 implement trapping knowledge of the opponent for: mean look, jaw lock, block, etc.. (moves that trap untill KO'd or switched)
 
 multi-hit moves KOing a pokemon can wrongfully cause the 'does not have choice band' flag to be set: compares max damage vs damage done by first hit
 
+detect speed range if faster mon is unable to move (freeze, para, etc)
+
+KO's when the knocked out pokemon was using a -priotiy move wrongfully sets the speed range
 
 ----------------------------------------------------------------------------------------------------------------
 
 
 
-EXPERIMENT 1
-    1. finalize setup
-        - two simplified teams
-            - extremely simplified mirror: 58-42, 52-48, 61, 39
-            - simplified mirror:
-        - two regular OU teams
-            - OU 1 vs OU 2
-            - OU 2 vs OU 1
-    2. finalize teams
-    3. properly document
-    4. actually do experiment
+VALUE NETWORK
+    1. Create own version of basic replay analyzer
+    2. Mess with Pytorch using those data
+    3. research evaluation network structures for non image-like games (e.g. Go board can be seen as pixels)
+    4. create first real draft
 
 
 INFO MANAGEMENT
@@ -62,13 +59,6 @@ INFO MANAGEMENT
         - for each possible ability (temporarily set the ability)
         - for each possible item (temporarily set the item)
         - for each bulk/offense/speed range(?)
-
-
-VALUE NETWORK
-    1. Create own version of basic replay analyzer
-    2. Mess with Pytorch using those data
-    3. research evaluation network structures for non image-like games (e.g. Go board can be seen as pixels)
-    4. create first real draft
 
 
 NASH EQUILIBRIUM

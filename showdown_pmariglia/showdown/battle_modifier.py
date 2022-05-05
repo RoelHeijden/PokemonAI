@@ -419,6 +419,12 @@ def activate(battle, split_msg):
 
     if split_msg[3].lower() == 'move: poltergeist':
         item = normalize_name(split_msg[4])
+
+        # if opponent was not known to hold a choice scarf: update speed_range
+        if pkmn.item == constants.UNKNOWN_ITEM and item == 'choicescarf' and is_opponent(battle, split_msg):
+            pkmn.speed_range = StatRange(max=math.floor(pkmn.speed_range.max * 1.5),
+                                         min=max(pkmn.speed_range.min, math.floor(pkmn.min_speed * 1.5)))
+
         logger.debug("{} has the item {}".format(pkmn.name, item))
         pkmn.item = item
 
@@ -427,7 +433,6 @@ def activate(battle, split_msg):
         move = normalize_name(split_msg[3].strip('move: '))
         if move in constants.BINDING_MOVES:
             pkmn.volatile_statuses.append(constants.PARTIALLY_TRAPPED)
-
 
 
 def prepare(battle, split_msg):
@@ -620,13 +625,25 @@ def swapsideconditions(battle, _):
 
 
 def set_item(battle, split_msg):
-    """Set the opponent's item"""
+    """Set the opponent's item
+
+    updates speed range accordingly if choice scarf is set/removed on the opponent"""
     if is_opponent(battle, split_msg):
         side = battle.opponent
     else:
         side = battle.user
 
+    # if opponent was already known to hold a choice scarf
+    if side.active.item == 'choicescarf' and is_opponent(battle, split_msg):
+        side.active.speed_range = StatRange(max=math.ceil(side.active.speed_range.max / 1.5),
+                                            min=max(side.active.min_speed, math.ceil(side.active.speed_range.min / 1.5)))
+
+    # if opponent is being given a choice scarf (via Trick or Switcheroo)
     item = normalize_name(split_msg[3].strip())
+    if item == 'choicescarf' and is_opponent(battle, split_msg):
+        side.active.speed_range = StatRange(max=math.floor(side.active.speed_range.max * 1.5),
+                                            min=math.floor(side.active.speed_range.min * 1.5))
+
     logger.debug("Setting {}'s item to {}".format(side.active.name, item))
     side.active.item = item
 
@@ -634,20 +651,29 @@ def set_item(battle, split_msg):
 def remove_item(battle, split_msg):
     """Remove the opponent's item
 
-    If choice scarf is removed, updates the opposing speed ranges accordingly
+    if choice scarf is removed, updates the opposing speed ranges accordingly
     """
     if is_opponent(battle, split_msg):
         side = battle.opponent
     else:
         side = battle.user
 
-    logger.debug("Removing {}'s item".format(side.active.name))
-    side.active.item = None
-
     item = normalize_name(split_msg[3])
     if item == 'choicescarf' and is_opponent(battle, split_msg):
-        side.active.speed_range = StatRange(max=side.active.max_speed,
-                                            min=max(side.active.min_speed, math.floor(side.active.speed_range.min / 1.5)))
+
+        # if choice scarf was already detected before this
+        if side.active.item == 'choicescarf':
+            new_max_speed = math.ceil(side.active.speed_range.max / 1.5)
+
+        # if item was unknown untill now
+        else:
+            new_max_speed = side.active.max_speed
+
+        new_min_speed = max(side.active.min_speed, math.ceil(side.active.speed_range.min / 1.5))
+        side.active.speed_range = StatRange(max=new_max_speed, min=new_min_speed)
+
+    logger.debug("Removing {}'s item".format(side.active.name))
+    side.active.item = None
 
 
 def set_ability(battle, split_msg):
@@ -859,9 +885,22 @@ def check_speed_ranges(battle, msg_lines):
     switching_move_used = len(moves) == 1 and normalize_name(moves[0][1]['name']) in constants.SWITCH_OUT_MOVES
     priorities_equal = len(moves) == 2 and moves[0][1][constants.PRIORITY] == moves[1][1][constants.PRIORITY]
 
+    # check weather damage order
+
+    # check terrain healing order
+
+    # check status damage order
+
+    # check ability order if both pokemon switch in at the start, or after a double KO?
+
     # Focus punch ruins everything
     for line in msg_lines:
         if '|move: Focus Punch' in line:
+            return
+
+    # a pokemon was unable to move
+    for line in msg_lines:
+        if line.startswith('|cant|'):
             return
 
     # check speed if both pokemon switch out
@@ -899,6 +938,10 @@ def check_speed_ranges(battle, msg_lines):
     ):
         return
 
+    # don't check speed range if user's Unburden could be at play
+    if battle.user.active.ability == 'unburden' and battle.user.active.item is None:
+        return
+
     battle_copy = deepcopy(battle)
 
     speed_threshold = int(
@@ -921,9 +964,6 @@ def check_speed_ranges(battle, msg_lines):
 
     if battle.user.active.item == "choicescarf":
         speed_threshold = int(speed_threshold * 1.5)
-
-    if battle.user.active.ability == 'unburden' and battle.user.active.item is None:
-        speed_threshold = int(speed_threshold * 2)
 
     if battle.user.active.ability == 'swiftswim' and battle.weather == constants.RAIN:
         speed_threshold = int(speed_threshold * 2)
@@ -961,13 +1001,12 @@ def check_speed_ranges(battle, msg_lines):
                 min=speed_threshold,
                 max=battle.opponent.active.speed_range.max
             )
-            logger.info(
-                "Updated {}'s min speed to {}".format(battle.opponent.active.name, battle.opponent.active.speed_range.min))
+            logger.info("Updated {}'s min speed to {}".format(battle.opponent.active.name, battle.opponent.active.speed_range.min))
 
     # check for choice scarf
     opp_pkmn = battle.opponent.active
     if opp_pkmn.item != 'choicescarf' and opp_pkmn.speed_range.min > opp_pkmn.max_speed:
-        logger.info("Opponent {} could not have gone first - setting it's item to choicescarf".format(opp_pkmn.name))
+        logger.info("Opponent {} min speed range exceeds it's max speed - setting it's item to choicescarf".format(opp_pkmn.name))
         battle.opponent.active.item = 'choicescarf'
         opp_pkmn.speed_range = StatRange(min=opp_pkmn.speed_range.min, max=math.floor(opp_pkmn.max_speed * 1.5))
 
@@ -1202,9 +1241,10 @@ def check_heavydutyboots(battle, msg_lines):
 
 def update_battle(battle, msg):
     msg_lines = msg.split('\n')
-
     action = None
+
     check_speed_ranges(battle, msg_lines)
+
     for i, line in enumerate(msg_lines):
         split_msg = line.split('|')
         if len(split_msg) < 2:
