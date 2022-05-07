@@ -28,3 +28,5 @@
 27. changed some stuff in check_choice_band_or_specs()
 28. prevented substitute to wrongfully be removed in the move() volatile status removal
 29. added speed_range updates when scarf is set/detected via trick/switcheroo or poltergeist
+30. added skill swap mechanics in battle_modifier activate()
+31. added is_grounded() to battle.Pokemon

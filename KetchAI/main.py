@@ -1,9 +1,9 @@
-from nash_calc import NashCalc
-from turn_simulator import TurnSimulator
+from Showdown_Pmariglia.showdown.battle import Battle
+from Showdown_Pmariglia.showdown.battle_bots.helpers import format_decision
+from Showdown_Pmariglia.showdown.engine.objects import StateMutator
 
-from showdown_pmariglia.showdown.battle import Battle
-from showdown_pmariglia.showdown.battle_bots.helpers import format_decision
-from showdown_pmariglia.showdown.engine.objects import StateMutator
+from KetchAI.nash_calc import NashCalc
+from KetchAI.turn_simulator import TurnSimulator
 
 
 class BattleBot(Battle):
@@ -35,8 +35,8 @@ class BattleBot(Battle):
         # select move based on a nash equilibrium strategy
         best_move, user_strategy, opp_strategy = self.NE.nash_equilibrium_move(self, bimatrix, user_options, opponent_options)
 
-        self.NE.display_payoff_matrix(payoff_matrix, user_options, opponent_options, user_strategy, opp_strategy)
-        print(f'\nChosen move: \033[1m{best_move}\033[0m')
+        # self.NE.display_payoff_matrix(payoff_matrix, user_options, opponent_options, user_strategy, opp_strategy)
+        # print(f'\nChosen move: \033[1m{best_move}\033[0m')
 
         return format_decision(self, best_move)
 

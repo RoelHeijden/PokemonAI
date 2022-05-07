@@ -1,12 +1,12 @@
 import numpy as np
 import math
 
-from showdown_pmariglia import config
-from showdown_pmariglia import constants
-from showdown_pmariglia.showdown.engine.objects import *
-from showdown_pmariglia.showdown.engine.find_state_instructions import *
-from showdown_pmariglia.showdown.engine.damage_calculator import _calculate_damage
-from showdown_pmariglia.showdown.engine.evaluate import evaluate
+from Showdown_Pmariglia.showdown.engine.objects import *
+from Showdown_Pmariglia.showdown.engine.find_state_instructions import *
+from Showdown_Pmariglia.showdown.engine.damage_calculator import _calculate_damage
+from Showdown_Pmariglia.showdown.engine.evaluate import evaluate
+from Showdown_Pmariglia import config
+from Showdown_Pmariglia import constants
 
 
 class TurnSimulator:

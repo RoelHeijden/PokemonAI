@@ -4,8 +4,6 @@ explore 2-deep tree search using NE to get scores for each depth
 
 update speed range after instruction (e.g. when checking the case where the bot outspeeds, update speed range in that branch)?
 
-do something with hidden_power_type in battler.from_team_json()
-
 Keep track of potential choice scarf speed_range -- you might know a mon is not max speed scarf before choice scarf is revealed
 
 for bo3 module: update speed_range_check() and others on final turn as well.
@@ -32,11 +30,29 @@ KO's when the knocked out pokemon was using a -priotiy move wrongfully sets the 
 
 ----------------------------------------------------------------------------------------------------------------
 
+REGULAR:
+    do something with hidden_power_type in battler.from_team_json() and battler from the parser class
+    fix zoroark deleting previous pokemon bug
+
+PARSER:
+    reserve never empties
+    fainted is never set to True
+
+    check switch_or_drag transform handling (it resets the pokemon..)
+    check ability cases in start_volatile_status
+    test zoroark in granted dataset
+
+    rename user and opponent to p1 and p1
+    reduce output size
+
 
 
 VALUE NETWORK
-    3. research evaluation network structures for non image-like games (e.g. Go board can be seen as pixels)
-    4. create first real draft
+    1. Create parser to convert data to game states
+    2. Create parser to convert game states to csv
+    3. Refresh Pytorch knowledge and make first mini draft
+    4. Research evaluation network structures for non image-like games (e.g. Go board can be seen as pixels)
+    5. Create first real draft
 
 
 INFO MANAGEMENT

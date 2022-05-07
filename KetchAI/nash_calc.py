@@ -2,7 +2,7 @@ from quantecon.game_theory.lemke_howson import lemke_howson
 from quantecon.game_theory.normal_form_game import NormalFormGame
 import numpy as np
 
-from showdown_pmariglia import constants
+from Showdown_Pmariglia import constants
 
 
 # data required to make a correct switching decision mid turn (caused by switching moves)
