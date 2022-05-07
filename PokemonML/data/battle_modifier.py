@@ -12,7 +12,6 @@ from Showdown_Pmariglia.showdown.engine.helpers import calculate_stats
 
 logger = logging.getLogger(__name__)
 
-
 MOVE_END_STRINGS = {'move', 'switch', 'upkeep', ''}
 
 

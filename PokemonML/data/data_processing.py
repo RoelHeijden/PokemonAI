@@ -1,4 +1,5 @@
 import os
+import shutil
 import time
 import ujson
 
@@ -67,7 +68,7 @@ class ReplayData:
 
     def parse_replay(self):
         d = self.__dict__
-        battle = self.create_battle()
+        battle = self.init_battle()
 
         d['team_preview_state'] = battle.to_dict()
 
@@ -91,15 +92,13 @@ class ReplayData:
                 game_states["turn " + str(battle.turn)] = battle.extract_game_state()
 
         d['game_states'] = game_states
-
         return d
 
-    def create_battle(self):
+    def init_battle(self):
         battle = Battle(self.battle_id)
 
         battle.user.account_name = self.p1
         battle.opponent.account_name = self.p2
-
         battle.user.name = 'p1'
         battle.opponent.name = 'p2'
 
@@ -107,7 +106,6 @@ class ReplayData:
         battle.generation = self.format[:4]
 
         battle.initialize_team_preview(self.p1_team, self.p2_team)
-
         return battle
 
 
@@ -127,37 +125,17 @@ def parse_all(folder_path, save_path):
         ]
     )
 
-    # in_files = sorted(
-    #     [
-    #         os.path.join(folder_path, file_name)
-    #         for file_name in os.listdir(folder_path)
-    #     ]
-    # )[:]
-    #
-    # battle_ids = sorted(
-    #     [
-    #         int(file_name.split('-')[2].strip('.log.json'))
-    #         for file_name in os.listdir(folder_path)
-    #     ]
-    # )
-    #
-    # save_files = sorted(
-    #     [
-    #         file_name.replace("battle", "game-states").replace('.log', '')
-    #         for file_name in os.listdir(folder_path)
-    #     ]
-    # )
-    #
-    # files = list(zip(in_files, save_files, battle_ids))
+    print(f'{len(files)} files found')
+    print("starting parsing")
 
     match_count = 0
     tic = time.time()
 
-    print("Starting parsing")
-
     for path_in, file_out, battle_id in files:
         with open(path_in, "r") as f_in:
             for line in f_in:
+
+                print("battle ID:", battle_id)
 
                 info = ujson.loads(line)
                 date = info['timestamp'].split(" ")
@@ -203,32 +181,63 @@ def parse_all(folder_path, save_path):
     print("Total time: {:.2f}s".format(toc - tic))
 
 
+def pretty_print(save_path: str, pretty_path: str, max_turns=20):
+    """ Writes new readable file """
+    with open(save_path, "r") as f_in, open(pretty_path, 'w') as f_out:
+        for line in f_in:
+            info = ujson.loads(line)
+
+            f_out.write(ujson.dumps(info['log'], indent=2))
+
+            for i, state in enumerate(info['game_states'].values(), start=1):
+
+                f_out.write("\n\n{} {} {} \n\n".format("#" * 60, ' turn ' + str(state['turn']) + ' ', "#" * 60))
+                f_out.write(ujson.dumps(state, indent=4))
+
+                if i == max_turns:
+                    break
+
+
+def copy_to_batches(data_folder, batch_location, n_batches=10, max_batch_size=100):
+    """ copies the files, divided over n folders of folder size m """
+
+    for i, file_name in enumerate(os.listdir(data_folder)):
+
+        # break if batches are full
+        if i >= max_batch_size * n_batches:
+            break
+
+        # create save path
+        batch = "batch" + str(i % n_batches)
+        batch_folder = os.path.join(batch_location, batch)
+
+        # create directory
+        if not os.path.exists(batch_folder):
+            os.mkdir(batch_folder)
+
+        # copy file
+        file_path = os.path.join(data_folder, file_name)
+        save_path = os.path.join(batch_folder, file_name)
+        shutil.copy(file_path, save_path)
+
+
 if __name__ == "__main__":
-    folder_path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/anonymized-ou-Dec2019-Feb2020/anonymized-ou-incomplete"
-    folder_path_out = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-dec2019-feb2020/anonymized-ou-incomplete"
-    # folder_path_in = os.path.join("granted_data", "raw_data")
-    # folder_path_out = os.path.join("granted_data", "processed_data")
-    parse_all(folder_path_in, folder_path_out)
+    # path_in = os.path.join("granted_data_testing", "raw_data", "batch1")
+    # path_out = os.path.join("granted_data_testing", "processed_data", "anonymized-ou-incomplete")
+    # parse_all(path_in, path_out)
 
+    # path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/anonymized-ou-Dec2019-Feb2020/anonymized-ou-incomplete"
+    # path_out = os.path.join("granted_data_testing", "raw_data")
+    # copy_to_batches(path_in, path_out)
 
-# import yaml
-#
-# path = os.path.join("granted_data", "processed_data", "rated_1000_1199")
-# in_files = sorted(
-#         [
-#             os.path.join(path, file_name)
-#             for file_name in os.listdir(path)
-#         ]
-# )
-#
-# for path_in in in_files:
-#     with open(path_in, "r") as f_in:
-#         for line in f_in:
-#             test = ujson.loads(line)
-#             states = test['game_states']
-#             for key in states:
-#                 s = states[key]
-#                 print()
-#                 print("--------------------", s['turn'], "--------------------")
-#                 print()
-#                 print(yaml.dump(s))
+    path_in = os.path.join("granted_data_testing", "raw_data", "batch1")
+    file = os.path.join(path_in, 'battle-gen8ou-100161.log.json')
+    f = open(file, 'r')
+
+    info = None
+    for line in f:
+        info = ujson.loads(line)
+
+    for line in info['log']:
+        print(line)
+

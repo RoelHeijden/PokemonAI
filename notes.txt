@@ -35,12 +35,10 @@ REGULAR:
     fix zoroark deleting previous pokemon bug
 
 PARSER:
-    reserve never empties
-    fainted is never set to True
-
     check switch_or_drag transform handling (it resets the pokemon..)
     check ability cases in start_volatile_status
     test zoroark in granted dataset
+    test nicknamed pokemon
 
     rename user and opponent to p1 and p1
     reduce output size
