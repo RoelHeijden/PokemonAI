@@ -15,8 +15,8 @@ class Battle:
 
     def __init__(self, battle_tag):
         self.battle_tag = battle_tag
-        self.user = Battler()
-        self.opponent = Battler()
+        self.p1 = Battler()
+        self.p2 = Battler()
         self.weather = None
         self.field = None
         self.trick_room = False
@@ -44,7 +44,7 @@ class Battle:
                 pkmn_info['moves'],
                 pkmn_info['item']
             )
-            self.user.reserve.append(pkmn)
+            self.p1.reserve.append(pkmn)
 
         for pkmn_info in p2_team:
 
@@ -62,13 +62,13 @@ class Battle:
                 pkmn_info['moves'],
                 pkmn_info['item']
             )
-            self.opponent.reserve.append(pkmn)
+            self.p2.reserve.append(pkmn)
 
     def to_dict(self):
         return {
             'turn': self.turn,
-            'p1': self.user.to_dict(),
-            'p2': self.opponent.to_dict(),
+            'p1': self.p1.to_dict(),
+            'p2': self.p2.to_dict(),
             'weather': self.weather,
             'field': self.field,
             'trick_room': self.trick_room,
@@ -77,8 +77,8 @@ class Battle:
     def extract_game_state(self):
         return {
             'turn': self.turn,
-            'p1': self.user.to_game_state(),
-            'p2': self.opponent.to_game_state(),
+            'p1': self.p1.to_game_state(),
+            'p2': self.p2.to_game_state(),
             'weather': self.weather,
             'field': self.field,
             'trick_room': self.trick_room,
@@ -146,7 +146,7 @@ class Battler:
     def check_if_trapped(self, battle):
         """ sets the 'trapped' flag"""
         pkmn = self.active
-        opp_pkmn = battle.user.active
+        opp_pkmn = battle.p1.active
 
         # check via items/abilities
         if pkmn.item == 'shedshell' or 'ghost' in pkmn.types or pkmn.ability == 'shadowtag':
@@ -177,12 +177,12 @@ class Battler:
             'side_conditions': dict(self.side_conditions),
             'trapped': self.trapped,
             'last_used_move': {
-                'user': self.last_used_move.pokemon_name,
+                'p1': self.last_used_move.pokemon_name,
                 'move': self.last_used_move.move,
                 'turn': self.last_used_move.turn
             },
             'wish': {'countdown': self.wish[0], 'hp_amount': int(self.wish[1])},
-            'future_sight': {'countdown': self.future_sight[0], 'user': self.future_sight[1]},
+            'future_sight': {'countdown': self.future_sight[0], 'p1': self.future_sight[1]},
         }
 
     def to_game_state(self):
@@ -192,12 +192,12 @@ class Battler:
             'side_conditions': dict(self.side_conditions),
             'trapped': self.trapped,
             'last_used_move': {
-                'user': self.last_used_move.pokemon_name,
+                'p1': self.last_used_move.pokemon_name,
                 'move': self.last_used_move.move,
                 'turn': self.last_used_move.turn
             },
             'wish': {'countdown': self.wish[0], 'hp_amount': int(self.wish[1])},
-            'future_sight': {'countdown': self.future_sight[0], 'user': self.future_sight[1]},
+            'future_sight': {'countdown': self.future_sight[0], 'p1': self.future_sight[1]},
         }
 
 

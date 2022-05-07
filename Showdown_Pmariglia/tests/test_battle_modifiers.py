@@ -93,10 +93,10 @@ class TestRequestMessage(unittest.TestCase):
             ],
             "side": {
                 "name": "NiceNameNerd",
-                "id": "p1",
+                "id": "user",
                 "pokemon": [
                     {
-                        "ident": "p1: Throh",
+                        "ident": "user: Throh",
                         "details": "Throh, L83, M",
                         "condition": "335/335",
                         "active": True,
@@ -119,7 +119,7 @@ class TestRequestMessage(unittest.TestCase):
                         "ability": "moldbreaker"
                     },
                     {
-                        "ident": "p1: Empoleon",
+                        "ident": "user: Empoleon",
                         "details": "Empoleon, L77, F",
                         "condition": "256/256",
                         "active": False,
@@ -142,7 +142,7 @@ class TestRequestMessage(unittest.TestCase):
                         "ability": "torrent"
                     },
                     {
-                        "ident": "p1: Emboar",
+                        "ident": "user: Emboar",
                         "details": "Emboar, L79, M",
                         "condition": "303/303",
                         "active": False,
@@ -165,7 +165,7 @@ class TestRequestMessage(unittest.TestCase):
                         "ability": "reckless"
                     },
                     {
-                        "ident": "p1: Zoroark",
+                        "ident": "user: Zoroark",
                         "details": "Zoroark, L77, M",
                         "condition": "219/219",
                         "active": False,
@@ -188,7 +188,7 @@ class TestRequestMessage(unittest.TestCase):
                         "ability": "illusion"
                     },
                     {
-                        "ident": "p1: Reuniclus",
+                        "ident": "user: Reuniclus",
                         "details": "Reuniclus, L78, M",
                         "condition": "300/300",
                         "active": False,
@@ -211,7 +211,7 @@ class TestRequestMessage(unittest.TestCase):
                         "ability": "magicguard"
                     },
                     {
-                        "ident": "p1: Moltres",
+                        "ident": "user: Moltres",
                         "details": "Moltres, L77",
                         "condition": "265/265",
                         "active": False,
@@ -268,8 +268,8 @@ class TestRequestMessage(unittest.TestCase):
 class TestSwitchOrDrag(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
         self.battle.user.active = Pokemon('pikachu', 100)
 
         self.opponent_active = Pokemon('caterpie', 100)
@@ -537,8 +537,8 @@ class TestSwitchOrDrag(unittest.TestCase):
 class TestHealOrDamage(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.user_active = Pokemon('caterpie', 100)
         self.opponent_active = Pokemon('caterpie', 100)
@@ -648,8 +648,8 @@ class TestHealOrDamage(unittest.TestCase):
 class TestActivate(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.user_active = Pokemon('caterpie', 100)
         self.opponent_active = Pokemon('caterpie', 100)
@@ -675,8 +675,8 @@ class TestActivate(unittest.TestCase):
 class TestPrepare(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.user_active = Pokemon('caterpie', 100)
         self.opponent_active = Pokemon('caterpie', 100)
@@ -698,8 +698,8 @@ class TestPrepare(unittest.TestCase):
 class TestClearAllBoosts(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.user_active = Pokemon('caterpie', 100)
         self.opponent_active = Pokemon('caterpie', 100)
@@ -751,8 +751,8 @@ class TestClearAllBoosts(unittest.TestCase):
 class TestMove(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.opponent_active = Pokemon('caterpie', 100)
         self.battle.opponent.active = self.opponent_active
@@ -950,7 +950,7 @@ class TestMove(unittest.TestCase):
 
         move(self.battle, split_msg)
 
-        expected_wish = (2, self.battle.user.active.max_hp/2)
+        expected_wish = (2, self.battle.user.active.max_hp / 2)
 
         self.assertEqual(expected_wish, self.battle.user.wish)
 
@@ -968,8 +968,8 @@ class TestMove(unittest.TestCase):
 class TestWeather(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.opponent_active = Pokemon('caterpie', 100)
         self.battle.opponent.active = self.opponent_active
@@ -992,8 +992,8 @@ class TestWeather(unittest.TestCase):
 class TestBoostAndUnboost(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.user_active = Pokemon('weedle', 100)
         self.battle.user.active = self.user_active
@@ -1100,8 +1100,8 @@ class TestBoostAndUnboost(unittest.TestCase):
 class TestStatus(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.battle.opponent.active = Pokemon('caterpie', 100)
         self.battle.user.active = Pokemon('caterpie', 100)
@@ -1128,8 +1128,8 @@ class TestStatus(unittest.TestCase):
 class TestCureStatus(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.opponent_active = Pokemon('caterpie', 100)
         self.battle.opponent.active = self.opponent_active
@@ -1141,21 +1141,21 @@ class TestCureStatus(unittest.TestCase):
 
     def test_curestatus_works_on_active_pokemon(self):
         self.opponent_active.status = constants.BURN
-        split_msg = ['', '-curestatus', 'p2: Caterpie', 'brn', '[msg]']
+        split_msg = ['', '-curestatus', 'opponent: Caterpie', 'brn', '[msg]']
         curestatus(self.battle, split_msg)
 
         self.assertEqual(None, self.opponent_active.status)
 
     def test_curestatus_works_on_active_pokemon_for_bot(self):
         self.battle.user.active.status = constants.BURN
-        split_msg = ['', '-curestatus', 'p1: Weedle', 'brn', '[msg]']
+        split_msg = ['', '-curestatus', 'user: Weedle', 'brn', '[msg]']
         curestatus(self.battle, split_msg)
 
         self.assertEqual(None, self.battle.user.active.status)
 
     def test_curestatus_works_on_reserve_pokemon(self):
         self.opponent_reserve.status = constants.BURN
-        split_msg = ['', '-curestatus', 'p2: Pikachu', 'brn', '[msg]']
+        split_msg = ['', '-curestatus', 'opponent: Pikachu', 'brn', '[msg]']
         curestatus(self.battle, split_msg)
 
         self.assertEqual(None, self.opponent_reserve.status)
@@ -1164,8 +1164,8 @@ class TestCureStatus(unittest.TestCase):
 class TestStartFutureSight(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.opponent_active = Pokemon('caterpie', 100)
         self.battle.opponent.active = self.opponent_active
@@ -1193,8 +1193,8 @@ class TestStartFutureSight(unittest.TestCase):
 class TestStartVolatileStatus(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.opponent_active = Pokemon('caterpie', 100)
         self.battle.opponent.active = self.opponent_active
@@ -1302,8 +1302,8 @@ class TestStartVolatileStatus(unittest.TestCase):
 class TestEndVolatileStatus(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.opponent_active = Pokemon('caterpie', 100)
         self.battle.opponent.active = self.opponent_active
@@ -1335,8 +1335,8 @@ class TestEndVolatileStatus(unittest.TestCase):
         split_msg = ['', '-end', 'p2a: Weedle', 'Dynamax']
         end_volatile_status(self.battle, split_msg)
 
-        self.assertEqual(hp/2, self.battle.opponent.active.hp)
-        self.assertEqual(maxhp/2, self.battle.opponent.active.max_hp)
+        self.assertEqual(hp / 2, self.battle.opponent.active.hp)
+        self.assertEqual(maxhp / 2, self.battle.opponent.active.max_hp)
 
     def test_halves_bots_hp_when_dynamax_ends(self):
         self.battle.user.active.volatile_statuses = ['dynamax']
@@ -1344,15 +1344,15 @@ class TestEndVolatileStatus(unittest.TestCase):
         split_msg = ['', '-end', 'p1a: Weedle', 'Dynamax']
         end_volatile_status(self.battle, split_msg)
 
-        self.assertEqual(hp/2, self.battle.user.active.hp)
-        self.assertEqual(maxhp/2, self.battle.user.active.max_hp)
+        self.assertEqual(hp / 2, self.battle.user.active.hp)
+        self.assertEqual(maxhp / 2, self.battle.user.active.max_hp)
 
 
 class TestUpdateAbility(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.opponent_active = Pokemon('caterpie', 100)
         self.battle.opponent.active = self.opponent_active
@@ -1397,8 +1397,8 @@ class TestUpdateAbility(unittest.TestCase):
 class TestSwapSideConditions(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.opponent_active = Pokemon('caterpie', 100)
         self.battle.opponent.active = self.opponent_active
@@ -1480,8 +1480,8 @@ class TestSwapSideConditions(unittest.TestCase):
 class TestFormChange(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.opponent_active = Pokemon('caterpie', 100)
         self.battle.opponent.active = self.opponent_active
@@ -1577,8 +1577,8 @@ class TestFormChange(unittest.TestCase):
 class TestClearNegativeBoost(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.user_active = Pokemon('weedle', 100)
         self.battle.user.active = self.user_active
@@ -1640,8 +1640,8 @@ class TestClearNegativeBoost(unittest.TestCase):
 class TestZPower(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.opponent_active = Pokemon('caterpie', 100)
         self.battle.opponent.active = self.opponent_active
@@ -1672,8 +1672,8 @@ class TestZPower(unittest.TestCase):
 class TestSingleTurn(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.opponent_active = Pokemon('caterpie', 100)
         self.battle.opponent.active = self.opponent_active
@@ -1714,8 +1714,8 @@ class TestSingleTurn(unittest.TestCase):
 class TestTransform(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.opponent_active = Pokemon('Ditto', 100)
         self.battle.opponent.active = self.opponent_active
@@ -1803,10 +1803,10 @@ class TestTransform(unittest.TestCase):
           ],
           "side": {
             "name": "BigBluePikachu",
-            "id": "p2",
+            "id": "opponent",
             "pokemon": [
               {
-                "ident": "p1: Weedle",
+                "ident": "user: Weedle",
                 "details": "Weedle",
                 "condition": "299/299",
                 "active": True,
@@ -1818,7 +1818,7 @@ class TestTransform(unittest.TestCase):
                 "ability": self.user_active_ability
               },
               {
-                "ident": "p1: Charmander",
+                "ident": "user: Charmander",
                 "details": "Charmander",
                 "condition": "299/299",
                 "active": False,
@@ -2023,8 +2023,8 @@ class TestTransform(unittest.TestCase):
 class TestUpkeep(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.opponent_active = Pokemon('caterpie', 100)
         self.battle.opponent.active = self.opponent_active
@@ -2085,8 +2085,8 @@ class TestUpkeep(unittest.TestCase):
 class TestCheckSpeedRanges(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.opponent_active = Pokemon('caterpie', 100)
         self.battle.opponent.active = self.opponent_active
@@ -2339,7 +2339,7 @@ class TestCheckSpeedRanges(unittest.TestCase):
 
         check_speed_ranges(self.battle, messages)
 
-        self.assertEqual(self.battle.user.active.stats[constants.SPEED]*1.5, self.battle.opponent.active.speed_range.max)
+        self.assertEqual(self.battle.user.active.stats[constants.SPEED] * 1.5, self.battle.opponent.active.speed_range.max)
 
     def test_minspeed_is_correctly_set_when_bot_has_choicescarf_and_opponent_is_boosted(self):
         # opponent should have max speed equal to the bot's speed
@@ -2358,7 +2358,7 @@ class TestCheckSpeedRanges(unittest.TestCase):
         # this is meant to show the rounding inherent with way pokemon floors values
         # floor(317 / 1.5) = 211
         # floor(211*1.5) = 316
-        expected_speed = int(self.battle.user.active.stats[constants.SPEED]/1.5)
+        expected_speed = int(self.battle.user.active.stats[constants.SPEED] / 1.5)
         expected_speed = int(expected_speed * 1.5)
 
         self.assertEqual(expected_speed, self.battle.opponent.active.speed_range.min)
@@ -2500,8 +2500,8 @@ class TestCheckSpeedRanges(unittest.TestCase):
 class TestGuessChoiceScarf(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.opponent_active = Pokemon('caterpie', 100)
         self.battle.opponent.active = self.opponent_active
@@ -2545,10 +2545,10 @@ class TestGuessChoiceScarf(unittest.TestCase):
         self.battle.request_json = {
             constants.SIDE: {
                 "name": "PlayerOne",
-                "id": "p2",
+                "id": "opponent",
                 "pokemon": [
                     {
-                        "ident": "p1: Caterpie",
+                        "ident": "user: Caterpie",
                         "details": "Caterpie, M",
                         "condition": "177/252",
                         "active": True,
@@ -2892,8 +2892,8 @@ class TestGuessChoiceScarf(unittest.TestCase):
 class TestCheckHeavyDutyBoots(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.opponent_active = Pokemon('caterpie', 100)
         self.battle.opponent.active = self.opponent_active
@@ -3209,8 +3209,8 @@ class TestCheckHeavyDutyBoots(unittest.TestCase):
 class TestInactive(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.opponent_active = Pokemon('caterpie', 100)
         self.battle.opponent.active = self.opponent_active
@@ -3260,8 +3260,8 @@ class TestInactive(unittest.TestCase):
 class TestInactiveOff(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.opponent_active = Pokemon('caterpie', 100)
         self.battle.opponent.active = self.opponent_active
@@ -3308,10 +3308,10 @@ class TestGetDamageDealt(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
 
-        self.battle.user.name = 'p1'
+        self.battle.user.name = 'user'
         self.battle.user.active = Pokemon('Caterpie', 100)
 
-        self.battle.opponent.name = 'p2'
+        self.battle.opponent.name = 'opponent'
         self.battle.opponent.active = Pokemon('Pikachu', 100)
 
     def test_assigns_damage_dealt_from_opponent_to_bot(self):
@@ -3602,10 +3602,10 @@ class TestNoInit(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
 
-        self.battle.user.name = 'p1'
+        self.battle.user.name = 'user'
         self.battle.user.active = Pokemon('Caterpie', 100)
 
-        self.battle.opponent.name = 'p2'
+        self.battle.opponent.name = 'opponent'
         self.battle.opponent.active = Pokemon('Pikachu', 100)
 
     def test_renames_battle_when_rename_message_occurs(self):
@@ -3624,8 +3624,8 @@ class TestNoInit(unittest.TestCase):
 class TestCheckChoiceItem(unittest.TestCase):
     def setUp(self):
         self.battle = Battle(None)
-        self.battle.user.name = 'p1'
-        self.battle.opponent.name = 'p2'
+        self.battle.user.name = 'user'
+        self.battle.opponent.name = 'opponent'
 
         self.opponent_active = Pokemon('caterpie', 100)
         self.battle.opponent.active = self.opponent_active
@@ -3704,10 +3704,10 @@ class TestCheckChoiceItem(unittest.TestCase):
         self.battle.request_json = {
             constants.SIDE: {
                 "name": "PlayerTwo",
-                "id": "p2",
+                "id": "opponent",
                 "pokemon": [
                   {
-                    "ident": "p1: Caterpie",
+                    "ident": "user: Caterpie",
                     "details": "Caterpie, M",
                     "condition": "177/252",
                     "active": True,
@@ -4079,7 +4079,7 @@ class TestCheckChoiceItem(unittest.TestCase):
 |-damage|p2a: Archeops|88/100|[from] ability: Iron Barbs|[of] p1a: Ferrothorn
 |-damage|p2a: Archeops|72/100|[from] item: Rocky Helmet|[of] p1a: Ferrothorn
 |move|p1a: Ferrothorn|Spikes|p2a: Archeops
-|-sidestart|p2: la-stabbystabs2205|Spikes"""
+|-sidestart|opponent: la-stabbystabs2205|Spikes"""
 
         self.battle.user.last_used_move = LastUsedMove('ferrothorn', 'spikes', 0)
 

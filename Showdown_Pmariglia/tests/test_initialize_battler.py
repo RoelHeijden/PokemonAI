@@ -58,10 +58,10 @@ class TestInitializeBattler(unittest.TestCase):
           ],
           "side": {
             "name": "BigBluePikachu",
-            "id": "p2",
+            "id": "opponent",
             "pokemon": [
               {
-                "ident": "p2: Necrozma",
+                "ident": "opponent: Necrozma",
                 "details": "Necrozma-Ultra",
                 "condition": "152/335",
                 "active": True,
@@ -84,7 +84,7 @@ class TestInitializeBattler(unittest.TestCase):
                 "ability": "neuroforce"
               },
               {
-                "ident": "p2: Groudon",
+                "ident": "opponent: Groudon",
                 "details": "Groudon",
                 "condition": "386/386",
                 "active": False,
@@ -107,7 +107,7 @@ class TestInitializeBattler(unittest.TestCase):
                 "ability": "drought"
               },
               {
-                "ident": "p2: Xerneas",
+                "ident": "opponent: Xerneas",
                 "details": "Xerneas",
                 "condition": "393/393",
                 "active": False,
@@ -130,7 +130,7 @@ class TestInitializeBattler(unittest.TestCase):
                 "ability": "fairyaura"
               },
               {
-                "ident": "p2: Darkrai",
+                "ident": "opponent: Darkrai",
                 "details": "Darkrai",
                 "condition": "281/281",
                 "active": False,
@@ -153,7 +153,7 @@ class TestInitializeBattler(unittest.TestCase):
                 "ability": "baddreams"
               },
               {
-                "ident": "p2: Arceus",
+                "ident": "opponent: Arceus",
                 "details": "Arceus-Dragon",
                 "condition": "444/444",
                 "active": False,
@@ -176,7 +176,7 @@ class TestInitializeBattler(unittest.TestCase):
                 "ability": "multitype"
               },
               {
-                "ident": "p2: Celesteela",
+                "ident": "opponent: Celesteela",
                 "details": "Celesteela",
                 "condition": "397/397",
                 "active": False,
@@ -253,10 +253,10 @@ class TestInitializeBattler(unittest.TestCase):
           ],
           "side": {
             "name": "BigBluePikachu",
-            "id": "p2",
+            "id": "opponent",
             "pokemon": [
               {
-                "ident": "p2: Necrozma",
+                "ident": "opponent: Necrozma",
                 "details": "Necrozma",
                 "condition": "152/335",
                 "active": True,
@@ -279,7 +279,7 @@ class TestInitializeBattler(unittest.TestCase):
                 "ability": "neuroforce"
               },
               {
-                "ident": "p2: Groudon",
+                "ident": "opponent: Groudon",
                 "details": "Groudon",
                 "condition": "386/386",
                 "active": False,
@@ -302,7 +302,7 @@ class TestInitializeBattler(unittest.TestCase):
                 "ability": "drought"
               },
               {
-                "ident": "p2: Xerneas",
+                "ident": "opponent: Xerneas",
                 "details": "Xerneas",
                 "condition": "393/393",
                 "active": False,
@@ -325,7 +325,7 @@ class TestInitializeBattler(unittest.TestCase):
                 "ability": "fairyaura"
               },
               {
-                "ident": "p2: Darkrai",
+                "ident": "opponent: Darkrai",
                 "details": "Darkrai",
                 "condition": "281/281",
                 "active": False,
@@ -348,7 +348,7 @@ class TestInitializeBattler(unittest.TestCase):
                 "ability": "baddreams"
               },
               {
-                "ident": "p2: Arceus",
+                "ident": "opponent: Arceus",
                 "details": "Arceus-Dragon",
                 "condition": "444/444",
                 "active": False,
@@ -371,7 +371,7 @@ class TestInitializeBattler(unittest.TestCase):
                 "ability": "multitype"
               },
               {
-                "ident": "p2: Celesteela",
+                "ident": "opponent: Celesteela",
                 "details": "Celesteela",
                 "condition": "397/397",
                 "active": False,
@@ -447,10 +447,10 @@ class TestInitializeBattler(unittest.TestCase):
           ],
           "side": {
             "name": "BigBluePikachu",
-            "id": "p2",
+            "id": "opponent",
             "pokemon": [
               {
-                "ident": "p2: Necrozma",
+                "ident": "opponent: Necrozma",
                 "details": "Necrozma",
                 "condition": "152/335",
                 "active": True,
@@ -473,7 +473,7 @@ class TestInitializeBattler(unittest.TestCase):
                 "ability": "neuroforce"
               },
               {
-                "ident": "p2: Groudon",
+                "ident": "opponent: Groudon",
                 "details": "Groudon",
                 "condition": "386/386",
                 "active": False,
@@ -496,7 +496,7 @@ class TestInitializeBattler(unittest.TestCase):
                 "ability": "drought"
               },
               {
-                "ident": "p2: Xerneas",
+                "ident": "opponent: Xerneas",
                 "details": "Xerneas",
                 "condition": "393/393",
                 "active": False,
@@ -519,7 +519,7 @@ class TestInitializeBattler(unittest.TestCase):
                 "ability": "fairyaura"
               },
               {
-                "ident": "p2: Darkrai",
+                "ident": "opponent: Darkrai",
                 "details": "Darkrai",
                 "condition": "281/281",
                 "active": False,
@@ -542,7 +542,7 @@ class TestInitializeBattler(unittest.TestCase):
                 "ability": "baddreams"
               },
               {
-                "ident": "p2: Arceus",
+                "ident": "opponent: Arceus",
                 "details": "Arceus-Dragon",
                 "condition": "444/444",
                 "active": False,
@@ -565,7 +565,7 @@ class TestInitializeBattler(unittest.TestCase):
                 "ability": "multitype"
               },
               {
-                "ident": "p2: Celesteela",
+                "ident": "opponent: Celesteela",
                 "details": "Celesteela",
                 "condition": "397/397",
                 "active": False,

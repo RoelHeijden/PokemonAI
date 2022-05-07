@@ -108,7 +108,7 @@ def evaluate(state):
 
     number_of_opponent_reserve_revealed = len(state.opponent.reserve) + 1
     bot_alive_reserve_count = len([p.hp for p in state.self.reserve.values() if p.hp > 0])
-    opponent_alive_reserves_count = len([p for p in state.opponent.reserve.values() if p.hp > 0]) + (6-number_of_opponent_reserve_revealed)
+    opponent_alive_reserves_count = len([p for p in state.opponent.reserve.values() if p.hp > 0]) + (6 - number_of_opponent_reserve_revealed)
 
     # evaluate the bot's pokemon
     score += evaluate_pokemon(state.self.active)

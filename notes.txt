@@ -28,20 +28,24 @@ detect speed range if faster mon is unable to move (freeze, para, etc)
 
 KO's when the knocked out pokemon was using a -priotiy move wrongfully sets the speed range
 
+do something with hidden_power_type in battler.from_team_json() and battler from the parser class
+
 ----------------------------------------------------------------------------------------------------------------
 
-REGULAR:
-    do something with hidden_power_type in battler.from_team_json() and battler from the parser class
-    fix zoroark deleting previous pokemon bug
+REGULAR
+    1. check Zoroark
+    2. check Transform
+    3. check form changes (e.g. Minior?)
 
-PARSER:
-    check switch_or_drag transform handling (it resets the pokemon..)
-    check ability cases in start_volatile_status
-    test zoroark in granted dataset
-    test nicknamed pokemon
+PARSER
+    1. test nicknamed pokemon
+    2. add move inputs to state
 
-    rename user and opponent to p1 and p1
-    reduce output size
+    3. check ability cases in start_volatile_status
+    4. check switch_or_drag transform handling (it resets the pokemon..)
+    5. test zoroark in granted dataset
+
+
 
 
 

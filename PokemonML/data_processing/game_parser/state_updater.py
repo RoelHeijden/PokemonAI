@@ -5,9 +5,10 @@ import math
 from Showdown_Pmariglia import constants
 from Showdown_Pmariglia.data import all_move_json
 from Showdown_Pmariglia.data import pokedex
-from battle import Pokemon, LastUsedMove
 from Showdown_Pmariglia.showdown.engine.helpers import normalize_name
 from Showdown_Pmariglia.showdown.engine.helpers import calculate_stats
+
+from PokemonML.data_processing.game_parser.state import Pokemon, LastUsedMove
 
 
 logger = logging.getLogger(__name__)
@@ -22,15 +23,15 @@ def find_pokemon_in_reserves(pkmn_name, reserves):
     return None
 
 
-def is_opponent(battle,  split_msg):
-    return not split_msg[2].startswith(battle.user.name)
+def is_p2(battle, split_msg):
+    return not split_msg[2].startswith(battle.p1.name)
 
 
 def switch_or_drag(battle, split_msg):
-    if is_opponent(battle, split_msg):
-        side = battle.opponent
+    if is_p2(battle, split_msg):
+        side = battle.p2
     else:
-        side = battle.user
+        side = battle.p1
 
     if side.active is not None:
         # set the pkmn's types back to their original value if the types were changed
@@ -85,10 +86,10 @@ def switch_or_drag(battle, split_msg):
 
 
 def heal_or_damage(battle, split_msg):
-    if is_opponent(battle, split_msg):
-        side = battle.opponent
+    if is_p2(battle, split_msg):
+        side = battle.p2
     else:
-        side = battle.user
+        side = battle.p1
 
     pkmn = side.active
 
@@ -103,10 +104,10 @@ def heal_or_damage(battle, split_msg):
 
 
 def faint(battle, split_msg):
-    if is_opponent(battle, split_msg):
-        side = battle.opponent
+    if is_p2(battle, split_msg):
+        side = battle.p2
     else:
-        side = battle.user
+        side = battle.p1
 
     side.active.hp = 0
     side.active.fainted = True
@@ -118,12 +119,12 @@ def move(battle, split_msg):
 
     move_name = normalize_name(split_msg[3].strip().lower())
 
-    if is_opponent(battle, split_msg):
-        side = battle.opponent
-        pkmn = battle.opponent.active
+    if is_p2(battle, split_msg):
+        side = battle.p2
+        pkmn = battle.p2.active
     else:
-        side = battle.user
-        pkmn = battle.user.active
+        side = battle.p1
+        pkmn = battle.p1.active
 
     # remove volatile status if they have it
     # this is for preparation moves like Phantom Force
@@ -147,7 +148,7 @@ def move(battle, split_msg):
         logger.debug("{} used two different moves - it cannot have a choice item".format(pkmn.name))
         pkmn.can_have_choice_item = False
 
-    # if the opponent uses a boosting status move, they cannot have a choice item
+    # if the p2 uses a boosting status move, they cannot have a choice item
     # this COULD be set for any status move, but some pkmn uncommonly run things like specs + wisp
     try:
         if constants.BOOSTS in all_move_json[move_name] and all_move_json[move_name][constants.CATEGORY] == constants.STATUS:
@@ -192,10 +193,10 @@ def move(battle, split_msg):
 
 
 def boost(battle, split_msg):
-    if is_opponent(battle, split_msg):
-        pkmn = battle.opponent.active
+    if is_p2(battle, split_msg):
+        pkmn = battle.p2.active
     else:
-        pkmn = battle.user.active
+        pkmn = battle.p1.active
 
     stat = constants.STAT_ABBREVIATION_LOOKUPS[split_msg[3].strip()]
     amount = int(split_msg[4].strip())
@@ -204,10 +205,10 @@ def boost(battle, split_msg):
 
 
 def unboost(battle, split_msg):
-    if is_opponent(battle, split_msg):
-        pkmn = battle.opponent.active
+    if is_p2(battle, split_msg):
+        pkmn = battle.p2.active
     else:
-        pkmn = battle.user.active
+        pkmn = battle.p1.active
 
     stat = constants.STAT_ABBREVIATION_LOOKUPS[split_msg[3].strip()]
     amount = int(split_msg[4].strip())
@@ -216,10 +217,10 @@ def unboost(battle, split_msg):
 
 
 def status(battle, split_msg):
-    if is_opponent(battle, split_msg):
-        pkmn = battle.opponent.active
+    if is_p2(battle, split_msg):
+        pkmn = battle.p2.active
     else:
-        pkmn = battle.user.active
+        pkmn = battle.p1.active
 
     status_name = split_msg[3].strip()
     logger.debug("{} got status: {}".format(pkmn.name, status_name))
@@ -227,12 +228,12 @@ def status(battle, split_msg):
 
 
 def activate(battle, split_msg):
-    if is_opponent(battle, split_msg):
-        pkmn = battle.opponent.active
-        other_pkmn = battle.user.active
+    if is_p2(battle, split_msg):
+        pkmn = battle.p2.active
+        other_pkmn = battle.p1.active
     else:
-        pkmn = battle.user.active
-        other_pkmn = battle.opponent.active
+        pkmn = battle.p1.active
+        other_pkmn = battle.p2.active
 
     if split_msg[3].lower() == 'move: skill swap':
         pkmn.ability = normalize_name(split_msg[4])
@@ -246,10 +247,10 @@ def activate(battle, split_msg):
 
 
 def prepare(battle, split_msg):
-    if is_opponent(battle, split_msg):
-        pkmn = battle.opponent.active
+    if is_p2(battle, split_msg):
+        pkmn = battle.p2.active
     else:
-        pkmn = battle.user.active
+        pkmn = battle.p1.active
 
     being_prepared = normalize_name(split_msg[3])
     if being_prepared in pkmn.volatile_statuses:
@@ -259,12 +260,12 @@ def prepare(battle, split_msg):
 
 
 def start_volatile_status(battle, split_msg):
-    if is_opponent(battle, split_msg):
-        pkmn = battle.opponent.active
-        side = battle.opponent
+    if is_p2(battle, split_msg):
+        pkmn = battle.p2.active
+        side = battle.p2
     else:
-        pkmn = battle.user.active
-        side = battle.user
+        pkmn = battle.p1.active
+        side = battle.p1
 
     volatile_status = normalize_name(split_msg[3].split(":")[-1])
 
@@ -305,10 +306,10 @@ def start_volatile_status(battle, split_msg):
 
 
 def end_volatile_status(battle, split_msg):
-    if is_opponent(battle, split_msg):
-        pkmn = battle.opponent.active
+    if is_p2(battle, split_msg):
+        pkmn = battle.p2.active
     else:
-        pkmn = battle.user.active
+        pkmn = battle.p1.active
 
     volatile_status = normalize_name(split_msg[3].split(":")[-1])
     if volatile_status in constants.BINDING_MOVES:
@@ -326,10 +327,10 @@ def end_volatile_status(battle, split_msg):
 
 
 def curestatus(battle, split_msg):
-    if is_opponent(battle, split_msg):
-        side = battle.opponent
+    if is_p2(battle, split_msg):
+        side = battle.p2
     else:
-        side = battle.user
+        side = battle.p1
 
     pkmn_name = split_msg[2].split(':')[-1].strip()
 
@@ -348,11 +349,11 @@ def curestatus(battle, split_msg):
 
 
 def cureteam(battle, split_msg):
-    """Cure every pokemon on the opponent's team of it's status"""
-    if is_opponent(battle, split_msg):
-        side = battle.opponent
+    """Cure every pokemon on the p2's team of it's status"""
+    if is_p2(battle, split_msg):
+        side = battle.p2
     else:
-        side = battle.user
+        side = battle.p1
 
     side.active.status = None
     for pkmn in filter(lambda p: isinstance(p, Pokemon), side.reserve):
@@ -396,12 +397,12 @@ def sidestart(battle, split_msg):
     condition = split_msg[3].split(':')[-1].strip()
     condition = normalize_name(condition)
 
-    if is_opponent(battle, split_msg):
-        logger.debug("Side condition {} starting for opponent".format(condition))
-        battle.opponent.side_conditions[condition] += 1
+    if is_p2(battle, split_msg):
+        logger.debug("Side condition {} starting for p2".format(condition))
+        battle.p2.side_conditions[condition] += 1
     else:
         logger.debug("Side condition {} starting for bot".format(condition))
-        battle.user.side_conditions[condition] += 1
+        battle.p1.side_conditions[condition] += 1
 
 
 def sideend(battle, split_msg):
@@ -409,48 +410,47 @@ def sideend(battle, split_msg):
     condition = split_msg[3].split(':')[-1].strip()
     condition = normalize_name(condition)
 
-    if is_opponent(battle, split_msg):
-        logger.debug("Side condition {} ending for opponent".format(condition))
-        battle.opponent.side_conditions[condition] = 0
+    if is_p2(battle, split_msg):
+        logger.debug("Side condition {} ending for p2".format(condition))
+        battle.p2.side_conditions[condition] = 0
     else:
         logger.debug("Side condition {} ending for bot".format(condition))
-        battle.user.side_conditions[condition] = 0
+        battle.p1.side_conditions[condition] = 0
 
 
 def swapsideconditions(battle, _):
-    user_sc = battle.user.side_conditions
-    opponent_sc = battle.opponent.side_conditions
+    p1_sc = battle.p1.side_conditions
+    opponent_sc = battle.p2.side_conditions
     for side_condition in constants.COURT_CHANGE_SWAPS:
-        user_sc[side_condition], opponent_sc[side_condition] = opponent_sc[side_condition], user_sc[side_condition]
-
+        p1_sc[side_condition], opponent_sc[side_condition] = opponent_sc[side_condition], p1_sc[side_condition]
 
 def set_item(battle, split_msg):
-    if is_opponent(battle, split_msg):
-        side = battle.opponent
+    if is_p2(battle, split_msg):
+        side = battle.p2
     else:
-        side = battle.user
+        side = battle.p1
 
-    # if opponent is being given a choice scarf (via Trick or Switcheroo)
+    # if p2 is being given a choice scarf (via Trick or Switcheroo)
     item = normalize_name(split_msg[3].strip())
     logger.debug("Setting {}'s item to {}".format(side.active.name, item))
     side.active.item = item
 
 
 def remove_item(battle, split_msg):
-    if is_opponent(battle, split_msg):
-        side = battle.opponent
+    if is_p2(battle, split_msg):
+        side = battle.p2
     else:
-        side = battle.user
+        side = battle.p1
 
     logger.debug("Removing {}'s item".format(side.active.name))
     side.active.item = None
 
 
 def set_ability(battle, split_msg):
-    if is_opponent(battle, split_msg):
-        side = battle.opponent
+    if is_p2(battle, split_msg):
+        side = battle.p2
     else:
-        side = battle.user
+        side = battle.p1
 
     for msg in split_msg:
         if constants.ABILITY in normalize_name(msg):
@@ -460,10 +460,10 @@ def set_ability(battle, split_msg):
 
 
 def form_change(battle, split_msg):
-    if is_opponent(battle, split_msg):
-        side = battle.opponent
+    if is_p2(battle, split_msg):
+        side = battle.p2
     else:
-        side = battle.user
+        side = battle.p1
 
     prev_pkmn_state = side.active.to_dict()
     previous_boosts = side.active.boosts
@@ -497,10 +497,10 @@ def form_change(battle, split_msg):
 
 
 def clearnegativeboost(battle, split_msg):
-    if is_opponent(battle, split_msg):
-        pkmn = battle.opponent.active
+    if is_p2(battle, split_msg):
+        pkmn = battle.p2.active
     else:
-        pkmn = battle.user.active
+        pkmn = battle.p1.active
 
     for stat, value in pkmn.boosts.items():
         if value < 0:
@@ -509,13 +509,13 @@ def clearnegativeboost(battle, split_msg):
 
 
 def clearallboost(battle, _):
-    pkmn = battle.user.active
+    pkmn = battle.p1.active
     for stat, value in pkmn.boosts.items():
         if value != 0:
             logger.debug("Setting {}'s {} stat to 0".format(pkmn.name, stat))
             pkmn.boosts[stat] = 0
 
-    pkmn = battle.opponent.active
+    pkmn = battle.p2.active
     for stat, value in pkmn.boosts.items():
         if value != 0:
             logger.debug("Setting {}'s {} stat to 0".format(pkmn.name, stat))
@@ -523,10 +523,10 @@ def clearallboost(battle, _):
 
 
 def singleturn(battle, split_msg):
-    if is_opponent(battle, split_msg):
-        side = battle.opponent
+    if is_p2(battle, split_msg):
+        side = battle.p2
     else:
-        side = battle.user
+        side = battle.p1
 
     move_name = normalize_name(split_msg[3].split(':')[-1])
     if move_name in constants.PROTECT_VOLATILE_STATUSES:
@@ -536,36 +536,36 @@ def singleturn(battle, split_msg):
 
 
 def upkeep(battle, _):
-    if battle.user.side_conditions[constants.PROTECT] > 0:
-        battle.user.side_conditions[constants.PROTECT] -= 1
-        logger.debug("Setting protect to {} for the bot".format(battle.user.side_conditions[constants.PROTECT]))
+    if battle.p1.side_conditions[constants.PROTECT] > 0:
+        battle.p1.side_conditions[constants.PROTECT] -= 1
+        logger.debug("Setting protect to {} for the bot".format(battle.p1.side_conditions[constants.PROTECT]))
 
-    if battle.opponent.side_conditions[constants.PROTECT] > 0:
-        battle.opponent.side_conditions[constants.PROTECT] -= 1
-        logger.debug("Setting protect to {} for the opponent".format(battle.opponent.side_conditions[constants.PROTECT]))
+    if battle.p2.side_conditions[constants.PROTECT] > 0:
+        battle.p2.side_conditions[constants.PROTECT] -= 1
+        logger.debug("Setting protect to {} for the p2".format(battle.p2.side_conditions[constants.PROTECT]))
 
-    if battle.user.wish[0] > 0:
-        battle.user.wish = (battle.user.wish[0] - 1, battle.user.wish[1])
-        logger.debug("Decrementing wish to {} for the bot".format(battle.user.wish[0]))
+    if battle.p1.wish[0] > 0:
+        battle.p1.wish = (battle.p1.wish[0] - 1, battle.p1.wish[1])
+        logger.debug("Decrementing wish to {} for the bot".format(battle.p1.wish[0]))
 
-    if battle.opponent.wish[0] > 0:
-        battle.opponent.wish = (battle.opponent.wish[0] - 1, battle.opponent.wish[1])
-        logger.debug("Decrementing wish to {} for the opponent".format(battle.opponent.wish[0]))
+    if battle.p2.wish[0] > 0:
+        battle.p2.wish = (battle.p2.wish[0] - 1, battle.p2.wish[1])
+        logger.debug("Decrementing wish to {} for the p2".format(battle.p2.wish[0]))
 
-    if battle.user.future_sight[0] > 0:
-        battle.user.future_sight = (battle.user.future_sight[0] - 1, battle.user.future_sight[1])
-        logger.debug("Decrementing future_sight to {} for the bot".format(battle.user.future_sight[0]))
+    if battle.p1.future_sight[0] > 0:
+        battle.p1.future_sight = (battle.p1.future_sight[0] - 1, battle.p1.future_sight[1])
+        logger.debug("Decrementing future_sight to {} for the bot".format(battle.p1.future_sight[0]))
 
-    if battle.opponent.future_sight[0] > 0:
-        battle.opponent.future_sight = (battle.opponent.future_sight[0] - 1, battle.opponent.future_sight[1])
-        logger.debug("Decrementing future_sight to {} for the opponent".format(battle.opponent.future_sight[0]))
+    if battle.p2.future_sight[0] > 0:
+        battle.p2.future_sight = (battle.p2.future_sight[0] - 1, battle.p2.future_sight[1])
+        logger.debug("Decrementing future_sight to {} for the p2".format(battle.p2.future_sight[0]))
 
 
 def mega(battle, split_msg):
-    if is_opponent(battle, split_msg):
-        side = battle.opponent
+    if is_p2(battle, split_msg):
+        side = battle.p2
     else:
-        side = battle.user
+        side = battle.p1
 
     side.active.is_mega = True
     logger.debug("Mega-Pokemon: {}".format(side.active.name))
@@ -576,34 +576,34 @@ def zpower(battle, split_msg):
 
 
 def transform(battle, split_msg):
-    if is_opponent(battle, split_msg):
-        transformed_into_name = battle.user.active.name
+    if is_p2(battle, split_msg):
+        transformed_into_name = battle.p1.active.name
 
         battle_copy = deepcopy(battle)
-        battle.opponent.active.boosts = deepcopy(battle.user.active.boosts)
+        battle.p2.active.boosts = deepcopy(battle.p1.active.boosts)
 
-        battle_copy.user.from_json(battle_copy.request_json)
+        battle_copy.p1.from_json(battle_copy.request_json)
 
-        if battle_copy.user.active.name == transformed_into_name or battle_copy.user.active.name.startswith(transformed_into_name):
-            transformed_into = battle_copy.user.active
+        if battle_copy.p1.active.name == transformed_into_name or battle_copy.p1.active.name.startswith(transformed_into_name):
+            transformed_into = battle_copy.p1.active
         else:
-            transformed_into = find_pokemon_in_reserves(transformed_into_name, battle_copy.user.reserve)
+            transformed_into = find_pokemon_in_reserves(transformed_into_name, battle_copy.p1.reserve)
 
-        logger.debug("Opponent {} transformed into {}".format(battle.opponent.active.name, battle.user.active.name))
-        battle.opponent.active.stats = deepcopy(transformed_into.stats)
-        battle.opponent.active.ability = deepcopy(transformed_into.ability)
-        battle.opponent.active.moves = deepcopy(transformed_into.moves)
-        battle.opponent.active.types = deepcopy(transformed_into.types)
+        logger.debug("Opponent {} transformed into {}".format(battle.p2.active.name, battle.p1.active.name))
+        battle.p2.active.stats = deepcopy(transformed_into.stats)
+        battle.p2.active.ability = deepcopy(transformed_into.ability)
+        battle.p2.active.moves = deepcopy(transformed_into.moves)
+        battle.p2.active.types = deepcopy(transformed_into.types)
 
-        if constants.TRANSFORM not in battle.opponent.active.volatile_statuses:
-            battle.opponent.active.volatile_statuses.append(constants.TRANSFORM)
+        if constants.TRANSFORM not in battle.p2.active.volatile_statuses:
+            battle.p2.active.volatile_statuses.append(constants.TRANSFORM)
 
 
 def turn(battle, split_msg):
     battle.turn = int(split_msg[2])
 
 
-def update_battle(battle, split_msg):
+def update_state(battle, split_msg):
     action = split_msg[1].strip()
 
     battle_modifiers_lookup = {
@@ -649,8 +649,8 @@ def update_battle(battle, split_msg):
         function_to_call(battle, split_msg)
 
     if action == 'turn':
-        battle.opponent.check_if_trapped(battle)
-        battle.opponent.lock_moves()
-        battle.user.check_if_trapped(battle)
-        battle.opponent.lock_moves()
+        battle.p2.check_if_trapped(battle)
+        battle.p2.lock_moves()
+        battle.p1.check_if_trapped(battle)
+        battle.p2.lock_moves()
 
