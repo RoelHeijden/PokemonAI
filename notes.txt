@@ -28,30 +28,22 @@ detect speed range if faster mon is unable to move (freeze, para, etc)
 
 KO's when the knocked out pokemon was using a -priotiy move wrongfully sets the speed range
 
-do something with hidden_power_type in battler.from_team_json() and battler from the parser class
-
 ----------------------------------------------------------------------------------------------------------------
 
-REGULAR
+ENVIRONMENT
     1. check Zoroark
     2. check Transform
     3. check form changes (e.g. Minior?)
-
-PARSER
-    1. test nicknamed pokemon
-    2. add move inputs to state
-
-    3. check ability cases in start_volatile_status
-    4. check switch_or_drag transform handling (it resets the pokemon..)
-    5. test zoroark in granted dataset
+    4. check role of hidden_power_type in battler.from_team_json()
 
 
-
+DATA:
+    1. Edit parser to sort on rating
+    2. Parse game logs
+    3. Create parser to convert game states to csv
 
 
 VALUE NETWORK
-    1. Create parser to convert data to game states
-    2. Create parser to convert game states to csv
     3. Refresh Pytorch knowledge and make first mini draft
     4. Research evaluation network structures for non image-like games (e.g. Go board can be seen as pixels)
     5. Create first real draft

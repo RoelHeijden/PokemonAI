@@ -2,29 +2,29 @@ import os
 import shutil
 import time
 import ujson
-from tqdm import tqdm
 
 from game_parser.game_log import GameLog
 
+"""
+UNFINISHED PROGRAM
+- Transform, Illusion and other form changes cause bugs
+- Game state information needs to be extended
+
+
+TO DO:
+    1. test nicknamed pokemon
+    2. add move inputs to state
+    3. check ability if statements in start_volatile_status()
+    4. actually edit the Transform function
+    5. check switch_or_drag transform handling (it resets the pokemon..)
+    6. test zoroark
+"""
 
 
 def main():
-    """
-    error IDs:
-        - 0: 100165
-        - 1: 100161
-        - 2: 100121
-        - 3: 100234
-        - 4: 100271
-        - 5: 100149
-        - 6: 100224
-        - 7: 100137
-        - 8: 100200
-        - 9:
-    """
-    mode = 'read from batch'
-    # mode = 'create batches'
-    # mode = 'test'
+    # mode = 'read from batch'
+    mode = 'create batches'
+    # mode = 'test a file'
 
     batch = 0
     battle_id = 100165
@@ -38,9 +38,9 @@ def main():
     if mode == 'create batches':
         path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/anonymized-ou-Dec2019-Feb2020/anonymized-ou-incomplete"
         path_out = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/python/PokemonML/data/granted_data_testing/raw_data"
-        copy_to_batches(path_in, path_out)
+        copy_to_batches(path_in, path_out, 10, 50)
 
-    if mode == 'test':
+    if mode == 'test a file':
         path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/python/PokemonML/data/granted_data_testing/raw_data"
         file = os.path.join(path_in, 'batch' + str(batch), 'battle-gen8ou-' + str(battle_id) + '.log.json')
         f = open(file, 'r')

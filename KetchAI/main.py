@@ -35,8 +35,8 @@ class BattleBot(Battle):
         # select move based on a nash equilibrium strategy
         best_move, user_strategy, opp_strategy = self.NE.nash_equilibrium_move(self, bimatrix, user_options, opponent_options)
 
-        # self.NE.display_payoff_matrix(payoff_matrix, user_options, opponent_options, user_strategy, opp_strategy)
-        # print(f'\nChosen move: \033[1m{best_move}\033[0m')
+        self.NE.display_payoff_matrix(payoff_matrix, user_options, opponent_options, user_strategy, opp_strategy)
+        print(f'\nChosen move: \033[1m{best_move}\033[0m')
 
         return format_decision(self, best_move)
 
