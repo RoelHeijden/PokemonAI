@@ -1,7 +1,7 @@
 import ujson
 
-from .state import Battle
-from .state_updater import update_state
+from state import Battle
+from state_updater import update_state
 from Showdown_Pmariglia import constants
 
 

@@ -1,0 +1,6 @@
+weather = ['sun', 'rain', 'sand', 'hail', 'harshsun', 'heavyrain', 'strongwind']
+terrain = ['psychicterrain', 'grassyterrain', 'electricterrain', 'mistyterrain']
+trickroom = [True, False]
+
+
+for each of the three categories, add counter for how long the field has been active

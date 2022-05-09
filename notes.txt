@@ -38,9 +38,8 @@ ENVIRONMENT
 
 
 DATA:
-    1. Edit parser to sort on rating
-    2. Parse game logs
-    3. Create parser to convert game states to csv
+    3. Parse game logs
+    4. Create parser to convert game states to csv
 
 
 VALUE NETWORK
