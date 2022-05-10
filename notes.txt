@@ -30,22 +30,25 @@ KO's when the knocked out pokemon was using a -priotiy move wrongfully sets the 
 
 ----------------------------------------------------------------------------------------------------------------
 
+
+DATA:
+    1. Parse game logs
+    2. Create parser to convert game states to csv
+    3. Double check presence of weird nicknames under 'species' in p1team/p2team jsons
+
+VALUE NETWORK
+    1. Refresh Pytorch knowledge and make first draft
+    2. Research evaluation network structures for evaluation of non image-like games (as Go boards can be seen as pixels)
+    3. Create first version
+
+
+
+
 ENVIRONMENT
     1. check Zoroark
     2. check Transform
     3. check form changes (e.g. Minior?)
     4. check role of hidden_power_type in battler.from_team_json()
-
-
-DATA:
-    3. Parse game logs
-    4. Create parser to convert game states to csv
-
-
-VALUE NETWORK
-    3. Refresh Pytorch knowledge and make first mini draft
-    4. Research evaluation network structures for non image-like games (e.g. Go board can be seen as pixels)
-    5. Create first real draft
 
 
 INFO MANAGEMENT

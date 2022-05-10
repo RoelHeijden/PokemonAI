@@ -7,7 +7,7 @@ from game_log import GameLog
 
 """
 UNFINISHED PROGRAM
-- Transform, Illusion and other form changes cause bugs
+- Transform, Illusion and potential other form changes cause bugs
 - Game state information needs to be extended
 
 
@@ -134,8 +134,8 @@ def pre_pre_processing(folder_path, save_path):
 
                 match_count += 1
 
-                if match_count % 50000 == 0:
-                    print(f'{match_count} games processed, {time.time() - tic} seconds passed')
+                if match_count % 20000 == 0:
+                    print(f'{match_count} games processed, {round(time.time() - tic)} seconds passed')
 
     toc = time.time()
 
@@ -245,8 +245,8 @@ def parse_all(folder_path, save_path):
 
                 match_count += 1
 
-                if match_count % 10000 == 0:
-                    print(f'{match_count} games processed, {time.time() - tic} seconds passed')
+                if match_count % 20000 == 0:
+                    print(f'{match_count} games processed, {round(time.time() - tic)} seconds passed')
 
     toc = time.time()
 
