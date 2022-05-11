@@ -3,6 +3,8 @@ import os
 import numpy as np
 import csv
 import time
+import ujson
+import random
 
 
 """
@@ -62,7 +64,7 @@ def write_csv_headers(file, headers):
         f_out.close()
 
 
-def convert_games(converter, path_in, file_out):
+def convert_games(converter, path_in, file_out, min_game_length=5):
     """ converts each game into one or two number-converted game states """
 
     print("starting\n")
@@ -77,12 +79,20 @@ def convert_games(converter, path_in, file_out):
     n_states = 0
     n_games = 0
 
+    games_too_short = {}
+
     # open each game_states file
     for f in files:
         with open(f) as f_in, open(file_out, 'a') as f_out:
 
-            # select states to write
             all_states = json.load(f_in)
+
+            # skip game if game doesn't last long enough
+            if len(all_states) < min_game_length:
+                games_too_short[f] = len(all_states)
+                continue
+
+            # select two random states to write
             states = pick_random_states(all_states)
 
             # write states to file
@@ -102,35 +112,44 @@ def convert_games(converter, path_in, file_out):
     print("finished")
     print(f'{n_games} games processed')
     print(f'{n_states} states converted')
-    print(f'runtime: {round(time.time() - start_time, 1)}s ')
+    print(f'runtime: {round(time.time() - start_time, 1)}s\n')
+
+    print(f"Games skipped because they lasted shorter than {min_game_length} turns")
+    print(ujson.dumps(games_too_short))
 
 
-def pick_random_states(all_states, max_in_between=6, min_game_length=15):
-    """ selects one or two random states from a game_state list, depending on the game length """
+def pick_random_states(all_states):
+    """selects two random states from a game_state list, one for each of the players POV but at least n turns apart"""
 
-    # extract two states if game has 20 or more turns
-    if len(all_states) > min_game_length:
+    # iterate until two random states are found where no active pokemon are None
+    while True:
+        state1_idx, state2_idx = random.sample(range(0, len(all_states)), 2)
+        state1 = all_states[state1_idx]
+        state2 = all_states[state2_idx]
 
-        # iterate until two random states are found where no active pokemon are None
-        while True:
-            turns_in_between = np.random.randint(max_in_between, len(all_states))
-            state1_idx = np.random.randint(0, len(all_states) - turns_in_between)
-            state2_idx = state1_idx + turns_in_between
-            state1 = all_states[state1_idx]
-            state2 = all_states[state2_idx]
+        if state1['state']['p1']['active'] and state1['state']['p2']['active'] and \
+           state2['state']['p1']['active'] and state2['state']['p2']['active']:
+            return [state1, reverse_state(state2)]
 
-            if state1['state']['p1']['active'] and state1['state']['p2']['active'] and \
-               state2['state']['p1']['active'] and state2['state']['p2']['active']:
-                return [state1, state2]
 
+def reverse_state(state):
+    """ flips the POV of a state """
+    if state['winner'] == 'p1':
+        state['winner'] = 'p2'
+    elif state['winner'] == 'p2':
+        state['winner'] = 'p1'
     else:
-        # iterate until a random state is found where no active pokemon are None
-        while True:
-            state_idx = np.random.randint(0, len(all_states))
-            state = all_states[state_idx]
+        raise ValueError(f'State winner cannot be {state["winner"]}')
 
-            if state['state']['p1']['active'] and state['state']['p2']['active']:
-                return [state]
+    hold_my_beer = state['state']['p1']
+    state['state']['p1'] = state['state']['p2']
+    state['state']['p2'] = hold_my_beer
+
+    hold_my_beer = state['p1_move']
+    state['p1_move'] = state['p2_move']
+    state['p2_move'] = hold_my_beer
+
+    return state
 
 
 class Converter:
