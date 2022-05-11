@@ -1,3 +1,0 @@
-types = ['Steel', 'Ghost', 'Dragon', 'Rock', 'Fighting', 'Grass', 'Dark', 'Fairy', 'Normal', 'Flying', 'Ice', 'Bug', 'Psychic', 'Electric', 'Water', 'Ground', 'Fire', 'Poison']
-
-18 types

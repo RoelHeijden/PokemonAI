@@ -1,0 +1,60 @@
+ABILITIES:
+    263 abilities
+    collected from the pokemon in pokemon.json
+
+
+WEATHERS:
+    7 weathers
+    counters not added yet
+
+
+TERRAINS
+    4 terrains
+    counters not added yet
+
+
+ITEMS:
+    196 items
+    does not contain NO_ITEM yet
+    useless items removed
+    collected from training dataset
+
+
+MOVES:
+    757 moves
+    filtered out non-standard moves except 'Past'
+    includes moves no longer in the game (e.g. hidden power)
+    hidden power split over multiple moves (1 for each type)
+    collected from poke-env's moves json
+
+
+POKEMON:
+    1032 Pokemon
+    form merges:
+        - magearna
+        - Cramorant
+        - toxtricity
+        - zarude
+        - Keldeo
+    form splits:
+        - Arceus
+        - Silvallu
+        - Zamazenta
+        - Zacian
+        - Aegislash
+        - Genesect
+    Collected from PMariglia's Pokedex, manually removed illegal Pokemon (may contain mistakes)
+
+
+STATUS:
+    28 Status conditions
+    counters added for sleep turns and toxic turns
+    sleep form Rest is it's own status
+
+TYPES:
+    18 types
+    does not include '???' as type
+
+
+MOVE_CATEGORY:
+    3 categories
