@@ -1,5 +1,3 @@
-import pandas as pd
-import ujson
 import json
 import os
 import numpy as np
@@ -13,7 +11,7 @@ STATES
         - presence of weird nicknames under 'species' in p1team/p2team jsons
         - how moves like taunt, encore, disable, lightscreen and volatiles are represented.
         - sleep representation after Rest
-        - fainted status is represented as status['fnt']
+        - how layers of spikes, etc are represented
     
     add:
         - counters for: toxic, sleep, weather, terrain, trickroom, encore, side_conditions, volatiles, etc.
@@ -153,7 +151,7 @@ class Converter:
     def init_category(file_name, relative_path='categories'):
         path = os.path.join(relative_path, file_name)
         file = open(path, 'r')
-        return list(json.load(file))
+        return np.asarray(list(json.load(file)))
 
     def convert_state(self, game_state):
         """ convert state information to an array numbers """
@@ -167,52 +165,126 @@ class Converter:
         return p1_win + turn + fields + player1 + player2
 
     def convert_fields(self, state):
-        weather = np.asarray([])
-        terrain = np.asarray([])
+        # one-hot-encode weather
+        weather = np.zeros(len(self.weather_list))
+        weather[np.where(self.weather_list == state['weather'])] = 1
+
+        weather_count = np.asarray([state['weather_count']])
+
+        # one-hot-encode terrain
+        terrain = np.zeros(len(self.terrain_list))
+        terrain[np.where(self.terrain_list == state['terrain'])] = 1
+
+        terrain_count = np.asarray([state['terrain_count']])
+
         trick_room = np.asarray([int(state['trick_room'])])
 
-        return []
+        trick_room_count = np.asarray([state['trick_room_count']])
+
+        return weather + weather_count + terrain + terrain_count + trick_room + trick_room_count
 
     def convert_side(self, side):
-        side_conditions = np.asarray([])
-        wish = np.asarray([])
-        future_sight = np.asarray([])
+        # one-hot-encode side conditions
+        side_conditions = np.zeros(len(self.side_condition_list))
+        for v in side['side_conditions']:
+            side_conditions[np.where(self.side_condition_list == v)] = 1
+
+        wish = np.asarray(side['wish'])
+
+        future_sight = np.asarray([side['future_sight'][0]])
+
         active = self.convert_pokemon(side['active'])
         reserve = np.concatenate([self.convert_pokemon(pkmn) for pkmn in side['reserve']])
 
-        return []
+        return side_conditions + wish + future_sight + active + reserve
 
     def convert_pokemon(self, pokemon):
-        species = []
-        ability = []
-        types = []
-        item = []
-        stats = []
+        # one-hot-encode species
+        species = np.zeros(len(self.pokemon_list))
+        species[np.where(self.pokemon_list == pokemon['id'])] = 1
 
-        max_hp = [pokemon['maxhp']]
-        current_hp = [pokemon['hp']]
+        # one-hot-encode ability
+        ability = np.zeros(len(self.ability_list))
+        ability[np.where(self.ability_list == pokemon['ability'])] = 1
 
-        stat_changes = []
-        status = []
-        volatile_status = []
+        # one-hot-encode types
+        types = np.zeros(len(self.type_list))
+        for t in pokemon['types']:
+            types[np.where(self.type_list == t)] = 1
 
-        fainted = [int(pokemon['status'] == 'fnt')]
+        # one-hot-encode item
+        item = np.zeros(len(self.item_list))
+        item[np.where(self.item_list == pokemon['item'])] = 1
 
-        moves = [self.convert_move(move) for move in pokemon['moves']]
-        last_used_move = []
+        has_item = np.asarray([int(pokemon['item'] != "")])
 
-        return []
+        stats = np.asarray([
+            pokemon['attack'],
+            pokemon['defense'],
+            pokemon['special_attack'],
+            pokemon['special_defense'],
+            pokemon['speed'],
+        ])
+
+        stat_changes = np.asarray([
+            pokemon['attack_boost'],
+            pokemon['defense_boost'],
+            pokemon['special_attack_boost'],
+            pokemon['special_defense_boost'],
+            pokemon['speed_boost'],
+            pokemon['accuracy_boost'],
+            pokemon['evasion_boost']
+        ])
+
+        max_hp = np.asarray([pokemon['maxhp']])
+
+        current_hp = np.asarray([pokemon['hp']])
+
+        fainted = np.asarray([int(pokemon['status'] == 'fnt')])
+
+        # one-hot-encode status conditions
+        status = np.zeros(len(self.status_list))
+        status[np.where(self.status_list == pokemon['status'])] = 1
+
+        # one-hot-encode volatile_status
+        volatile_status = np.zeros(len(self.volatile_status_list))
+        for v in pokemon['volatile_status']:
+            volatile_status[np.where(self.volatile_status_list == v)] = 1
+
+        moves = np.concatenate([self.convert_move(move) for move in pokemon['moves']])
+
+        return species + ability + types + item + has_item + stats + stat_changes + \
+               max_hp + current_hp + fainted + status + volatile_status + moves
 
     def convert_move(self, move):
-        move = np.asarray([])
-        typing = np.asarray([])
-        move_category = np.asarray([])
-        base_power = np.asarray([])
-        current_pp = np.asarray([])
-        max_pp = np.asarray([])
-        disabled = np.asarray([])
+        # one-hot-encode moves
+        moves = np.zeros(len(self.move_list))
+        moves[np.where(self.move_list == move['id'])] = 1
 
-        return []
+        # one-hot-encode typing
+        typing = np.zeros(len(self.type_list))
+        typing[np.where(self.type_list == move['type'])] = 1
+
+        # one-hot-encode move category
+        move_category = np.zeros(len(self.move_category_list))
+        move_category[np.where(self.move_category_list == move['category'])] = 1
+
+        base_power = np.asarray([move['bp']])
+
+        current_pp = np.asarray([move['pp']])
+
+        max_pp = np.asarray(['maxpp'])
+
+        target_self = np.asarray([int(move['target'] == 'self')])
+
+        disabled = np.asarray([int(move['disabled'])])
+
+        last_used_move = np.asarray([int(move['last_used_move'])])
+
+        used = np.asarray([int(move['used'])])
+
+        return moves + typing + move_category + base_power + current_pp + max_pp + \
+               target_self + disabled + last_used_move + used
 
     def create_header(self):
         """ returns a 4*m header """
@@ -223,20 +295,23 @@ class Converter:
                 ['base power'] +
                 ['current pp'] +
                 ['max pp'] +
-                ['disabled']
+                ['target self'] +
+                ['disabled'] +
+                ['last used move'] +
+                ['used']
         )
 
         pokemon_header = (
                 ['name' for _ in self.pokemon_list] +
+                ['ability' for _ in self.ability_list] +
                 ['type' for _ in self.type_list] +
                 ['item' for _ in self.item_list] +
-                ['ability' for _ in self.ability_list] +
-                ['stats'] * 6 +
+                ['has item'] +
+                ['stats'] * 5 +
+                ['stat changes'] * 7 +
                 ['max hp'] +
                 ['current hp'] +
                 ['fainted'] +
-                ['stat changes'] * 7 +
-                ['last used move'] * 4 +
                 ['status' for _ in self.status_list] +
                 ['volatile status' for _ in self.volatile_status_list] +
                 ['move1' for _ in move_header] +
@@ -246,11 +321,9 @@ class Converter:
         )
 
         player_header = (
-                ['player rating'] +
-                ['player move'] +
                 ['side condition' for _ in self.side_condition_list] +
                 ['wish'] * 2 +
-                ['future sight'] * 2 +
+                ['future sight'] +
                 ['active pokemon' for _ in pokemon_header] +
                 ['reserve pokemon1' for _ in pokemon_header] +
                 ['reserve pokemon2' for _ in pokemon_header] +
@@ -263,8 +336,11 @@ class Converter:
                 ['p1_win'] +
                 ['turn'] +
                 ['weather' for _ in self.weather_list] +
+                ['weather count'] +
                 ['terrain' for _ in self.terrain_list] +
+                ['terrain count'] +
                 ['trick room'] +
+                ['trick room count'] +
                 ['p1' for _ in player_header] +
                 ['p2' for _ in player_header]
         )

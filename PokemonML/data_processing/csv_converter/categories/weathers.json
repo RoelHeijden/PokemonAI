@@ -1,9 +1,9 @@
 {
-    "sun": "sun",
-    "rain": "rain",
-    "sand": "sand",
+    "sun": "sunnyday",
+    "rain": "raindance",
+    "sand": "sandstorm",
     "hail": "hail",
-    "harshsun": "harshsun",
-    "heavyrain": "heavyrain",
-    "strongwind": "strongwind"
+    "harshsun": "desolateland",
+    "heavyrain": "primordialsea",
+    "strongwind": "deltastream"
 }
