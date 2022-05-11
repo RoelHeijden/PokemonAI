@@ -32,9 +32,6 @@ KO's when the knocked out pokemon was using a -priotiy move wrongfully sets the 
 
 
 Extend payoff_matrix state_instructions to when a Pokemon is KO'd in simulation:
-        - go over all switch ins
-        - if user switch in: pick highest value
-        - if opp switch in: pick lowest value
         - if game over: pick inf or -inf
 Collect side condition list
 Collect volatile status list
@@ -45,8 +42,6 @@ ENVIRONMENT
     2. check Transform
     3. check form changes (e.g. Minior?)
     4. check role of hidden_power_type in battler.from_team_json()
-
-
 
 
 INFO MANAGEMENT

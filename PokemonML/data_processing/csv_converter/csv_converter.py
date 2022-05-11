@@ -5,6 +5,7 @@ import csv
 import time
 import ujson
 import random
+import math
 
 
 """
@@ -64,7 +65,7 @@ def write_csv_headers(file, headers):
         f_out.close()
 
 
-def convert_games(converter, path_in, file_out, min_game_length=5):
+def convert_games(converter, path_in, file_out, min_game_length=6):
     """ converts each game into one or two number-converted game states """
 
     print("starting\n")
@@ -93,7 +94,7 @@ def convert_games(converter, path_in, file_out, min_game_length=5):
                 continue
 
             # select two random states to write
-            states = pick_random_states(all_states)
+            states = pick_random_states(all_states, min_turns_apart=math.floor(min_game_length/2))
 
             # write states to file
             for s in states:
@@ -118,21 +119,20 @@ def convert_games(converter, path_in, file_out, min_game_length=5):
     print(ujson.dumps(games_too_short))
 
 
-def pick_random_states(all_states):
-    """selects two random states from a game_state list, one for each of the players POV but at least n turns apart"""
+def pick_random_states(all_states, min_turns_apart=1):
+    """ selects two random non-preview states from a game_state list,
+        one for each of the players POV and at least n turns apart """
 
-    # iterate until two random states are found where no active pokemon are None
-    while True:
-        state1_idx, state2_idx = random.sample(range(0, len(all_states)), 2)
-        state1 = all_states[state1_idx]
-        state2 = all_states[state2_idx]
+    state_idx1 = np.random.randint(1, len(all_states) - min_turns_apart)
+    state_idx2 = np.random.randint(state_idx1 + min_turns_apart, len(all_states))
 
-        if state1['state']['p1']['active'] and state1['state']['p2']['active'] and \
-           state2['state']['p1']['active'] and state2['state']['p2']['active']:
-            return [state1, reverse_state(state2)]
+    state1 = all_states[state_idx1]
+    state2 = all_states[state_idx2]
+
+    return [state1, reverse_pov(state2)]
 
 
-def reverse_state(state):
+def reverse_pov(state):
     """ flips the POV of a state """
     if state['winner'] == 'p1':
         state['winner'] = 'p2'
@@ -212,12 +212,17 @@ class Converter:
 
         future_sight = np.asarray([side['future_sight'][0]])
 
-        active = self.convert_pokemon(side['active'])
-        reserve = np.concatenate([self.convert_pokemon(pkmn) for pkmn in side['reserve']])
+        # if active pokemon is knocked out, reserve[0] is the (fainted) active pokemon
+        if side['active']:
+            active = self.convert_pokemon(side['active'], is_active=True)
+            reserve = np.concatenate([self.convert_pokemon(pkmn) for pkmn in side['reserve']])
+        else:
+            active = self.convert_pokemon(side['reserve'][0], is_active=False)
+            reserve = np.concatenate([self.convert_pokemon(pkmn) for pkmn in side['reserve'][1:]])
 
         return side_conditions + wish + future_sight + active + reserve
 
-    def convert_pokemon(self, pokemon):
+    def convert_pokemon(self, pokemon, is_active=False):
         # one-hot-encode species
         species = np.zeros(len(self.pokemon_list))
         species[np.where(self.pokemon_list == pokemon['id'])] = 1
@@ -236,6 +241,8 @@ class Converter:
         item[np.where(self.item_list == pokemon['item'])] = 1
 
         has_item = np.asarray([int(pokemon['item'] != "")])
+
+        active = np.asarray([int(is_active)])
 
         stats = np.asarray([
             pokemon['attack'],
@@ -272,7 +279,7 @@ class Converter:
 
         moves = np.concatenate([self.convert_move(move) for move in pokemon['moves']])
 
-        return species + ability + types + item + has_item + stats + stat_changes + \
+        return species + ability + types + item + has_item + active + stats + stat_changes + \
                max_hp + current_hp + fainted + status + volatile_status + moves
 
     def convert_move(self, move):
@@ -326,6 +333,7 @@ class Converter:
                 ['type' for _ in self.type_list] +
                 ['item' for _ in self.item_list] +
                 ['has item'] +
+                ['is active'] +
                 ['stats'] * 5 +
                 ['stat changes'] * 7 +
                 ['max hp'] +

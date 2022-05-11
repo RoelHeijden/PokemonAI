@@ -23,7 +23,7 @@ def init_category(file_name, relative_path='categories'):
 # move_list = init_category('moves.json')
 # weather_list = init_category('weathers.json')
 # terrain_list = init_category('terrains.json')
-type_list = init_category('types.json')
+# type_list = init_category('types.json')
 # status_list = init_category('status.json')
 # move_category_list = init_category('move_categories.json')
 # volatile_status_list = []  # TBD
@@ -31,6 +31,4 @@ type_list = init_category('types.json')
 
 
 ####################################################################################################
-
-
 

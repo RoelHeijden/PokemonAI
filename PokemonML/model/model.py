@@ -20,6 +20,7 @@ INPUT LAYER
         - Abilities [263]
         - Item [196]
         - Has item [1]
+        - Is active [1]
         - Types [18]
         - Stats [5]
 
