@@ -4,40 +4,42 @@ import numpy as np
 import csv
 import time
 import ujson
-import random
 import math
 
 
 """
 STATES
+    Collect: 
+        - possible status conditions
+        - possible volatile statuses
+        - possible side conditions
+        - pokemon species (check nickname bug?)
+        - weathers (check if names are right)
+
     Check:
-        - presence of weird nicknames under 'species' in p1team/p2team jsons
-        - how moves like taunt, encore, disable, lightscreen and volatiles are represented.
+        - how moves like toxic, taunt, encore, disable, lightscreen and volatiles are represented (do they have turn counts?).
         - sleep representation after Rest
         - how layers of spikes, etc are represented
-    
-    add:
-        - counters for: toxic, sleep, weather, terrain, trickroom, encore, side_conditions, volatiles, etc.
-        - current turn 
-        - first_turn_out
-        - last_used_move
-        - player ratings
-        
+        - if Protect being used is represented in volatiles
+
     Fix:
-        - represent choice-lock disabled moves in end-of-turn state
+        - represent choice-lock disabled moves in end-of-turn state: if a pokemon get's a KO with a choice item, 
+          the choice lock is set, but moves are not set to disabled until the next state (the start of next turn)
+          
+          solution: if choice-lock, each moves not moves['last_used'] = Disabled
 
 
-CSV
-    Use:
-        - only states with 2 active Pokemon
-        - two states per game (min 10 turns apart)
-    
+CSV    
     Create:
         - train/test split (90%/10%)
         - test split with three categories:
             - turn 1
             - mid-game
             - endgame 
+    
+    Check:
+        - that reverse_state() is correct
+        - that the header is correct
 """
 
 
@@ -53,7 +55,7 @@ def main():
     headers = converter.create_header()
     write_csv_headers(file_out, headers)
 
-    convert_games(converter, path_in, file_out)
+    convert_all_games(converter, path_in, file_out)
 
 
 def write_csv_headers(file, headers):
@@ -65,7 +67,7 @@ def write_csv_headers(file, headers):
         f_out.close()
 
 
-def convert_games(converter, path_in, file_out, min_game_length=6):
+def convert_all_games(converter, path_in, file_out, min_game_length=6):
     """ converts each game into one or two number-converted game states """
 
     print("starting\n")
@@ -149,6 +151,10 @@ def reverse_pov(state):
     state['p1_move'] = state['p2_move']
     state['p2_move'] = hold_my_beer
 
+    hold_my_beer = state['p1rating']
+    state['p1rating'] = state['p2rating']
+    state['p2rating'] = hold_my_beer
+
     return state
 
 
@@ -166,6 +172,8 @@ class Converter:
         self.volatile_status_list = []  # TBD
         self.side_condition_list = []  # TBD
 
+        self.move_lookup = json.load(open('lookups/move_lookup.json'))
+
     @staticmethod
     def init_category(file_name, relative_path='categories'):
         path = os.path.join(relative_path, file_name)
@@ -176,12 +184,21 @@ class Converter:
         """ convert state information to an array numbers """
 
         p1_win = np.asarray([1 if game_state['winner'] == 'p1' else -1])
+        p1_move = np.asarray([game_state['p1_move']])
+        p2_move = np.asarray([game_state['p2_move']])
+        p1_rating = np.asarray([game_state['p1rating']])
+        p2_rating = np.asarray([game_state['p2rating']])
+        avg_rating = np.asarray([game_state['average_rating']])
+        rated_battle = np.asarray([game_state['rated_battle']])
+        room_id = np.asarray([game_state['roomid']])
         turn = np.asarray([game_state['turn']])
+
         fields = self.convert_fields(game_state['state'])
         player1 = self.convert_side(game_state['state']['p1'])
         player2 = self.convert_side(game_state['state']['p2'])
 
-        return p1_win + turn + fields + player1 + player2
+        return np.concatenate(p1_win, p1_move, p2_move, p1_rating, p2_rating, avg_rating,
+                              rated_battle, room_id, turn, fields, player1, player2)
 
     def convert_fields(self, state):
         # one-hot-encode weather
@@ -200,7 +217,7 @@ class Converter:
 
         trick_room_count = np.asarray([state['trick_room_count']])
 
-        return weather + weather_count + terrain + terrain_count + trick_room + trick_room_count
+        return np.concatenate(weather, weather_count, terrain, terrain_count, trick_room, trick_room_count)
 
     def convert_side(self, side):
         # one-hot-encode side conditions
@@ -220,7 +237,7 @@ class Converter:
             active = self.convert_pokemon(side['reserve'][0], is_active=False)
             reserve = np.concatenate([self.convert_pokemon(pkmn) for pkmn in side['reserve'][1:]])
 
-        return side_conditions + wish + future_sight + active + reserve
+        return np.concatenate(side_conditions, wish, future_sight, active, reserve)
 
     def convert_pokemon(self, pokemon, is_active=False):
         # one-hot-encode species
@@ -244,7 +261,10 @@ class Converter:
 
         active = np.asarray([int(is_active)])
 
+        level = np.asarray([pokemon['level']])
+
         stats = np.asarray([
+            pokemon['maxhp'],
             pokemon['attack'],
             pokemon['defense'],
             pokemon['special_attack'],
@@ -262,9 +282,7 @@ class Converter:
             pokemon['evasion_boost']
         ])
 
-        max_hp = np.asarray([pokemon['maxhp']])
-
-        current_hp = np.asarray([pokemon['hp']])
+        health = np.asarray([int(pokemon['hp'] / pokemon['maxhp'] * 100)])
 
         fainted = np.asarray([int(pokemon['status'] == 'fnt')])
 
@@ -277,25 +295,29 @@ class Converter:
         for v in pokemon['volatile_status']:
             volatile_status[np.where(self.volatile_status_list == v)] = 1
 
+        first_turn_out = np.asarray([int(pokemon['first_turn_out'])])
+
         moves = np.concatenate([self.convert_move(move) for move in pokemon['moves']])
 
-        return species + ability + types + item + has_item + active + stats + stat_changes + \
-               max_hp + current_hp + fainted + status + volatile_status + moves
+        return np.concatenate(species, ability, types, item, has_item, active, level, stats,
+                              stat_changes, health, fainted, status, volatile_status, first_turn_out, moves)
 
     def convert_move(self, move):
+        move_name = move['id']
+
         # one-hot-encode moves
         moves = np.zeros(len(self.move_list))
-        moves[np.where(self.move_list == move['id'])] = 1
+        moves[np.where(self.move_list == move_name)] = 1
 
         # one-hot-encode typing
         typing = np.zeros(len(self.type_list))
-        typing[np.where(self.type_list == move['type'])] = 1
+        typing[np.where(self.type_list == self.move_lookup[move_name]['type'])] = 1
 
         # one-hot-encode move category
         move_category = np.zeros(len(self.move_category_list))
-        move_category[np.where(self.move_category_list == move['category'])] = 1
+        move_category[np.where(self.move_category_list == self.move_lookup[move_name]['category'])] = 1
 
-        base_power = np.asarray([move['bp']])
+        base_power = np.asarray([self.move_lookup[move_name]['basePower']])
 
         current_pp = np.asarray([move['pp']])
 
@@ -309,8 +331,10 @@ class Converter:
 
         used = np.asarray([int(move['used'])])
 
-        return moves + typing + move_category + base_power + current_pp + max_pp + \
-               target_self + disabled + last_used_move + used
+        priority = np.asarray([self.move_lookup[move_name]['priority']])
+
+        return np.concatenate(moves, typing, move_category, base_power, current_pp, max_pp,
+                              target_self, disabled, last_used_move, used, priority)
 
     def create_header(self):
         """ returns a 4*m header """
@@ -324,7 +348,8 @@ class Converter:
                 ['target self'] +
                 ['disabled'] +
                 ['last used move'] +
-                ['used']
+                ['used'] +
+                ['priority']
         )
 
         pokemon_header = (
@@ -334,13 +359,14 @@ class Converter:
                 ['item' for _ in self.item_list] +
                 ['has item'] +
                 ['is active'] +
-                ['stats'] * 5 +
+                ['level'] +
+                ['stats'] * 6 +
                 ['stat changes'] * 7 +
-                ['max hp'] +
-                ['current hp'] +
+                ['health'] +
                 ['fainted'] +
                 ['status' for _ in self.status_list] +
                 ['volatile status' for _ in self.volatile_status_list] +
+                ['first turn out'] +
                 ['move1' for _ in move_header] +
                 ['move2' for _ in move_header] +
                 ['move3' for _ in move_header] +
@@ -360,7 +386,14 @@ class Converter:
         )
 
         game_header = (
-                ['p1_win'] +
+                ['p1 win'] +
+                ['p1_move'] +
+                ['p2_move'] +
+                ['p1 rating'] +
+                ['p2 rating'] +
+                ['avg rating'] +
+                ['rated battle'] +
+                ['room id'] +
                 ['turn'] +
                 ['weather' for _ in self.weather_list] +
                 ['weather count'] +

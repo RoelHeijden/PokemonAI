@@ -560,6 +560,10 @@ def upkeep(battle, _):
         battle.p2.future_sight = (battle.p2.future_sight[0] - 1, battle.p2.future_sight[1])
         logger.debug("Decrementing future_sight to {} for the p2".format(battle.p2.future_sight[0]))
 
+    # increment weather counter?
+    # increment terrain counter?
+    # increment Trick room counter?
+
 
 def mega(battle, split_msg):
     if is_p2(battle, split_msg):
