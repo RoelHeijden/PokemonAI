@@ -12,6 +12,7 @@ INPUT LAYER
     - Side conditions [?]
     - Future sight [1]
     - Wish [2]
+    - Has active [1]
     - Active [1]
     - Reserve [5]
 
@@ -20,7 +21,6 @@ INPUT LAYER
         - Abilities [263]
         - Item [196]
         - Has item [1]
-        - Is active [1]
         - Types [18]
         - Stats [6]
         - Level [1]

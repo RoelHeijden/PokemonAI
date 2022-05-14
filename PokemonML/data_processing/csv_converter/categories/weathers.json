@@ -1,9 +1,10 @@
 {
-    "sun": "sunnyday",
-    "rain": "raindance",
-    "sand": "sandstorm",
+    "": "NO_WEATHER",
+    "sunnyday": "sunnyday",
+    "raindance": "raindance",
+    "sandstorm": "sandstorm",
     "hail": "hail",
-    "harshsun": "desolateland",
-    "heavyrain": "primordialsea",
-    "strongwind": "deltastream"
+    "desolateland": "desolateland",
+    "primordialsea": "primordialsea",
+    "deltastream": "deltastream"
 }

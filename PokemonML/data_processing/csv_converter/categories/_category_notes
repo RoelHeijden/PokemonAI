@@ -4,12 +4,12 @@ ABILITIES:
 
 
 WEATHERS:
-    7 weathers
+    7 weathers + 1 no_weather slot
     counters not added yet
 
 
 TERRAINS
-    4 terrains
+    4 terrains + 1 no_terrain slot
     counters not added yet
 
 
@@ -47,7 +47,7 @@ POKEMON:
 
 
 STATUS:
-    28 Status conditions
+    28 Status conditions + 1 no_status slot
     counters added for sleep turns and toxic turns
     sleep form Rest is it's own status
 
