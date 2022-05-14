@@ -1,9 +1,13 @@
+import torch
+import numpy as np
+import pandas as pd
+
 """
 INPUT LAYER
 
-- Weather type [7]
+- Weather type [8]
 - Weather count [1]
-- Terrain type [4]
+- Terrain type [5]
 - Terrain count [1]
 - Trick room [1]
 - Trick room count [1]
@@ -17,7 +21,7 @@ INPUT LAYER
     - Reserve [5]
 
     - For each Pokemon
-        - Species [1032]
+        - Species [1033]
         - Abilities [263]
         - Item [196]
         - Has item [1]
@@ -55,28 +59,29 @@ Attributes that may be unavailable in pmariglia's state simulation:
 
 
 To add to state:
-    Me:
-        Game
-        - Turn
-        - P1 rating
-        - P2 rating
-        - Average rating
-        - Rated battle
-        - Room ID
+    Game
+    - Turn
+    - P1 rating
+    - P2 rating
+    - Average rating
+    - Rated battle
+    - Room ID
 
-    Patrick:
-        Field
-        - Trick room [boolean]
-        - Weather turn count
-        - Terrain turn count
-        - Trick room turn count
+    Field
+    - Trick room [boolean]
+    - Weather turn count
+    - Terrain turn count
+    - Trick room turn count
 
-        Pokemon
-        - First_turn_out [boolean]
-        - Toxic turn count (if not already in status representation)
-        - Sleep turn count (if not already in status or volatile_status representation)
+    Pokemon
+    - First_turn_out [boolean]
+    - Toxic turn count (if not already in status representation)
+    - Sleep turn count (if not already in status or volatile_status representation)
 
-        Move
-        - Last_used [boolean]
+    Move
+    - Last_used [boolean]
 
 """
+
+if torch.cuda.is_available():
+    print("hey")

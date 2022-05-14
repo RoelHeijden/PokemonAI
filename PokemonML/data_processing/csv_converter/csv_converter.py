@@ -46,9 +46,6 @@ CSV
         - that the header is correct
         
 
-
-
-replace np.concat with something faster
 what if pokemon has less than 4 moves??
 
 """
@@ -196,57 +193,57 @@ class Converter:
     def convert_state(self, game_state):
         """ convert state information to an array numbers """
 
-        p1_win = np.asarray([1 if game_state['winner'] == 'p1' else -1])
-        p1_move = np.asarray([game_state['p1_move']])
-        p2_move = np.asarray([game_state['p2_move']])
-        p1_rating = np.asarray([game_state['p1rating']])
-        p2_rating = np.asarray([game_state['p2rating']])
-        avg_rating = np.asarray([game_state['average_rating']])
-        rated_battle = np.asarray([game_state['rated_battle']])
-        room_id = np.asarray([game_state['roomid']])
-        turn = np.asarray([game_state['turn']])
+        p1_win = [1 if game_state['winner'] == 'p1' else -1]
+        p1_move = [game_state['p1_move']]
+        p2_move = [game_state['p2_move']]
+        p1_rating = [game_state['p1rating']]
+        p2_rating = [game_state['p2rating']]
+        avg_rating = [game_state['average_rating']]
+        rated_battle = [game_state['rated_battle']]
+        room_id = [game_state['roomid']]
+        turn = [game_state['turn']]
 
         fields = self.convert_fields(game_state['state'])
         player1 = self.convert_side(game_state['state']['p1'])
         player2 = self.convert_side(game_state['state']['p2'])
 
-        return np.concatenate((p1_win, p1_move, p2_move, p1_rating, p2_rating, avg_rating,
-                              rated_battle, room_id, turn, fields, player1, player2))
+        return np.asarray(p1_win + p1_move + p2_move + p1_rating + p2_rating + avg_rating +
+                          rated_battle + room_id + turn + fields + player1 + player2)
 
     def convert_fields(self, state):
         # one-hot-encode weather
+        weather = [0] * len(self.weather_positions)
         weather_index = self.weather_positions.get(state['weather'])
-        weather = np.zeros(len(self.weather_positions))
         if weather_index is not None:
             weather[weather_index] = 1
         else:
             logging.debug(f'weather "{state["weather"]}" does not exist in weathers.json')
 
         # n turns the weather has been active
-        weather_count = np.asarray([state['weather_count']])
+        weather_count = [state['weather_count']]
 
         # one-hot-encode terrain
+        terrain = [0] * len(self.terrain_positions)
         terrain_index = self.terrain_positions.get(state['terrain'])
-        terrain = np.zeros(len(self.terrain_positions))
         if terrain_index is not None:
             terrain[terrain_index] = 1
         else:
             logging.debug(f'terrain "{state["terrain"]}" does not exist in terrains.json')
 
         # n turns the terrain has been active
-        terrain_count = np.asarray([state['terrain_count']])
+        terrain_count = [state['terrain_count']]
 
         # [1] if trick room is active, [0] otherwise
-        trick_room = np.asarray([int(state['trick_room'])])
+        trick_room = [int(state['trick_room'])]
 
         # n turns the trick room has been active
-        trick_room_count = np.asarray([state['trick_room_count']])
+        trick_room_count = [state['trick_room_count']]
 
-        return np.concatenate((weather, weather_count, terrain, terrain_count, trick_room, trick_room_count))
+        return weather + weather_count + terrain + terrain_count + trick_room + trick_room_count
 
     def convert_side(self, side):
         # one-hot-encode side conditions
-        side_conditions = np.zeros(len(self.side_condition_positions))
+        side_conditions = [0] * len(self.side_condition_positions)
         for side_condition in side['side_conditions']:
             index = self.side_condition_positions.get(side_condition)
             if index is not None:
@@ -255,26 +252,26 @@ class Converter:
                 logging.debug(f'side condition "{side_condition}" not in side_conditions.json')
 
         # two wish variables: [turn, amount]
-        wish = np.asarray(side['wish'])
+        wish = side['wish']
 
         # one future sight variable: [turn]
-        future_sight = np.asarray([side['future_sight'][0]])
+        future_sight = [side['future_sight'][0]]
 
         # if active pokemon is knocked out, reserve[0] is the (fainted) active pokemon
         if side['active']:
-            has_active = np.asarray([1])
+            has_active = [1]
             active = self.convert_pokemon(side['active'])
-            reserve = np.concatenate([self.convert_pokemon(pkmn) for pkmn in side['reserve']])
+            reserve = [val for pkmn in [self.convert_pokemon(pkmn) for pkmn in side['reserve']] for val in pkmn]
         else:
-            has_active = np.asarray([0])
+            has_active = [0]
             active = self.convert_pokemon(side['reserve'][0])
-            reserve = np.concatenate([self.convert_pokemon(pkmn) for pkmn in side['reserve'][1:]])
+            reserve = [val for pkmn in [self.convert_pokemon(pkmn) for pkmn in side['reserve'][1:]] for val in pkmn]
 
-        return np.concatenate((side_conditions, wish, future_sight, has_active, active, reserve))
+        return side_conditions + wish + future_sight + has_active + active + reserve
 
     def convert_pokemon(self, pokemon):
         # one-hot-encode species
-        species = np.zeros(len(self.pkmn_positions))
+        species = [0] * len(self.pkmn_positions)
         species_index = self.pkmn_positions.get(pokemon['id'])
         if species_index is not None:
             species[species_index] = 1
@@ -282,7 +279,7 @@ class Converter:
             logging.debug(f'pokemon "{pokemon["id"]}" does not exist in pokemon.json')
 
         # one-hot-encode ability
-        ability = np.zeros(len(self.ability_positions))
+        ability = [0] * len(self.ability_positions)
         ability_index = self.ability_positions.get(pokemon['ability'])
         if ability_index is not None:
             ability[ability_index] = 1
@@ -290,7 +287,7 @@ class Converter:
             logging.debug(f'ability "{pokemon["ability"]}" does not exist in ability.json')
 
         # one-hot-encode types
-        types = np.zeros(len(self.types_positions))
+        types = [0] * len(self.types_positions)
         for t in pokemon['types']:
             index = self.types_positions.get(t)
             if index is not None:
@@ -299,7 +296,7 @@ class Converter:
                 logging.debug(f'type "{t}" does not exist in types.json')
 
         # one-hot-encode item
-        item = np.zeros(len(self.item_positions))
+        item = [0] * len(self.item_positions)
         item_index = self.item_positions.get(pokemon['item'])
         if item_index is not None:
             item[item_index] = 1
@@ -307,23 +304,23 @@ class Converter:
             logging.debug(f'item "{pokemon["item"]}" does not exist in items.json')
 
         # [1] if has item, [0] if has no item
-        has_item = np.asarray([int(pokemon['item'] != "")])
+        has_item = [int(pokemon['item'] != "")]
 
         # pokemon level
-        level = np.asarray([pokemon['level']])
+        level = [pokemon['level']]
 
         # pokemon stats
-        stats = np.asarray([
+        stats = [
             pokemon['maxhp'],
             pokemon['attack'],
             pokemon['defense'],
             pokemon['special_attack'],
             pokemon['special_defense'],
             pokemon['speed'],
-        ])
+        ]
 
         # pokemon stat boosts/drops
-        stat_changes = np.asarray([
+        stat_changes = [
             pokemon['attack_boost'],
             pokemon['defense_boost'],
             pokemon['special_attack_boost'],
@@ -331,16 +328,16 @@ class Converter:
             pokemon['speed_boost'],
             pokemon['accuracy_boost'],
             pokemon['evasion_boost']
-        ])
+        ]
 
         # pokemon hp range 0-100
-        health = np.asarray([int(pokemon['hp'] / pokemon['maxhp'] * 100)])
+        health = [int(pokemon['hp'] / pokemon['maxhp'] * 100)]
 
         # [1] if pokemon fainted, [0] if still alive
-        fainted = np.asarray([int(pokemon['status'] == 'fnt')])
+        fainted = [int(pokemon['status'] == 'fnt')]
 
         # one-hot-encode status conditions
-        status = np.zeros(len(self.status_positions))
+        status = [0] * len(self.status_positions)
         status_index = self.status_positions.get(pokemon['status'])
         if status_index is not None:
             status[status_index] = 1
@@ -348,7 +345,7 @@ class Converter:
             logging.debug(f'status "{pokemon["status"]}" does not exist in status.json')
 
         # one-hot-encode volatile_status
-        volatile_status = np.zeros(len(self.volatile_status_positions))
+        volatile_status = [0] * len(self.volatile_status_positions)
         for v in pokemon['volatile_status']:
             index = self.volatile_status_positions.get(v)
             if index is not None:
@@ -357,19 +354,19 @@ class Converter:
                 logging.debug(f'volatile_status "{v}" does not exist in volatile_status.json')
 
         # [1] if its the pokemon's first turn out, [0] otherwise
-        first_turn_out = np.asarray([int(pokemon['first_turn_out'])])
+        first_turn_out = [int(pokemon['first_turn_out'])]
 
         # pokemon's moves
-        moves = np.concatenate([self.convert_move(move) for move in pokemon['moves']])
+        moves = [val for move in [self.convert_move(move) for move in pokemon['moves']] for val in move]
 
-        return np.concatenate((species, ability, types, item, has_item, level, stats,
-                              stat_changes, health, fainted, status, volatile_status, first_turn_out, moves))
+        return species + ability + types + item + has_item + level + stats + stat_changes + \
+            health + fainted + status + volatile_status + first_turn_out + moves
 
     def convert_move(self, move):
         move_name = move['id']
 
         # one-hot-encode moves
-        moves = np.zeros(len(self.move_positions))
+        moves = [0] * len(self.move_positions)
         move_index = self.move_positions.get(move_name)
         if move_index is not None:
             moves[move_index] = 1
@@ -377,7 +374,7 @@ class Converter:
             logging.debug(f'move "{move_name}" does not exist in moves.json')
 
         # one-hot-encode typing
-        typing = np.zeros(len(self.types_positions))
+        typing = [0] * len(self.types_positions)
         typing_index = self.types_positions.get(self.move_lookup[move_name]['type'])
         if typing_index is not None:
             typing[typing_index] = 1
@@ -385,7 +382,7 @@ class Converter:
             logging.debug(f'type "{self.move_lookup[move_name]["type"]}" does not exist in types.json')
 
         # one-hot-encode move category
-        move_category = np.zeros(len(self.move_category_positions))
+        move_category = [0] * len(self.move_category_positions)
         category_index = self.move_category_positions.get(self.move_lookup[move_name]['category'])
         if category_index is not None:
             move_category[category_index] = 1
@@ -393,31 +390,31 @@ class Converter:
             logging.debug(f'category "{self.move_lookup[move_name]["category"]}" does not exist in move_categories.json')
 
         # move base power
-        base_power = np.asarray([self.move_lookup[move_name]['basePower']])
+        base_power = [self.move_lookup[move_name]['basePower']]
 
         # current move pp
-        current_pp = np.asarray([move['pp']])
+        current_pp = [move['pp']]
 
         # maximum move pp
-        max_pp = np.asarray(['maxpp'])
+        max_pp = [move['maxpp']]
 
         # [1] is move targets the user, [0] otherwise
-        target_self = np.asarray([int(move['target'] == 'self')])
+        target_self = [int(move['target'] == 'self')]
 
         # [1] if move can't be used this turn, [0] otherwise
-        disabled = np.asarray([int(move['disabled'])])
+        disabled = [int(move['disabled'])]
 
         # [1] if move was the last used move by this pokemon, [0] otherwise
-        last_used_move = np.asarray([int(move['last_used_move'])])
+        last_used_move = [int(move['last_used_move'])]
 
         # [1] if the move has been used previously, [0] otherwise
-        used = np.asarray([int(move['used'])])
+        used = [int(move['used'])]
 
         # move priority level
-        priority = np.asarray([self.move_lookup[move_name]['priority']])
+        priority = [self.move_lookup[move_name]['priority']]
 
-        return np.concatenate((moves, typing, move_category, base_power, current_pp, max_pp,
-                              target_self, disabled, last_used_move, used, priority))
+        return moves + typing + move_category + base_power + current_pp + max_pp + \
+            target_self + disabled + last_used_move + used + priority
 
     def create_header(self):
         """ returns a 4*m header """

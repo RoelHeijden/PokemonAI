@@ -71,6 +71,8 @@ def test_test_states():
     files = sorted([os.path.join('test_states', file_name)
                     for file_name in os.listdir('test_states')])
 
+    tic = time.time()
+
     for i, f in enumerate(files):
         with open(f, 'r') as f_in:
 
@@ -83,11 +85,19 @@ def test_test_states():
 
             print("state", i)
             print("output length:", len(output))
-            print(f'{round(end_time, 5)}s')
+            print(f'{round(end_time, 8)}s')
             print()
+
+    toc = time.time()
+
+    print("-----------------------------------------------")
+    print(len(files), "states converted")
+    print("Total runtime:", round(toc - tic, 4))
 
 
 test_test_states()
+
+
 
 
 
