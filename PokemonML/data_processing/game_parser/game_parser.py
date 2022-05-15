@@ -35,7 +35,7 @@ def main():
     # mode = 'pre-process data'
     # mode = 'inspect a log'
 
-    batch = 1
+    batch = 0
     battle_id = 100012
 
     if mode == 'read from batch':

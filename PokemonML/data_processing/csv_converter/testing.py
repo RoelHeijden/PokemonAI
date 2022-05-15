@@ -53,7 +53,8 @@ def test_test_states():
             output = cv.convert_state(state)
             end_time = time.time() - start_time
 
-            print("state", state['turn'])
+            print("state", f.strip('.txt')[-2:].strip('_'))
+            print("turn:", state['turn'])
             print("output length:", len(output))
             print(f'{round(end_time, 8)}s')
             print()
@@ -71,7 +72,7 @@ test_test_states()
 ####################################################################################################
 
 
-# file = json.load(open('game-states-gen8ou-100046.json'))
+# file = json.load(open('game-states-gen8ou-100012.json'))
 #
 # for i, s in enumerate(file):
 #     open('test_states/test_state_' + str(i) + '.txt', 'w').write(json.dumps(s, indent=4))

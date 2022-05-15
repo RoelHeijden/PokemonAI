@@ -64,7 +64,7 @@ class GameLog:
         return int((p1_rating + p2_rating) / 2)
 
     def parse_replay(self):
-        battle = self.init_battle()
+        state = self.init_state()
 
         if self.winner == self.p1:
             winner = 'p1'
@@ -82,7 +82,7 @@ class GameLog:
             "roomid": self.battle_id,
         }
 
-        team_preview_state = battle.to_dict()
+        team_preview_state = state.to_dict()
         team_preview_state.update(basic_info)
 
         # initialize states with team preview state
@@ -100,29 +100,30 @@ class GameLog:
 
             # update the battle state
             else:
-                update_state(battle, split_msg)
+                update_state(state, split_msg)
 
-            # extract game state
-            if split_msg[1] == "turn":
-                d = battle.to_dict()
+            # extract game state at the end of a turn, or when a Pokemon fainted
+            if split_msg[1] == "turn" or split_msg[1] == "upkeep" and \
+                    (state.p1.active.fainted or state.p2.active.fainted):
+                d = state.to_dict()
                 d.update(basic_info)
                 game_states.append(d)
 
         return game_states
 
-    def init_battle(self):
-        battle = Battle(self.battle_id)
+    def init_state(self):
+        state = Battle(self.battle_id)
 
-        battle.p1.account_name = self.p1
-        battle.p2.account_name = self.p2
-        battle.p1.name = 'p1'
-        battle.p2.name = 'p2'
+        state.p1.account_name = self.p1
+        state.p2.account_name = self.p2
+        state.p1.name = 'p1'
+        state.p2.name = 'p2'
 
-        battle.battle_type = constants.RANDOM_BATTLE if 'randombattle' in self.format else constants.STANDARD_BATTLE
-        battle.generation = self.format[:4]
+        state.battle_type = constants.RANDOM_BATTLE if 'randombattle' in self.format else constants.STANDARD_BATTLE
+        state.generation = self.format[:4]
 
-        battle.initialize_team_preview(self.p1_team, self.p2_team)
+        state.initialize_team_preview(self.p1_team, self.p2_team)
 
-        return battle
+        return state
 
 

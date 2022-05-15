@@ -41,7 +41,6 @@ CSV
 
 ######################################################################################
 
-12. create states for KO turns
 
 2. transform / illusion / form changes fix
 
@@ -144,6 +143,7 @@ def pick_random_states(all_states, min_turns_apart=1):
     """ selects two random non-preview states from a game_state list,
         one for each of the players POV and at least n turns apart """
 
+    # rolling from (1, ..) in order to skip the team_preview state
     state_idx1 = np.random.randint(1, len(all_states) - min_turns_apart)
     state_idx2 = np.random.randint(state_idx1 + min_turns_apart, len(all_states))
 
@@ -265,15 +265,14 @@ class Converter:
         # player's pokemon is trapped
         trapped = [int(side['trapped'])]
 
-        # if active pokemon is knocked out, reserve[0] is the (fainted) active pokemon
-        if side['active']:
-            has_active = [1]
-            active = self.convert_pokemon(side['active'])
-            reserve = [val for pkmn in [self.convert_pokemon(pkmn) for pkmn in side['reserve']] for val in pkmn]
-        else:
-            has_active = [0]
-            active = self.convert_pokemon(side['reserve'][0])
-            reserve = [val for pkmn in [self.convert_pokemon(pkmn) for pkmn in side['reserve'][1:]] for val in pkmn]
+        # [1] if the player's active pokemon is alive, [0] otherwise
+        has_active = [int(not side['active']['fainted'])]
+
+        # the player's active pokemon -- fainted or alive
+        active = self.convert_pokemon(side['active'])
+
+        # the player's reserve pokemon -- fainted or alive
+        reserve = [val for pkmn in [self.convert_pokemon(pkmn) for pkmn in side['reserve']] for val in pkmn]
 
         return side_conditions + wish + future_sight + trapped + has_active + active + reserve
 
