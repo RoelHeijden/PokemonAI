@@ -36,7 +36,7 @@ def main():
     # mode = 'inspect a log'
 
     batch = 0
-    battle_id = 100165
+    battle_id = 100046
 
     if mode == 'read from batch':
         data_folder = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/python/PokemonML/data/granted_data_testing"
@@ -55,7 +55,7 @@ def main():
         pre_pre_processing(path_in, path_out)
 
     if mode == 'inspect a log':
-        path_in = "/PokemonML/data/granted_data_testing/raw_data"
+        path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/Python/PokemonML/data/granted_data_testing/raw_data"
         file = os.path.join(path_in, 'batch' + str(batch), 'battle-gen8ou-' + str(battle_id) + '.log.json')
         f = open(file, 'r')
 

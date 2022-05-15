@@ -122,6 +122,7 @@ class GameLog:
         battle.generation = self.format[:4]
 
         battle.initialize_team_preview(self.p1_team, self.p2_team)
+
         return battle
 
 

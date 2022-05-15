@@ -31,7 +31,7 @@
                 "evasion": 0
             },
             "status": "none",
-            "volatile_status": [],
+            "volatile_status": {},
             "moves": [
                 {
                     "name": "transform",
@@ -75,7 +75,7 @@
                     "evasion": 0
                 },
                 "status": "none",
-                "volatile_status": [],
+                "volatile_status": {},
                 "moves": [
                     {
                         "name": "swordsdance",
@@ -136,7 +136,7 @@
                     "evasion": 0
                 },
                 "status": "none",
-                "volatile_status": [],
+                "volatile_status": {},
                 "moves": [
                     {
                         "name": "darkpulse",
@@ -197,7 +197,7 @@
                     "evasion": 0
                 },
                 "status": "none",
-                "volatile_status": [],
+                "volatile_status": {},
                 "moves": [
                     {
                         "name": "nightslash",
@@ -258,7 +258,7 @@
                     "evasion": 0
                 },
                 "status": "par",
-                "volatile_status": [],
+                "volatile_status": {},
                 "moves": [
                     {
                         "name": "airslash",
@@ -319,7 +319,7 @@
                     "evasion": 0
                 },
                 "status": "none",
-                "volatile_status": [],
+                "volatile_status": {},
                 "moves": [
                     {
                         "name": "flamethrower",
@@ -396,7 +396,7 @@
                 "evasion": 0
             },
             "status": "none",
-            "volatile_status": [],
+            "volatile_status": {},
             "moves": [
                 {
                     "name": "stoneedge",
@@ -458,7 +458,7 @@
                     "evasion": 0
                 },
                 "status": "none",
-                "volatile_status": [],
+                "volatile_status": {},
                 "moves": [
                     {
                         "name": "fishiousrend",
@@ -519,7 +519,7 @@
                     "evasion": 0
                 },
                 "status": "none",
-                "volatile_status": [],
+                "volatile_status": {},
                 "moves": [
                     {
                         "name": "substitute",
@@ -580,7 +580,7 @@
                     "evasion": 0
                 },
                 "status": "none",
-                "volatile_status": [],
+                "volatile_status": {},
                 "moves": [
                     {
                         "name": "stealthrock",
@@ -641,7 +641,7 @@
                     "evasion": 0
                 },
                 "status": "none",
-                "volatile_status": [],
+                "volatile_status": {},
                 "moves": [
                     {
                         "name": "moonblast",
@@ -702,7 +702,7 @@
                     "evasion": 0
                 },
                 "status": "none",
-                "volatile_status": [],
+                "volatile_status": {},
                 "moves": [
                     {
                         "name": "boomburst",
