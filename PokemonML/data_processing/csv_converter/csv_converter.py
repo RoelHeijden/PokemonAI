@@ -41,18 +41,22 @@ CSV
 
 ######################################################################################
 
+12. create states for KO turns
 
 2. transform / illusion / form changes fix
+
 3. collect volatile statuses
 4. collect side conditions
 5. check representation of: encore, light screen, taunt, spike layers, etc.
 6. check Rest sleep representation
 7. check how choice_lock is represented
-8. implement sleep counter
-9. implement weather, terrain, trickroom counter
-10. implement last_used_move and first_turn_out
-11. check species bug (weird nicknames)
-12. create states for KO turns
+8. check species bug (weird nicknames)
+
+9. implement sleep counter
+10. implement weather, terrain, trickroom counter
+11. implement last_used_move and first_turn_out
+
+
     
 
 """

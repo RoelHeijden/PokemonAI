@@ -35,8 +35,8 @@ def main():
     # mode = 'pre-process data'
     # mode = 'inspect a log'
 
-    batch = 0
-    battle_id = 100046
+    batch = 1
+    battle_id = 100012
 
     if mode == 'read from batch':
         data_folder = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/python/PokemonML/data/granted_data_testing"
