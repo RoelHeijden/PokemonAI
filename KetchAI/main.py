@@ -13,6 +13,15 @@ class BattleBot(Battle):
     - Tree search (depth=1)
     - Pmariglia's handcrafted evaluation function
     - Nash equilibria
+
+    Current plans:
+    - Replace evaluation function with neural network
+
+    Futurew work:
+    - Implement data driven move/item-set model
+    - Implement Bayesian Nash equilibrium
+    - Explore possibilities for depth=2 search
+
     """
     def __init__(self, *args, **kwargs):
         super(BattleBot, self).__init__(*args, **kwargs)
