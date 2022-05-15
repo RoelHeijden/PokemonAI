@@ -42,8 +42,6 @@ CSV
 ######################################################################################
 
 
-0. STAT_CHANGES INITIALIZED ON PREVIEW???
-1. what if pokemon has less than 4 moves?
 2. transform / illusion / form changes fix
 3. collect volatile statuses
 4. collect side conditions
@@ -362,11 +360,20 @@ class Converter:
         # [1] if its the pokemon's first turn out, [0] otherwise
         first_turn_out = [int(pokemon['first_turn_out'])]
 
+        # amount of moves the pokemon has, range 1-4
+        n_moves = [len(pokemon['moves'])]
+
         # pokemon's moves
         moves = [val for move in [self.convert_move(move) for move in pokemon['moves']] for val in move]
 
+        # account for a pokemon having less than 4 moves
+        if n_moves[0] < 4:
+            moves += [0] * int(len(moves) / n_moves[0]) * (4 - n_moves[0])
+        elif n_moves[0] <= 0:
+            raise ValueError(f'Pokemon {pokemon["name"]} has no moves')
+
         return species + ability + types + item + has_item + level + stats + stat_changes + \
-            health + fainted + status + volatile_status + first_turn_out + moves
+            health + fainted + status + volatile_status + first_turn_out + n_moves + moves
 
     def convert_move(self, move):
         move_name = move['name']
@@ -456,6 +463,7 @@ class Converter:
                 ['status' for _ in self.status_positions] +
                 ['volatile status' for _ in self.volatile_status_positions] +
                 ['first turn out'] +
+                ['n_moves'] +
                 ['move1' for _ in move_header] +
                 ['move2' for _ in move_header] +
                 ['move3' for _ in move_header] +

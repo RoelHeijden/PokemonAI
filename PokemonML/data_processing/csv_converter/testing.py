@@ -53,7 +53,7 @@ def test_test_states():
             output = cv.convert_state(state)
             end_time = time.time() - start_time
 
-            print("state", i)
+            print("state", state['turn'])
             print("output length:", len(output))
             print(f'{round(end_time, 8)}s')
             print()
@@ -75,10 +75,6 @@ test_test_states()
 #
 # for i, s in enumerate(file):
 #     open('test_states/test_state_' + str(i) + '.txt', 'w').write(json.dumps(s, indent=4))
-
-
-
-
 
 
 
