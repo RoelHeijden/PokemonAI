@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 """
-INPUT LAYER
+INPUT LAYER [1 x 56278]
 
 - Weather type [8]
 - Weather count [1]
@@ -35,6 +35,7 @@ INPUT LAYER
         - Fainted [1]
         - Health [1]
         - First turn out [1]
+        - N moves [1]
         - Moves [4]
 
         - For each move:
@@ -56,30 +57,6 @@ Attributes that may be unavailable in pmariglia's state simulation:
     - weather, terrain and trick room count
     - Pokemon: First turn out
     - Move: Last used
-
-
-To add to state:
-    Game
-    - Turn
-    - P1 rating
-    - P2 rating
-    - Average rating
-    - Rated battle
-    - Room ID
-
-    Field
-    - Trick room [boolean]
-    - Weather turn count
-    - Terrain turn count
-    - Trick room turn count
-
-    Pokemon
-    - First_turn_out [boolean]
-    - Toxic turn count (if not already in status representation)
-    - Sleep turn count (if not already in status or volatile_status representation)
-
-    Move
-    - Last_used [boolean]
 
 """
 
