@@ -24,14 +24,7 @@ STATES
         - how moves like toxic, taunt, encore, disable, lightscreen and volatiles are represented (do they have turn counts?).
         - sleep representation after Rest
         - how layers of spikes, etc are represented
-        - if Protect being used is represented in volatiles
-
-    Fix:
-        - represent choice-lock disabled moves in end-of-turn state: if a pokemon get's a KO with a choice item, 
-          the choice lock is set, but moves are not set to disabled until the next state (the start of next turn)
-          
-          solution: if choice-lock, each moves not moves['last_used'] = Disabled
-
+        - representation of choice-lock 
 
 CSV    
     Create:
@@ -46,7 +39,23 @@ CSV
         - that the header is correct
         
 
-what if pokemon has less than 4 moves??
+######################################################################################
+
+
+0. STAT_CHANGES INITIALIZED ON PREVIEW???
+1. what if pokemon has less than 4 moves?
+2. transform / illusion / form changes fix
+3. collect volatile statuses
+4. collect side conditions
+5. check representation of: encore, light screen, taunt, spike layers, etc.
+6. check Rest sleep representation
+7. check how choice_lock is represented
+8. implement sleep counter
+9. implement weather, terrain, trickroom counter
+10. implement last_used_move and first_turn_out
+11. check species bug (weird nicknames)
+12. create states for KO turns
+    
 
 """
 
@@ -54,7 +63,7 @@ what if pokemon has less than 4 moves??
 def main():
     converter = Converter()
 
-    path_in = 'test_games'
+    path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/python/PokemonML/data/granted_data_testing/processed_data'
 
     path_out = os.getcwd()
     file_name = 'training_states.csv'
@@ -75,7 +84,7 @@ def write_csv_headers(file, headers):
         f_out.close()
 
 
-def convert_all_games(converter, path_in, file_out, min_game_length=6):
+def convert_all_games(converter, path_in, file_out, min_game_length=3):
     """ converts each game into one or two number-converted game states """
 
     print("starting\n")
@@ -104,7 +113,7 @@ def convert_all_games(converter, path_in, file_out, min_game_length=6):
                 continue
 
             # select two random states to write
-            states = pick_random_states(all_states, min_turns_apart=math.floor(min_game_length/2))
+            states = pick_random_states(all_states, min_turns_apart=math.floor(min_game_length/3))
 
             # write states to file
             for s in states:
@@ -151,13 +160,9 @@ def reverse_pov(state):
     else:
         raise ValueError(f'State winner cannot be {state["winner"]}')
 
-    hold_my_beer = state['state']['p1']
-    state['state']['p1'] = state['state']['p2']
-    state['state']['p2'] = hold_my_beer
-
-    hold_my_beer = state['p1_move']
-    state['p1_move'] = state['p2_move']
-    state['p2_move'] = hold_my_beer
+    hold_my_beer = state['p1']
+    state['p1'] = state['p2']
+    state['p2'] = hold_my_beer
 
     hold_my_beer = state['p1rating']
     state['p1rating'] = state['p2rating']
@@ -194,8 +199,6 @@ class Converter:
         """ convert state information to an array numbers """
 
         p1_win = [1 if game_state['winner'] == 'p1' else -1]
-        p1_move = [game_state['p1_move']]
-        p2_move = [game_state['p2_move']]
         p1_rating = [game_state['p1rating']]
         p2_rating = [game_state['p2rating']]
         avg_rating = [game_state['average_rating']]
@@ -203,11 +206,11 @@ class Converter:
         room_id = [game_state['roomid']]
         turn = [game_state['turn']]
 
-        fields = self.convert_fields(game_state['state'])
-        player1 = self.convert_side(game_state['state']['p1'])
-        player2 = self.convert_side(game_state['state']['p2'])
+        fields = self.convert_fields(game_state)
+        player1 = self.convert_side(game_state['p1'])
+        player2 = self.convert_side(game_state['p2'])
 
-        return np.asarray(p1_win + p1_move + p2_move + p1_rating + p2_rating + avg_rating +
+        return np.asarray(p1_win + p1_rating + p2_rating + avg_rating +
                           rated_battle + room_id + turn + fields + player1 + player2)
 
     def convert_fields(self, state):
@@ -252,10 +255,13 @@ class Converter:
                 logging.debug(f'side condition "{side_condition}" not in side_conditions.json')
 
         # two wish variables: [turn, amount]
-        wish = side['wish']
+        wish = [side['wish']['countdown'], side['wish']['hp_amount']]
 
         # one future sight variable: [turn]
-        future_sight = [side['future_sight'][0]]
+        future_sight = [side['future_sight']['countdown']]
+
+        # player's pokemon is trapped
+        trapped = [int(side['trapped'])]
 
         # if active pokemon is knocked out, reserve[0] is the (fainted) active pokemon
         if side['active']:
@@ -267,12 +273,12 @@ class Converter:
             active = self.convert_pokemon(side['reserve'][0])
             reserve = [val for pkmn in [self.convert_pokemon(pkmn) for pkmn in side['reserve'][1:]] for val in pkmn]
 
-        return side_conditions + wish + future_sight + has_active + active + reserve
+        return side_conditions + wish + future_sight + trapped + has_active + active + reserve
 
     def convert_pokemon(self, pokemon):
         # one-hot-encode species
         species = [0] * len(self.pkmn_positions)
-        species_index = self.pkmn_positions.get(pokemon['id'])
+        species_index = self.pkmn_positions.get(pokemon['name'])
         if species_index is not None:
             species[species_index] = 1
         else:
@@ -300,41 +306,41 @@ class Converter:
         item_index = self.item_positions.get(pokemon['item'])
         if item_index is not None:
             item[item_index] = 1
-        elif pokemon['item'] != "":
+        elif pokemon['item'] != "none":
             logging.debug(f'item "{pokemon["item"]}" does not exist in items.json')
 
         # [1] if has item, [0] if has no item
-        has_item = [int(pokemon['item'] != "")]
+        has_item = [int(pokemon['item'] != "none")]
 
         # pokemon level
         level = [pokemon['level']]
 
         # pokemon stats
         stats = [
-            pokemon['maxhp'],
-            pokemon['attack'],
-            pokemon['defense'],
-            pokemon['special_attack'],
-            pokemon['special_defense'],
-            pokemon['speed'],
+            pokemon['stats']['hp'],
+            pokemon['stats']['attack'],
+            pokemon['stats']['defense'],
+            pokemon['stats']['special-attack'],
+            pokemon['stats']['special-defense'],
+            pokemon['stats']['speed'],
         ]
 
         # pokemon stat boosts/drops
         stat_changes = [
-            pokemon['attack_boost'],
-            pokemon['defense_boost'],
-            pokemon['special_attack_boost'],
-            pokemon['special_defense_boost'],
-            pokemon['speed_boost'],
-            pokemon['accuracy_boost'],
-            pokemon['evasion_boost']
+            pokemon['stat_changes']['attack'],
+            pokemon['stat_changes']['defense'],
+            pokemon['stat_changes']['special-attack'],
+            pokemon['stat_changes']['special-defense'],
+            pokemon['stat_changes']['speed'],
+            pokemon['stat_changes']['accuracy'],
+            pokemon['stat_changes']['evasion']
         ]
 
         # pokemon hp range 0-100
         health = [int(pokemon['hp'] / pokemon['maxhp'] * 100)]
 
         # [1] if pokemon fainted, [0] if still alive
-        fainted = [int(pokemon['status'] == 'fnt')]
+        fainted = [int(pokemon['fainted'])]
 
         # one-hot-encode status conditions
         status = [0] * len(self.status_positions)
@@ -363,7 +369,7 @@ class Converter:
             health + fainted + status + volatile_status + first_turn_out + moves
 
     def convert_move(self, move):
-        move_name = move['id']
+        move_name = move['name']
 
         # one-hot-encode moves
         moves = [0] * len(self.move_positions)
@@ -375,7 +381,7 @@ class Converter:
 
         # one-hot-encode typing
         typing = [0] * len(self.types_positions)
-        typing_index = self.types_positions.get(self.move_lookup[move_name]['type'])
+        typing_index = self.types_positions.get(self.move_lookup[move_name]['type'].lower())
         if typing_index is not None:
             typing[typing_index] = 1
         else:
@@ -392,14 +398,17 @@ class Converter:
         # move base power
         base_power = [self.move_lookup[move_name]['basePower']]
 
+        # move accuracy
+        accuracy = [self.move_lookup[move_name]['accuracy']]
+
         # current move pp
         current_pp = [move['pp']]
 
         # maximum move pp
-        max_pp = [move['maxpp']]
+        max_pp = [int(self.move_lookup[move_name]['pp'] * 1.6)]
 
         # [1] is move targets the user, [0] otherwise
-        target_self = [int(move['target'] == 'self')]
+        target_self = [int(self.move_lookup[move_name]['target'] == 'self')]
 
         # [1] if move can't be used this turn, [0] otherwise
         disabled = [int(move['disabled'])]
@@ -408,12 +417,12 @@ class Converter:
         last_used_move = [int(move['last_used_move'])]
 
         # [1] if the move has been used previously, [0] otherwise
-        used = [int(move['used'])]
+        used = [int(current_pp < max_pp)]
 
         # move priority level
         priority = [self.move_lookup[move_name]['priority']]
 
-        return moves + typing + move_category + base_power + current_pp + max_pp + \
+        return moves + typing + move_category + base_power + accuracy + current_pp + max_pp + \
             target_self + disabled + last_used_move + used + priority
 
     def create_header(self):
@@ -423,6 +432,7 @@ class Converter:
                 ['type' for _ in self.types_positions] +
                 ['move category' for _ in self.move_category_positions] +
                 ['base power'] +
+                ['accuracy'] +
                 ['current pp'] +
                 ['max pp'] +
                 ['target self'] +
@@ -456,6 +466,7 @@ class Converter:
                 ['side condition' for _ in self.side_condition_positions] +
                 ['wish'] * 2 +
                 ['future sight'] +
+                ['is trapped'] +
                 ['has active'] +
                 ['active pokemon' for _ in pokemon_header] +
                 ['reserve pokemon1' for _ in pokemon_header] +
@@ -467,8 +478,6 @@ class Converter:
 
         game_header = (
                 ['p1 win'] +
-                ['p1_move'] +
-                ['p2_move'] +
                 ['p1 rating'] +
                 ['p2 rating'] +
                 ['avg rating'] +

@@ -1,5 +1,5 @@
 {
-    "": "NO_TERRAIN",
+    "none": "NO_TERRAIN",
     "psychicterrain": "psychicterrain",
     "grassyterrain": "grassyterrain",
     "electricterrain": "electricterrain",

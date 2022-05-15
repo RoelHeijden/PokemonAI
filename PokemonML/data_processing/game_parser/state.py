@@ -17,6 +17,7 @@ class Battle:
         self.battle_tag = battle_tag
         self.p1 = Battler()
         self.p2 = Battler()
+
         self.weather = None
         self.field = None
         self.trick_room = False
@@ -69,19 +70,13 @@ class Battle:
             'turn': self.turn,
             'p1': self.p1.to_dict(),
             'p2': self.p2.to_dict(),
-            'weather': self.weather,
-            'field': self.field,
-            'trick_room': self.trick_room,
-        }
 
-    def extract_game_state(self):
-        return {
-            'turn': self.turn,
-            'p1': self.p1.to_game_state(),
-            'p2': self.p2.to_game_state(),
-            'weather': self.weather,
-            'field': self.field,
+            'weather': self.weather if self.weather else "none",
+            'weather_count': 0,
+            'terrain': self.field if self.field else "none",
+            'terrain_count': 0,
             'trick_room': self.trick_room,
+            'trick_room_count': 0,
         }
 
 
@@ -176,26 +171,6 @@ class Battler:
             'reserve': [p.to_dict() for p in self.reserve],
             'side_conditions': dict(self.side_conditions),
             'trapped': self.trapped,
-            'last_used_move': {
-                'p1': self.last_used_move.pokemon_name,
-                'move': self.last_used_move.move,
-                'turn': self.last_used_move.turn
-            },
-            'wish': {'countdown': self.wish[0], 'hp_amount': int(self.wish[1])},
-            'future_sight': {'countdown': self.future_sight[0], 'p1': self.future_sight[1]},
-        }
-
-    def to_game_state(self):
-        return {
-            'active': self.active.to_game_state_active() if self.active else None,
-            'reserve': {p.name: p.to_game_state_reserve() for p in self.reserve},
-            'side_conditions': dict(self.side_conditions),
-            'trapped': self.trapped,
-            'last_used_move': {
-                'p1': self.last_used_move.pokemon_name,
-                'move': self.last_used_move.move,
-                'turn': self.last_used_move.turn
-            },
             'wish': {'countdown': self.wish[0], 'hp_amount': int(self.wish[1])},
             'future_sight': {'countdown': self.future_sight[0], 'p1': self.future_sight[1]},
         }
@@ -295,47 +270,16 @@ class Pokemon:
             'gender': self.gender,
             'types': self.types,
             'hp': int(self.hp),
-            'max_hp': self.max_hp,
+            'maxhp': self.max_hp,
             'ability': self.ability,
-            'item': self.item,
-            'base_stats': self.base_stats,
+            'item': self.item if self.item else "none",
             'stats': self.stats,
-            'nature': self.nature,
-            'evs': {stat: self.evs[i] for i, stat in enumerate(self.stats)},
-            'ivs': {stat: self.ivs[i] for i, stat in enumerate(self.stats)},
             'stat_changes': self.boosts,
-            'status_condition': self.status,
+            'status': self.status if self.status else "none",
             'volatile_status': list(set(self.volatile_statuses)),
             'moves': [m.to_dict() for m in self.moves],
             'fainted': self.fainted,
-        }
-
-    def to_game_state_active(self):
-        return {
-            'name': self.name,
-            'types': self.types,
-            'hp': int(self.hp),
-            'max_hp': self.max_hp,
-            'ability': self.ability,
-            'item': self.item,
-            'stats': self.stats,
-            'stat_changes': self.boosts,
-            'status_condition': self.status,
-            'volatile_status': list(set(self.volatile_statuses)),
-            'moves': [m.to_game_state() for m in self.moves],
-            'fainted': self.fainted,
-        }
-
-    def to_game_state_reserve(self):
-        return {
-            'name': self.name,
-            'hp': int(self.hp),
-            'max_hp': self.max_hp,
-            'ability': self.ability,
-            'item': self.item,
-            'status_condition': self.status,
-            'moves': [{'name': m.name, 'pp': m.current_pp} for m in self.moves],
-            'fainted': self.fainted,
+            'first_turn_out': False
         }
 
     def __eq__(self, other):
@@ -358,6 +302,8 @@ class Move:
         self.category = move_json['category']
         self.type = move_json['type']
         self.max_pp = int(move_json.get(constants.PP) * 1.6)
+        self.target = move_json['target']
+        self.priority = move_json['priority']
 
         self.disabled = False
         self.can_z = False
@@ -366,20 +312,9 @@ class Move:
     def to_dict(self):
         return {
             "name": self.name,
-            "base_power": self.base_power,
-            "accuracy": self.accuracy,
-            "category": self.category,
-            "type": self.type,
-            "current_pp": self.current_pp,
-            "max_pp": self.max_pp,
+            "pp": self.current_pp,
             "disabled": self.disabled,
-        }
-
-    def to_game_state(self):
-        return {
-            "name": self.name,
-            "current_pp": self.current_pp,
-            "disabled": self.disabled,
+            "last_used_move": False,
         }
 
     def __eq__(self, other):

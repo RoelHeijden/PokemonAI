@@ -34,35 +34,6 @@ def init_category(file_name, relative_path='categories'):
 ####################################################################################################
 
 
-# adds the currently unavailable attributes
-def fill_new_attributes(state):
-    state['p1rating'] = 1069
-    state['p2rating'] = 1042
-    state['average_rating'] = 1051
-    state['rated_battle'] = True
-    state['roomid'] = 1
-    state['turn'] = 2
-
-    state['state']['weather_count'] = 1
-    state['state']['terrain_count'] = 1
-    state['state']['trick_room_count'] = 0
-
-    for key in state['state']:
-        if key == 'p1' or key == 'p2':
-            if state['state'][key]['active']:
-                state['state'][key]['active']['first_turn_out'] = False
-                for j in range(len(state['state'][key]['active']['moves'])):
-                    state['state'][key]['active']['moves'][j]['last_used_move'] = False
-
-            for i in range(len(state['state'][key]['reserve'])):
-
-                state['state'][key]['reserve'][i]['first_turn_out'] = False
-                for j in range(len(state['state'][key]['reserve'][i]['moves'])):
-                    state['state'][key]['reserve'][i]['moves'][j]['last_used_move'] = False
-
-    return state
-
-
 # go test each test state
 def test_test_states():
     from csv_converter import Converter
@@ -77,7 +48,6 @@ def test_test_states():
         with open(f, 'r') as f_in:
 
             state = json.load(f_in)
-            state = fill_new_attributes(state)
 
             start_time = time.time()
             output = cv.convert_state(state)
@@ -96,6 +66,19 @@ def test_test_states():
 
 
 test_test_states()
+
+
+####################################################################################################
+
+
+# file = json.load(open('game-states-gen8ou-100046.json'))
+#
+# for i, s in enumerate(file):
+#     open('test_states/test_state_' + str(i) + '.txt', 'w').write(json.dumps(s, indent=4))
+
+
+
+
 
 
 

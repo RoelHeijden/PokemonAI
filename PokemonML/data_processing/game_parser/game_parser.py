@@ -11,6 +11,14 @@ UNFINISHED PROGRAM
 - Game state information needs to be extended
 
 
+1. implement last_used_move for both players
+2. implement last_used for move
+3. implement first_turn out for pokemon
+4. add weather counters
+5. change sleep/toxic representation
+
+
+
 TO DO:
     1. test nicknamed pokemon
     2. add move inputs to state
@@ -33,13 +41,13 @@ def main():
     if mode == 'read from batch':
         data_folder = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/python/PokemonML/data/granted_data_testing"
         path_in = os.path.join(data_folder, "raw_data", "batch" + str(batch))
-        path_out = os.path.join(data_folder, "processed_data", "anonymized-ou-incomplete")
+        path_out = os.path.join(data_folder, "processed_data")
         parse_all(path_in, path_out)
 
     if mode == 'create batches':
-        path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/anonymized-ou-Dec2019-Feb2020/anonymized-ou-incomplete"
-        path_out = "/PokemonML/data/granted_data_testing/raw_data"
-        copy_to_batches(path_in, path_out, 1, 50)
+        path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/pre-processed-ou-dec2019-feb2022/anonymized-ou-incomplete/all_rated_1200+"
+        path_out = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/Python/PokemonML/data/granted_data_testing/raw_data"
+        copy_to_batches(path_in, path_out, 1, 20)
 
     if mode == 'pre-process data':
         path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/anonymized-ou-Dec2019-Feb2020/anonymized-ou-incomplete"
@@ -213,39 +221,14 @@ def parse_all(folder_path, save_path):
                 game = GameLog(info, battle_id)
                 parsed_replay = game.parse_replay()
 
-                # sort based on average rating
-                if parsed_replay.get('rated_battle'):
-                    rating = parsed_replay['average_rating']
-                    if 1000 <= rating <= 1199:
-                        folder = "rated_1000_1199"
-                    elif 1200 <= rating <= 1399:
-                        folder = "rated_1200_1399"
-                    elif 1400 <= rating <= 1599:
-                        folder = "rated_1400_1599"
-                    elif 1600 <= rating <= 1799:
-                        folder = "rated_1600_1799"
-                    elif 1800 <= rating:
-                        folder = "rated_1800+"
-                    else:
-                        raise ValueError(
-                            "Rated battle rating {} not between 999 and inf -- battle id: {}".format(rating, battle_id)
-                        )
-                else:
-                    folder = "unrated"
-
-                # create directory if it doesn't exist
-                folder_out = os.path.join(save_path, folder)
-                if not os.path.exists(folder_out):
-                    os.mkdir(folder_out)
-
                 # write parsed file
-                path_out = os.path.join(folder_out, file_out)
+                path_out = os.path.join(save_path, file_out)
                 f_out = open(path_out, "w+")
                 f_out.write(ujson.dumps(parsed_replay))
 
                 match_count += 1
 
-                if match_count % 20000 == 0:
+                if match_count % 10000 == 0:
                     print(f'{match_count} games processed, {round(time.time() - tic)} seconds passed')
 
     toc = time.time()

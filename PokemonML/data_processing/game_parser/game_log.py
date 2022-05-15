@@ -64,13 +64,31 @@ class GameLog:
         return int((p1_rating + p2_rating) / 2)
 
     def parse_replay(self):
-        d = self.__dict__
         battle = self.init_battle()
 
-        d['team_preview_state'] = battle.to_dict()
+        if self.winner == self.p1:
+            winner = 'p1'
+        elif self.winner == self.p2:
+            winner = 'p2'
+        else:
+            raise ValueError(f' No winners. p1: {self.p1}, p2: {self.p2}, winner: {self.winner}\nID: {self.battle_id}')
+
+        basic_info = {
+            "winner": winner,
+            "p1rating": self.p1_rating,
+            "p2rating": self.p2_rating,
+            "average_rating": self.average_rating,
+            "rated_battle": self.rated_battle,
+            "roomid": self.battle_id,
+        }
+
+        team_preview_state = battle.to_dict()
+        team_preview_state.update(basic_info)
+
+        # initialize states with team preview state
+        game_states = [team_preview_state]
 
         # parsing the log line by line
-        game_states = {}
         for i, line in enumerate(self.log):
             split_msg = line.split('|')
 
@@ -86,16 +104,17 @@ class GameLog:
 
             # extract game state
             if split_msg[1] == "turn":
-                game_states["turn " + str(battle.turn)] = battle.extract_game_state()
+                d = battle.to_dict()
+                d.update(basic_info)
+                game_states.append(d)
 
-        d['game_states'] = game_states
-        return d
+        return game_states
 
     def init_battle(self):
         battle = Battle(self.battle_id)
 
-        # battle.p1.account_name = self.p1
-        # battle.p2.account_name = self.p2
+        battle.p1.account_name = self.p1
+        battle.p2.account_name = self.p2
         battle.p1.name = 'p1'
         battle.p2.name = 'p2'
 
@@ -104,3 +123,5 @@ class GameLog:
 
         battle.initialize_team_preview(self.p1_team, self.p2_team)
         return battle
+
+

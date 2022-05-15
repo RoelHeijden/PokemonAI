@@ -83,5 +83,6 @@ To add to state:
 
 """
 
-if torch.cuda.is_available():
-    print("hey")
+
+
+
