@@ -178,10 +178,12 @@ def switch_or_drag(battle, split_msg):
         # if the target was transformed, reset its transformed attributes
         if constants.TRANSFORM in side.active.volatile_statuses:
             logger.debug("{} was transformed. Resetting its transformed attributes".format(side.active.name))
-            side.active.stats = calculate_stats(side.active.base_stats, side.active.level)
-            side.active.ability = None
-            side.active.moves = []
+            side.active.stats = side.active.original_attributes['stats']
+            side.active.moves = side.active.original_attributes['moves']
             side.active.types = pokedex[side.active.name][constants.TYPES]
+
+        # reset the Pokemon's ability
+        side.active.ability = side.active.original_attributes['ability']
 
         # reset the boost of the pokemon being replaced
         side.active.boosts.clear()
