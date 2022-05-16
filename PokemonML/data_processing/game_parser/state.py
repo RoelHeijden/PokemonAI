@@ -36,6 +36,7 @@ class Battle:
 
             pkmn = Pokemon(
                 pkmn_info['species'],
+                pkmn_info['name'],
                 pkmn_info['level'],
                 pkmn_info.get('gender'),
                 pkmn_info['nature'],
@@ -54,6 +55,7 @@ class Battle:
 
             pkmn = Pokemon(
                 pkmn_info['species'],
+                pkmn_info['name'],
                 pkmn_info['level'],
                 pkmn_info.get('gender'),
                 pkmn_info['nature'],
@@ -91,6 +93,7 @@ class Battler:
         self.trapped = False
         self.wish = (0, 0)
         self.future_sight = (0, 0)
+        self.healing_wish_incoming = False
 
         self.account_name = None
 
@@ -173,13 +176,16 @@ class Battler:
             'trapped': self.trapped,
             'wish': {'countdown': self.wish[0], 'hp_amount': int(self.wish[1])},
             'future_sight': {'countdown': self.future_sight[0], 'p1': self.future_sight[1]},
+            'healing_wish': self.healing_wish_incoming
         }
 
 
 class Pokemon:
-    def __init__(self, name: str, level: int, gender: str, nature: str, evs: tuple, ivs: tuple, ability: str, moves: list, item: str):
+    def __init__(self, name: str, nickname: str, level: int, gender: str, nature: str,
+                 evs: tuple, ivs: tuple, ability: str, moves: list, item: str):
         self.name = normalize_name(name)
         self.base_name = self.name
+        self.nickname = nickname
         self.level = level
         self.gender = gender
         self.nature = normalize_name(nature)
@@ -197,6 +203,12 @@ class Pokemon:
 
         self.types = pokedex[self.name][constants.TYPES]
         self.stats = calculate_stats(self.base_stats, self.level, ivs=ivs, evs=evs, nature=self.nature)
+
+        self.original_attributes = {
+            'stats': self.stats,
+            'moves': self.moves,
+            'ability': self.ability
+        }
 
         self.max_hp = self.stats.get(constants.HITPOINTS)
         self.hp = self.max_hp

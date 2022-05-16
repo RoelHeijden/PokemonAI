@@ -27,64 +27,6 @@ def is_p2(battle, split_msg):
     return not split_msg[2].startswith(battle.p1.name)
 
 
-def switch_or_drag(battle, split_msg):
-    if is_p2(battle, split_msg):
-        side = battle.p2
-    else:
-        side = battle.p1
-
-    if side.active is not None:
-        # set the pkmn's types back to their original value if the types were changed
-        if constants.TYPECHANGE in side.active.volatile_statuses:
-            original_types = pokedex[side.active.name][constants.TYPES]
-            logger.debug("{} had it's type changed - changing its types back to {}".format(side.active.name, original_types))
-            side.active.types = original_types
-
-        # if the target was transformed, reset its transformed attributes
-        if constants.TRANSFORM in side.active.volatile_statuses:
-            logger.debug("{} was transformed. Resetting its transformed attributes".format(side.active.name))
-            side.active.stats = calculate_stats(side.active.base_stats, side.active.level)
-            side.active.ability = None
-            side.active.moves = []
-            side.active.types = pokedex[side.active.name][constants.TYPES]
-
-        # reset the boost of the pokemon being replaced
-        side.active.boosts = {key: 0 for key in side.active.boosts}
-
-        # reset the volatile statuses of the pokemon being replaced
-        side.active.volatile_statuses.clear()
-
-        # reset toxic count for this side
-        side.side_conditions[constants.TOXIC_COUNT] = 0
-
-        # if the side is alive and has regenerator, give it back 1/3 of it's maxhp
-        if side.active.hp > 0 and not side.active.fainted and side.active.ability == "regenerator":
-            health_healed = int(side.active.max_hp / 3)
-            side.active.hp = min(side.active.hp + health_healed, side.active.max_hp)
-            logger.debug(
-                "{} switched out with regenerator. Healing it to {}/{}".format(
-                    side.active.name, side.active.hp, side.active.max_hp
-                )
-            )
-
-    name = normalize_name(split_msg[3].split(',')[0])
-    pkmn = find_pokemon_in_reserves(name, side.reserve)
-
-    side.reserve.remove(pkmn)
-
-    side.last_used_move = LastUsedMove(
-        pokemon_name=None,
-        move='switch {}'.format(pkmn.name),
-        turn=battle.turn
-    )
-
-    # pkmn != active is a special edge-case for Zoroark
-    if side.active is not None and pkmn != side.active:
-        side.reserve.append(side.active)
-
-    side.active = pkmn
-
-
 def heal_or_damage(battle, split_msg):
     if is_p2(battle, split_msg):
         side = battle.p2
@@ -102,6 +44,9 @@ def heal_or_damage(battle, split_msg):
     if len(split_msg) == 5 and constants.TOXIC in split_msg[3] and '[from] psn' in split_msg[4]:
         side.side_conditions[constants.TOXIC_COUNT] += 1
 
+    if len(split_msg) == 5 and ('Healing Wish' in split_msg[4] or 'Lunar Dance' in split_msg[4]):
+        side.active.status = None
+
 
 def faint(battle, split_msg):
     if is_p2(battle, split_msg):
@@ -116,6 +61,9 @@ def faint(battle, split_msg):
 def move(battle, split_msg):
     if '[from]' in split_msg[-1] and split_msg[-1] != "[from]lockedmove":
         return
+    if '[still]' in split_msg[-1]:
+        if '[from]' in split_msg[-2] and split_msg[-2] != "[from]lockedmove":
+            return
 
     move_name = normalize_name(split_msg[3].strip().lower())
 
@@ -126,18 +74,20 @@ def move(battle, split_msg):
         side = battle.p1
         pkmn = battle.p1.active
 
+    if move_name == 'healingwish' or move_name == 'lunardance':
+        side.healing_wish_incoming = True
+
     # remove volatile status if they have it
     # this is for preparation moves like Phantom Force
     if move_name in pkmn.volatile_statuses and not move_name == 'substitute':
         logger.debug("Removing volatile status {} from {}".format(move_name, pkmn.name))
         pkmn.volatile_statuses.remove(move_name)
 
-    # add the move to it's moves if it hasn't been seen
     # decrement the PP by one
-    # if the move is unknown, do nothing
-    move_object = pkmn.get_move(move_name)
-    move_object.current_pp -= 1
-    logger.debug("{} already has the move {}. Decrementing the PP by 1".format(pkmn.name, move_name))
+    if move_name != 'struggle':
+        move_object = pkmn.get_move(move_name)
+        move_object.current_pp -= 1
+        logger.debug("{} already has the move {}. Decrementing the PP by 1".format(pkmn.name, move_name))
 
     # if this pokemon used two different moves without switching,
     # set a flag to signify that it cannot have a choice item
@@ -312,6 +262,10 @@ def end_volatile_status(battle, split_msg):
         pkmn = battle.p1.active
 
     volatile_status = normalize_name(split_msg[3].split(":")[-1])
+
+    if volatile_status == 'futuresight':
+        return
+
     if volatile_status in constants.BINDING_MOVES:
         volatile_status = constants.PARTIALLY_TRAPPED
 
@@ -332,20 +286,7 @@ def curestatus(battle, split_msg):
     else:
         side = battle.p1
 
-    pkmn_name = split_msg[2].split(':')[-1].strip()
-
-    if normalize_name(pkmn_name) == side.active.name:
-        pkmn = side.active
-    else:
-        try:
-            pkmn = next(filter(lambda x: x.name == normalize_name(pkmn_name), side.reserve))
-        except StopIteration:
-            logger.warning(
-                "The pokemon {} does not exist in the party, defaulting to the active pokemon".format(normalize_name(pkmn_name))
-            )
-            pkmn = side.active
-
-    pkmn.status = None
+    side.active.stats = None
 
 
 def cureteam(battle, split_msg):
@@ -424,6 +365,7 @@ def swapsideconditions(battle, _):
     for side_condition in constants.COURT_CHANGE_SWAPS:
         p1_sc[side_condition], opponent_sc[side_condition] = opponent_sc[side_condition], p1_sc[side_condition]
 
+
 def set_item(battle, split_msg):
     if is_p2(battle, split_msg):
         side = battle.p2
@@ -457,43 +399,6 @@ def set_ability(battle, split_msg):
             ability = normalize_name(msg.split(':')[-1])
             logger.debug("Setting {}'s ability to {}".format(side.active.name, ability))
             side.active.ability = ability
-
-
-def form_change(battle, split_msg):
-    if is_p2(battle, split_msg):
-        side = battle.p2
-    else:
-        side = battle.p1
-
-    prev_pkmn_state = side.active.to_dict()
-    previous_boosts = side.active.boosts
-    name = split_msg[3].split(',')[0]
-
-    if normalize_name(name) == "zoroark":
-        prev_active = deepcopy(side.active)
-        side.active = find_pokemon_in_reserves(normalize_name(name), side.reserve)
-
-        side.active.hp = math.ceil((prev_active.hp / prev_active.max_hp) * side.active.max_hp)
-
-    else:
-        new_pokemon = Pokemon(
-            name=name,
-            level=prev_pkmn_state['level'],
-            gender=prev_pkmn_state['gender'],
-            nature=prev_pkmn_state['nature'],
-            evs=prev_pkmn_state['evs'],
-            ivs=prev_pkmn_state['ivs'],
-            ability=prev_pkmn_state['ability'],
-            moves=prev_pkmn_state['moves'],
-            item=prev_pkmn_state['item']
-        )
-        side.active = new_pokemon
-        side.active.hp = prev_pkmn_state['hp']
-        side.active.base_name = prev_pkmn_state['base_name']
-
-    side.active.boosts = previous_boosts
-    side.active.status = prev_pkmn_state['status']
-    side.active.volatile_statuses = prev_pkmn_state['volatile_status']
 
 
 def clearnegativeboost(battle, split_msg):
@@ -565,46 +470,136 @@ def upkeep(battle, _):
     # increment Trick room counter?
 
 
-def mega(battle, split_msg):
+def turn(battle, split_msg):
+    battle.turn = int(split_msg[2])
+
+
+def switch_or_drag(battle, split_msg):
     if is_p2(battle, split_msg):
         side = battle.p2
     else:
         side = battle.p1
 
-    side.active.is_mega = True
-    logger.debug("Mega-Pokemon: {}".format(side.active.name))
+    if side.healing_wish_incoming:
+        side.healing_wish_incoming = False
 
+    if side.active is not None:
+        # set the pkmn's types back to their original value if the types were changed
+        if constants.TYPECHANGE in side.active.volatile_statuses:
+            original_types = pokedex[side.active.name][constants.TYPES]
+            logger.debug("{} had it's type changed - changing its types back to {}".format(side.active.name, original_types))
+            side.active.types = original_types
 
-def zpower(battle, split_msg):
-    pass
+        # if the target was transformed, reset its transformed attributes
+        if constants.TRANSFORM in side.active.volatile_statuses:
+            logger.debug("{} was transformed. Resetting its transformed attributes".format(side.active.name))
+            side.active.stats = side.active.original_attributes['stats']
+            side.active.moves = side.active.original_attributes['moves']
+            side.active.types = pokedex[side.active.name][constants.TYPES]
+
+        # reset the ability to original
+        side.active.ability = side.active.original_attributes['ability']
+
+        # reset the boost of the pokemon being replaced
+        side.active.boosts = {key: 0 for key in side.active.boosts}
+
+        # reset the volatile statuses of the pokemon being replaced
+        side.active.volatile_statuses.clear()
+
+        # reset toxic count for this side
+        side.side_conditions[constants.TOXIC_COUNT] = 0
+
+        # if the side is alive and has regenerator, give it back 1/3 of it's maxhp
+        if side.active.hp > 0 and not side.active.fainted and side.active.ability == "regenerator":
+            health_healed = int(side.active.max_hp / 3)
+            side.active.hp = min(side.active.hp + health_healed, side.active.max_hp)
+            logger.debug(
+                "{} switched out with regenerator. Healing it to {}/{}".format(
+                    side.active.name, side.active.hp, side.active.max_hp
+                )
+            )
+
+    name = normalize_name(split_msg[3].split(',')[0])
+    pkmn = find_pokemon_in_reserves(name, side.reserve)
+
+    side.reserve.remove(pkmn)
+
+    side.last_used_move = LastUsedMove(
+        pokemon_name=None,
+        move='switch {}'.format(pkmn.name),
+        turn=battle.turn
+    )
+
+    # pkmn != active is a special edge-case for Zoroark
+    if side.active is not None and pkmn != side.active:
+        side.reserve.append(side.active)
+
+    side.active = pkmn
 
 
 def transform(battle, split_msg):
     if is_p2(battle, split_msg):
-        transformed_into_name = battle.p1.active.name
+        opp_pkmn = battle.p1.active
+        user_pkmn = battle.p2.active
+    else:
+        opp_pkmn = battle.p2.active
+        user_pkmn = battle.p1.active
 
-        battle_copy = deepcopy(battle)
-        battle.p2.active.boosts = deepcopy(battle.p1.active.boosts)
+    if opp_pkmn is None:
+        raise ValueError(f"Pokemon {user_pkmn} cannot transform into '{opp_pkmn}'")
 
-        battle_copy.p1.from_json(battle_copy.request_json)
+    user_pkmn.boosts = deepcopy(opp_pkmn.boosts)
+    user_pkmn.stats = deepcopy(opp_pkmn.stats)
+    user_pkmn.ability = deepcopy(opp_pkmn.ability)
+    user_pkmn.moves = deepcopy(opp_pkmn.moves)
+    user_pkmn.types = deepcopy(opp_pkmn.types)
 
-        if battle_copy.p1.active.name == transformed_into_name or battle_copy.p1.active.name.startswith(transformed_into_name):
-            transformed_into = battle_copy.p1.active
-        else:
-            transformed_into = find_pokemon_in_reserves(transformed_into_name, battle_copy.p1.reserve)
-
-        logger.debug("Opponent {} transformed into {}".format(battle.p2.active.name, battle.p1.active.name))
-        battle.p2.active.stats = deepcopy(transformed_into.stats)
-        battle.p2.active.ability = deepcopy(transformed_into.ability)
-        battle.p2.active.moves = deepcopy(transformed_into.moves)
-        battle.p2.active.types = deepcopy(transformed_into.types)
-
-        if constants.TRANSFORM not in battle.p2.active.volatile_statuses:
-            battle.p2.active.volatile_statuses.append(constants.TRANSFORM)
+    if constants.TRANSFORM not in user_pkmn.volatile_statuses:
+        user_pkmn.volatile_statuses.append(constants.TRANSFORM)
 
 
-def turn(battle, split_msg):
-    battle.turn = int(split_msg[2])
+def form_change(battle, split_msg):
+    if is_p2(battle, split_msg):
+        side = battle.p2
+    else:
+        side = battle.p1
+
+    previous_boosts = side.active.boosts
+    prev_base_name = side.active.base_name
+    prev_hp = side.active.hp
+    prev_status = side.active.status
+    prev_volatile_status = side.active.volatile_statuses
+    prev_moves = side.active.moves
+
+    name = split_msg[3].split(',')[0]
+
+    if normalize_name(name) == "zoroark":
+        prev_active = deepcopy(side.active)
+        side.active = find_pokemon_in_reserves(normalize_name(name), side.reserve)
+
+        side.active.hp = math.ceil((prev_active.hp / prev_active.max_hp) * side.active.max_hp)
+
+    else:
+        new_pokemon = Pokemon(
+            name=name,
+            nickname=side.active.nickname,
+            level=side.active.level,
+            gender=side.active.gender,
+            nature=side.active.nature,
+            evs=side.active.evs,
+            ivs=side.active.ivs,
+            ability=side.active.ability,
+            moves=[],
+            item=side.active.item
+        )
+        side.active = new_pokemon
+        side.active.moves = prev_moves
+        side.active.hp = prev_hp
+        side.active.base_name = prev_base_name
+
+    side.active.boosts = previous_boosts
+    side.active.status = prev_status
+    side.active.volatile_statuses = prev_volatile_status
 
 
 def update_state(battle, split_msg):
@@ -639,8 +634,6 @@ def update_state(battle, split_msg):
         'replace': form_change,
         '-formechange': form_change,
         '-transform': transform,
-        '-mega': mega,
-        '-zpower': zpower,
         '-clearnegativeboost': clearnegativeboost,
         '-clearallboost': clearallboost,
         '-singleturn': singleturn,
