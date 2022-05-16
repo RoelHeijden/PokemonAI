@@ -419,7 +419,6 @@ class Battler:
             constants.SIDE_CONDITIONS: copy(self.side_conditions)
         }
 
-
     def from_team_json(self, team_json):
         # hiddenpowertype??
 
@@ -467,6 +466,11 @@ class Battler:
             if pokemon.item == 'choicescarf':
                 speed = math.floor(speed*1.5)
             pokemon.speed_range = StatRange(min=speed, max=speed)
+
+            pokemon.original_attributes['stats'] = pokemon.stats
+            pokemon.original_attributes['ability'] = pokemon.ability
+            pokemon.original_attributes['moves'] = pokemon.moves
+
 
     def check_if_trapped(self, battle):
         """ sets the 'trapped' flag"""
@@ -530,9 +534,15 @@ class Pokemon:
         self.ability = None
         self.types = pokedex[self.name][constants.TYPES]
         self.item = constants.UNKNOWN_ITEM
+        self.moves = []
+
+        self.original_attributes = {
+            'moves': self.moves,
+            'stats': self.stats,
+            'ability': self.ability
+            }
 
         self.fainted = False
-        self.moves = []
         self.status = None
         self.volatile_statuses = []
         self.boosts = defaultdict(lambda: 0)
@@ -546,6 +556,7 @@ class Pokemon:
         self.can_not_have_specs = False
         self.can_have_life_orb = True
         self.can_have_heavydutyboots = True
+
 
     def forme_change(self, new_pkmn_name):
         hp_percent = float(self.hp) / self.max_hp
