@@ -841,6 +841,10 @@ def transform(battle, split_msg):
         battle.opponent.active.moves = deepcopy(transformed_into.moves)
         battle.opponent.active.types = deepcopy(transformed_into.types)
 
+        for m in battle.opponent.active.moves:
+            m.max_pp = 5
+            m.current_pp = 5
+
         if constants.TRANSFORM not in battle.opponent.active.volatile_statuses:
             battle.opponent.active.volatile_statuses.append(constants.TRANSFORM)
 
