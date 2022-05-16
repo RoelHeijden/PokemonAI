@@ -12,19 +12,6 @@ logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 
 
 """
-STATES
-    Collect: 
-        - possible status conditions
-        - possible volatile statuses
-        - possible side conditions
-        - pokemon species (check nickname bug?)
-        - weathers (check if names are right)
-
-    Check:
-        - how moves like toxic, taunt, encore, disable, lightscreen and volatiles are represented (do they have turn counts?).
-        - sleep representation after Rest
-        - how layers of spikes, etc are represented
-        - representation of choice-lock 
 
 CSV    
     Create:
@@ -42,21 +29,24 @@ CSV
 ######################################################################################
 
 
-2. transform / illusion / form changes fix
+1. fix illusion
+1.1 test illusion
 
+2. collect status conditions
 3. collect volatile statuses
 4. collect side conditions
 5. check representation of: encore, light screen, taunt, spike layers, etc.
 6. check Rest sleep representation
 7. check how choice_lock is represented
 8. check species bug (weird nicknames)
+9. check weather names
+10. check pokemon names/forms
 
-9. implement sleep counter
-10. implement weather, terrain, trickroom counter
-11. implement last_used_move and first_turn_out
+11. implement sleep counter
+12. implement weather, terrain, trickroom counter
+13. implement last_used_move and first_turn_out
 
 
-    
 
 """
 
@@ -262,6 +252,9 @@ class Converter:
         # one future sight variable: [turn]
         future_sight = [side['future_sight']['countdown']]
 
+        # [1] if the Healing wish/Lunar dance effect is incoming, [0] otherwise
+        healing_wish = [int(side['healing_wish'])]
+
         # player's pokemon is trapped
         trapped = [int(side['trapped'])]
 
@@ -274,7 +267,7 @@ class Converter:
         # the player's reserve pokemon -- fainted or alive
         reserve = [val for pkmn in [self.convert_pokemon(pkmn) for pkmn in side['reserve']] for val in pkmn]
 
-        return side_conditions + wish + future_sight + trapped + has_active + active + reserve
+        return side_conditions + wish + future_sight + healing_wish + trapped + has_active + active + reserve
 
     def convert_pokemon(self, pokemon):
         # one-hot-encode species
@@ -477,6 +470,7 @@ class Converter:
                 ['side condition' for _ in self.side_condition_positions] +
                 ['wish'] * 2 +
                 ['future sight'] +
+                ['healing wish'] +
                 ['is trapped'] +
                 ['has active'] +
                 ['active pokemon' for _ in pokemon_header] +
