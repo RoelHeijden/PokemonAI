@@ -91,12 +91,17 @@ def convert_all_games(converter, path_in, file_out, min_game_length=3):
     n_games = 0
 
     games_too_short = {}
+    ignore_list = json.load(open('game_parser/games_to_ignore.json', 'r'))
 
     # open each game_states file
     for f in files:
         with open(f) as f_in, open(file_out, 'a') as f_out:
 
             all_states = json.load(f_in)
+
+            # skip game if in the ignore list
+            if ignore_list.get(str(all_states[0]['roomid'])):
+                continue
 
             # skip game if game doesn't last long enough
             if len(all_states) < min_game_length:
@@ -150,7 +155,8 @@ def reverse_pov(state):
     elif state['winner'] == 'p2':
         state['winner'] = 'p1'
     else:
-        raise ValueError(f'State winner cannot be {state["winner"]}')
+        # tie
+        pass
 
     hold_my_beer = state['p1']
     state['p1'] = state['p2']
@@ -190,7 +196,12 @@ class Converter:
     def convert_state(self, game_state):
         """ convert state information to an array numbers """
 
-        p1_win = [1 if game_state['winner'] == 'p1' else -1]
+        # [1] for a win, [-1] for a loss, [0] for a (rare) tie
+        if game_state['winner']:
+            p1_win = [1 if game_state['winner'] == 'p1' else -1]
+        else:
+            p1_win = [0]
+
         p1_rating = [game_state['p1rating']]
         p2_rating = [game_state['p2rating']]
         avg_rating = [game_state['average_rating']]

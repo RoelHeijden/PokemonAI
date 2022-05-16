@@ -1,6 +1,8 @@
+import os
 from copy import deepcopy
 import logging
 import math
+import json
 
 from Showdown_Pmariglia import constants
 from Showdown_Pmariglia.data import all_move_json
@@ -61,7 +63,7 @@ def faint(battle, split_msg):
 def move(battle, split_msg):
     if '[from]' in split_msg[-1] and split_msg[-1] != "[from]lockedmove":
         return
-    if '[still]' in split_msg[-1]:
+    if '[still]' in split_msg[-1] or '[miss]' in split_msg[-1]:
         if '[from]' in split_msg[-2] and split_msg[-2] != "[from]lockedmove":
             return
 
@@ -79,12 +81,27 @@ def move(battle, split_msg):
 
     # remove volatile status if they have it
     # this is for preparation moves like Phantom Force
-    if move_name in pkmn.volatile_statuses and not move_name == 'substitute':
+    do_not_remove = ['substitute', 'yawn', 'disable']
+    if move_name in pkmn.volatile_statuses and not move_name in do_not_remove:
         logger.debug("Removing volatile status {} from {}".format(move_name, pkmn.name))
         pkmn.volatile_statuses.remove(move_name)
 
+    # there's a bug in the data where in rare occasions numbers are concatenated with 'action' strings,
+    # as well as with other variables. This may result in things like: shadowball31788
+    if pkmn.get_move(move_name) is None and move_name != 'struggle':
+        logger.warning(f'battle {battle.battle_tag} - turn {battle.turn}\n'
+                       f'move {move_name} from {pkmn.name} not in pokemon move list')
+
+        file = open('game_parser/games_to_ignore.json')
+        ignore_json = json.load(file)
+        ignore_json[str(battle.battle_tag)] = battle.battle_tag
+        open('game_parser/games_to_ignore.json', 'w').write(json.dumps(ignore_json, indent=2))
+
+    elif move_name == 'struggle':
+        pass
+
     # decrement the PP by one
-    if move_name != 'struggle':
+    else:
         move_object = pkmn.get_move(move_name)
         move_object.current_pp -= 1
         logger.debug("{} already has the move {}. Decrementing the PP by 1".format(pkmn.name, move_name))
@@ -266,11 +283,15 @@ def end_volatile_status(battle, split_msg):
     if volatile_status == 'futuresight':
         return
 
+    if volatile_status == 'octolock':
+        return
+
     if volatile_status in constants.BINDING_MOVES:
         volatile_status = constants.PARTIALLY_TRAPPED
 
     if volatile_status not in pkmn.volatile_statuses:
-        logger.warning("Pokemon '{}' does not have the volatile status '{}'".format(pkmn.to_dict(), volatile_status))
+        logger.warning("Pokemon '{}' does not have the volatile status '{}'\n"
+                       "battle: {}, turn: {}".format(pkmn.to_dict(), volatile_status, battle.battle_tag, battle.turn))
     else:
         logger.debug("Removing the volatile status {} from {}".format(volatile_status, pkmn.name))
         pkmn.volatile_statuses.remove(volatile_status)
@@ -554,6 +575,10 @@ def transform(battle, split_msg):
     user_pkmn.moves = deepcopy(opp_pkmn.moves)
     user_pkmn.types = deepcopy(opp_pkmn.types)
 
+    for m in user_pkmn.moves:
+        m.max_pp = 5
+        m.current_pp = 5
+
     if constants.TRANSFORM not in user_pkmn.volatile_statuses:
         user_pkmn.volatile_statuses.append(constants.TRANSFORM)
 
@@ -574,6 +599,7 @@ def form_change(battle, split_msg):
     name = split_msg[3].split(',')[0]
 
     if normalize_name(name) == "zoroark":
+        print("@@@@@@@@@@@@@@@@@@", battle.battle_tag, battle.turn)
         prev_active = deepcopy(side.active)
         side.active = find_pokemon_in_reserves(normalize_name(name), side.reserve)
 
