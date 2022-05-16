@@ -30,3 +30,4 @@
 29. added speed_range updates when scarf is set/detected via trick/switcheroo or poltergeist
 30. added skill swap mechanics in battle_modifier activate()
 31. added is_grounded() to battle.Pokemon
+32. added pokemon.original_attributes, to be used for transform and ability swaps

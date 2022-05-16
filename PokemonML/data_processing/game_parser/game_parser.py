@@ -35,8 +35,11 @@ def main():
     # mode = 'pre-process data'
     # mode = 'inspect a log'
 
-    batch = 0
-    battle_id = 100012
+    batch = 42
+    battle_id = 1019397
+
+    n_batches = 5
+    batch_size = 200
 
     if mode == 'read from batch':
         data_folder = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/python/PokemonML/data/granted_data_testing"
@@ -47,7 +50,7 @@ def main():
     if mode == 'create batches':
         path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/pre-processed-ou-dec2019-feb2022/anonymized-ou-incomplete/all_rated_1200+"
         path_out = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/Python/PokemonML/data/granted_data_testing/raw_data"
-        copy_to_batches(path_in, path_out, 1, 20)
+        copy_to_batches(path_in, path_out, n_batches, batch_size)
 
     if mode == 'pre-process data':
         path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/anonymized-ou-Dec2019-Feb2020/anonymized-ou-incomplete"
@@ -221,10 +224,10 @@ def parse_all(folder_path, save_path):
                 game = GameLog(info, battle_id)
                 parsed_replay = game.parse_replay()
 
-                # write parsed file
-                path_out = os.path.join(save_path, file_out)
-                f_out = open(path_out, "w+")
-                f_out.write(ujson.dumps(parsed_replay))
+                # # write parsed file
+                # path_out = os.path.join(save_path, file_out)
+                # f_out = open(path_out, "w+")
+                # f_out.write(ujson.dumps(parsed_replay))
 
                 match_count += 1
 

@@ -102,12 +102,12 @@ class GameLog:
             else:
                 update_state(state, split_msg)
 
-            # extract game state at the end of a turn, or when a Pokemon fainted
-            if split_msg[1] == "turn" or split_msg[1] == "upkeep" and \
-                    (state.p1.active.fainted or state.p2.active.fainted):
-                d = state.to_dict()
-                d.update(basic_info)
-                game_states.append(d)
+            # # extract game state at the end of a turn, or when a Pokemon fainted
+            # if split_msg[1] == "turn" or split_msg[1] == "upkeep" and \
+            #         (state.p1.active.fainted or state.p2.active.fainted):
+            #     d = state.to_dict()
+            #     d.update(basic_info)
+            #     game_states.append(d)
 
         return game_states
 

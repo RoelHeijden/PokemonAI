@@ -72,9 +72,11 @@ test_test_states()
 ####################################################################################################
 
 
-# file = json.load(open('game-states-gen8ou-100012.json'))
+# file = json.load(open('game-states-gen8ou-1019397.json'))
 #
 # for i, s in enumerate(file):
+#     if i == 0:
+#         continue
 #     open('test_states/test_state_' + str(i) + '.txt', 'w').write(json.dumps(s, indent=4))
 
 
