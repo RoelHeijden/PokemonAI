@@ -29,22 +29,22 @@ CSV
 ######################################################################################
 
 
-1. fix illusion
-1.1 test illusion
+3. collect status conditions
+4. collect volatile statuses
+5. collect side conditions
 
-2. collect status conditions
-3. collect volatile statuses
-4. collect side conditions
-5. check representation of: encore, light screen, taunt, spike layers, etc.
-6. check Rest sleep representation
-7. check how choice_lock is represented
-8. check species bug (weird nicknames)
+6. check representation of: encore, light screen, taunt, spike layers, etc.
+7. check Rest sleep representation
+8. check how choice_lock is represented
 9. check weather names
-10. check pokemon names/forms
+
+10. implement pokemon form check in csv_converter
 
 11. implement sleep counter
 12. implement weather, terrain, trickroom counter
 13. implement last_used_move and first_turn_out
+
+14. check speedups for to_dict()
 
 
 
@@ -91,7 +91,7 @@ def convert_all_games(converter, path_in, file_out, min_game_length=3):
     n_games = 0
 
     games_too_short = {}
-    ignore_list = json.load(open('game_parser/games_to_ignore.json', 'r'))
+    ignore_list = json.load(open('games_to_ignore.json', 'r'))
 
     # open each game_states file
     for f in files:
@@ -130,7 +130,7 @@ def convert_all_games(converter, path_in, file_out, min_game_length=3):
     print(f'{n_states} states converted')
     print(f'runtime: {round(time.time() - start_time, 1)}s\n')
 
-    print(f"Games skipped because they lasted shorter than {min_game_length} turns")
+    print(f"{len(games_too_short)} games skipped because they lasted shorter than {min_game_length} turns")
     print(ujson.dumps(games_too_short))
 
 

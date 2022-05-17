@@ -4,8 +4,9 @@ from collections import namedtuple
 from Showdown_Pmariglia import constants
 from Showdown_Pmariglia.data import all_move_json
 from Showdown_Pmariglia.data import pokedex
-from Showdown_Pmariglia.showdown.engine.helpers import normalize_name
 from Showdown_Pmariglia.showdown.engine.helpers import calculate_stats
+
+from helpers import normalize_name
 
 
 LastUsedMove = namedtuple('LastUsedMove', ['pokemon_name', 'move', 'turn'])

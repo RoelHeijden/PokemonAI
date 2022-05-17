@@ -1,4 +1,3 @@
-import os
 from copy import deepcopy
 import logging
 import math
@@ -7,9 +6,8 @@ import json
 from Showdown_Pmariglia import constants
 from Showdown_Pmariglia.data import all_move_json
 from Showdown_Pmariglia.data import pokedex
-from Showdown_Pmariglia.showdown.engine.helpers import normalize_name
-from Showdown_Pmariglia.showdown.engine.helpers import calculate_stats
 
+from helpers import normalize_name
 from PokemonML.data_processing.game_parser.state import Pokemon, LastUsedMove
 
 
@@ -81,8 +79,8 @@ def move(battle, split_msg):
 
     # remove volatile status if they have it
     # this is for preparation moves like Phantom Force
-    do_not_remove = ['substitute', 'yawn', 'disable']
-    if move_name in pkmn.volatile_statuses and not move_name in do_not_remove:
+    do_not_remove = ['substitute', 'yawn', 'disable', 'throatchop', 'uproar']
+    if move_name in pkmn.volatile_statuses and move_name not in do_not_remove:
         logger.debug("Removing volatile status {} from {}".format(move_name, pkmn.name))
         pkmn.volatile_statuses.remove(move_name)
 
@@ -92,10 +90,10 @@ def move(battle, split_msg):
         logger.warning(f'battle {battle.battle_tag} - turn {battle.turn}\n'
                        f'move {move_name} from {pkmn.name} not in pokemon move list')
 
-        file = open('game_parser/games_to_ignore.json')
+        file = open('games_to_ignore.json')
         ignore_json = json.load(file)
         ignore_json[str(battle.battle_tag)] = battle.battle_tag
-        open('game_parser/games_to_ignore.json', 'w').write(json.dumps(ignore_json, indent=2))
+        open('games_to_ignore.json', 'w').write(json.dumps(ignore_json, indent=2))
 
     elif move_name == 'struggle':
         pass
@@ -230,9 +228,11 @@ def start_volatile_status(battle, split_msg):
     if is_p2(battle, split_msg):
         pkmn = battle.p2.active
         side = battle.p2
+        opp_side = battle.p1
     else:
         pkmn = battle.p1.active
         side = battle.p1
+        opp_side = battle.p2
 
     volatile_status = normalize_name(split_msg[3].split(":")[-1])
 
@@ -246,6 +246,10 @@ def start_volatile_status(battle, split_msg):
         side.future_sight = (3, pkmn.name)
         return
 
+    # TBD
+    if volatile_status == "doomdesire":
+        return
+
     if volatile_status not in pkmn.volatile_statuses:
         logger.debug("Starting the volatile status {} on {}".format(volatile_status, pkmn.name))
         pkmn.volatile_statuses.append(volatile_status)
@@ -255,16 +259,9 @@ def start_volatile_status(battle, split_msg):
         pkmn.max_hp *= 2
         logger.debug("{} started dynamax - doubling their HP to {}/{}".format(pkmn.name, pkmn.hp, pkmn.max_hp))
 
-    if constants.ABILITY in split_msg[3]:
-        pkmn.ability = volatile_status
-
-    if len(split_msg) == 6 and constants.ABILITY in normalize_name(split_msg[5]):
-        pkmn.ability = normalize_name(split_msg[5].split('ability:')[-1])
-
     if volatile_status == constants.TYPECHANGE:
         if split_msg[4] == "[from] move: Reflect Type":
-            pkmn_name = normalize_name(split_msg[5].split(":")[-1])
-            new_types = deepcopy(pokedex[pkmn_name][constants.TYPES])
+            new_types = deepcopy(pokedex[opp_side.active.name][constants.TYPES])
         else:
             new_types = [normalize_name(t) for t in split_msg[4].split("/")]
 
@@ -280,7 +277,7 @@ def end_volatile_status(battle, split_msg):
 
     volatile_status = normalize_name(split_msg[3].split(":")[-1])
 
-    if volatile_status == 'futuresight':
+    if volatile_status == 'futuresight' or volatile_status == "doomdesire":
         return
 
     if volatile_status == 'octolock':
@@ -599,7 +596,6 @@ def form_change(battle, split_msg):
     name = split_msg[3].split(',')[0]
 
     if normalize_name(name) == "zoroark":
-        print("@@@@@@@@@@@@@@@@@@", battle.battle_tag, battle.turn)
         prev_active = deepcopy(side.active)
         side.active = find_pokemon_in_reserves(normalize_name(name), side.reserve)
 
@@ -630,6 +626,18 @@ def form_change(battle, split_msg):
 
 def update_state(battle, split_msg):
     action = split_msg[1].strip()
+
+    # some games are bugged where action strings are followed by the players anonymized name.
+    # e.g. move79888
+    if any(i.isdigit() for i in action) and not action.startswith('-side'):
+        file = open('games_to_ignore.json')
+        ignore_json = json.load(file)
+        ignore_json[str(battle.battle_tag)] = battle.battle_tag
+        open('games_to_ignore.json', 'w').write(json.dumps(ignore_json, indent=2))
+
+        logger.warning(f"game {battle.battle_tag} contained action '{action}'\n"
+                       f"game aborted and added to games_to_ignore")
+        return False
 
     battle_modifiers_lookup = {
         'switch': switch_or_drag,
@@ -676,4 +684,6 @@ def update_state(battle, split_msg):
         battle.p2.lock_moves()
         battle.p1.check_if_trapped(battle)
         battle.p2.lock_moves()
+
+    return True
 

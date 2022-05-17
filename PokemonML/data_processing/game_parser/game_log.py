@@ -71,7 +71,7 @@ class GameLog:
         elif self.winner == self.p2:
             winner = 'p2'
         else:
-            raise ValueError(f' No winners. p1: {self.p1}, p2: {self.p2}, winner: {self.winner}\nID: {self.battle_id}')
+            winner = None
 
         basic_info = {
             "winner": winner,
@@ -100,14 +100,16 @@ class GameLog:
 
             # update the battle state
             else:
-                update_state(state, split_msg)
+                bug_free_game = update_state(state, split_msg)
+                if not bug_free_game:
+                    break
 
-            # # extract game state at the end of a turn, or when a Pokemon fainted
-            # if split_msg[1] == "turn" or split_msg[1] == "upkeep" and \
-            #         (state.p1.active.fainted or state.p2.active.fainted):
-            #     d = state.to_dict()
-            #     d.update(basic_info)
-            #     game_states.append(d)
+            # extract game state at the end of a turn, or when a Pokemon fainted
+            if split_msg[1] == "turn" or split_msg[1] == "upkeep" and \
+                    (state.p1.active.fainted or state.p2.active.fainted):
+                d = state.to_dict()
+                d.update(basic_info)
+                game_states.append(d)
 
         return game_states
 

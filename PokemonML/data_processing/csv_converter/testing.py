@@ -6,6 +6,7 @@ import json
 import ujson
 import csv
 import time
+import re
 
 
 ####################################################################################################
@@ -18,7 +19,7 @@ def init_category(file_name, relative_path='categories'):
     return data
 
 
-# pokemon_list = init_category('pokemon.json')
+pokemon_list = init_category('pokemon.json')
 # item_list = init_category('items.json')
 # ability_list = init_category('abilities.json')
 # move_list = init_category('moves.json')
@@ -72,12 +73,17 @@ test_test_states()
 ####################################################################################################
 
 
-# file = json.load(open('game-states-gen8ou-1019397.json'))
+# file = json.load(open('game-states-gen8ou-6425043.json'))
 #
 # for i, s in enumerate(file):
 #     if i == 0:
 #         continue
 #     open('test_states/test_state_' + str(i) + '.txt', 'w').write(json.dumps(s, indent=4))
+
+
+####################################################################################################
+
+
 
 
 

@@ -2,44 +2,31 @@ import os
 import shutil
 import time
 import ujson
+import json
 
 from game_log import GameLog
 
-"""
-UNFINISHED PROGRAM
-- Transform, Illusion and potential other form changes cause bugs
-- Game state information needs to be extended
-
-
-1. implement last_used_move for both players
-2. implement last_used for move
-3. implement first_turn out for pokemon
-4. add weather counters
-5. change sleep/toxic representation
-
-
-
-TO DO:
-    1. test nicknamed pokemon
-    2. add move inputs to state
-    3. check ability if statements in start_volatile_status()
-    4. actually edit the Transform function
-    5. check switch_or_drag transform handling (it resets the pokemon..)
-    6. test zoroark
-"""
-
 
 def main():
+    # mode = 'read from folder'
     mode = 'read from batch'
     # mode = 'create batches'
     # mode = 'pre-process data'
     # mode = 'inspect a log'
 
-    batch = 42
-    battle_id = 1019397
+    folder = 'rated_1400_1599'
+    battle_id = 0000000
 
-    n_batches = 5
-    batch_size = 200
+    batch = 42
+
+    n_batches = 0
+    batch_size = 000
+
+    if mode == 'read from folder':
+        folder_path = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/pre-processed-ou-dec2019-feb2022/anonymized-ou-incomplete"
+        path_in = os.path.join(folder_path, folder)
+        path_out = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-dec2019-feb2022/anonymized-ou-incomplete/actual_testing"
+        parse_all(path_in, path_out)
 
     if mode == 'read from batch':
         data_folder = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/python/PokemonML/data/granted_data_testing"
@@ -58,8 +45,11 @@ def main():
         pre_pre_processing(path_in, path_out)
 
     if mode == 'inspect a log':
-        path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/Python/PokemonML/data/granted_data_testing/raw_data"
-        file = os.path.join(path_in, 'batch' + str(batch), 'battle-gen8ou-' + str(battle_id) + '.log.json')
+        folder_path = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/pre-processed-ou-dec2019-feb2022/anonymized-ou-incomplete"
+        path_in = os.path.join(folder_path, folder)
+        # path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/Python/PokemonML/data/granted_data_testing/raw_data"
+
+        file = os.path.join(path_in, 'battle-gen8ou-' + str(battle_id) + '.log.json')
         f = open(file, 'r')
 
         info = None
@@ -209,7 +199,14 @@ def parse_all(folder_path, save_path):
     match_count = 0
     tic = time.time()
 
+    ignore_list = json.load(open('games_to_ignore.json', 'r'))
+
     for path_in, file_out, battle_id in files:
+
+        # skip battle if game is in the ignore list
+        if ignore_list.get(str(battle_id)):
+            continue
+
         with open(path_in, "r", encoding='utf-8') as f_in:
             for line in f_in:
 
@@ -224,10 +221,10 @@ def parse_all(folder_path, save_path):
                 game = GameLog(info, battle_id)
                 parsed_replay = game.parse_replay()
 
-                # # write parsed file
-                # path_out = os.path.join(save_path, file_out)
-                # f_out = open(path_out, "w+")
-                # f_out.write(ujson.dumps(parsed_replay))
+                # write parsed file
+                path_out = os.path.join(save_path, file_out)
+                f_out = open(path_out, "w+")
+                f_out.write(ujson.dumps(parsed_replay))
 
                 match_count += 1
 

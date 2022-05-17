@@ -32,6 +32,8 @@ update pokemon.original_attributes for non-full-info games when intializing the 
 
 fix move pp updating for unknown moves (e.g. Struggle. I the move is now permanently added to the move list)
 
+fix/implement Illusion in game_parser
+
 ----------------------------------------------------------------------------------------------------------------
 
 
@@ -40,8 +42,6 @@ STATE SIMULATOR:
     - if both pokemon fainted: evaluate normally?
 
 ENVIRONMENT
-    1. check Zoroark
-    2. check form changes (e.g. Minior?)
     3. check role of hidden_power_type in battler.from_team_json()
 
 ONCE NN WORKS
