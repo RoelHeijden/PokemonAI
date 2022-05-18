@@ -40,6 +40,8 @@ def test_test_states():
     from csv_converter import Converter
     cv = Converter()
 
+    headers = cv.create_header()
+
     files = sorted([os.path.join('test_states', file_name)
                     for file_name in os.listdir('test_states')])
 
@@ -62,12 +64,13 @@ def test_test_states():
 
     toc = time.time()
 
+    print(f'header size: {len(headers[0])}\n')
     print("-----------------------------------------------")
     print(len(files), "states converted")
     print("Total runtime:", round(toc - tic, 4))
 
 
-# test_test_states()
+test_test_states()
 
 
 ####################################################################################################
@@ -81,7 +84,7 @@ def test_test_states():
 #     files.append(os.path.join(folder, file_name))
 #
 #
-# file = json.load(open(files[1]))
+# file = json.load(open(files[0]))
 #
 # for i, s in enumerate(file):
 #     if i == 0:
