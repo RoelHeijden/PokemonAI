@@ -8,35 +8,36 @@ from game_log import GameLog
 
 
 def main():
-    # mode = 'read from folder'
+    mode = 'read from folder'
     # mode = 'read from batch'
     # mode = 'create batches'
     # mode = 'pre-process data'
-    mode = 'inspect a log'
+    # mode = 'inspect a log'
 
     folder = 'all_rated_1200+'
-    battle_id = 758890
+    battle_id = 00000000
 
-    batch = 42
+    batch = 0
 
-    n_batches = 0
-    batch_size = 000
+    n_batches = 4
+    batch_size = 50
 
     if mode == 'read from folder':
         folder_path = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/pre-processed-ou-dec2019-feb2022/anonymized-ou-incomplete"
         path_in = os.path.join(folder_path, folder)
-        path_out = 'C:\\Users\\RoelH\\Documents\\Uni\\Bachelor thesis\\data\\processed-ou-incomplete\\all_rated_1200+'
+        path_out = 'C:/Users/RoelH/Documents//Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+'
         parse_all(path_in, path_out)
 
     if mode == 'read from batch':
-        data_folder = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/python/PokemonML/data/granted_data_testing"
+        data_folder = "../data/granted_data_testing"
         path_in = os.path.join(data_folder, "raw_data", "batch" + str(batch))
         path_out = os.path.join(data_folder, "processed_data")
         parse_all(path_in, path_out)
 
     if mode == 'create batches':
-        path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/pre-processed-ou-dec2019-feb2022/anonymized-ou-incomplete/all_rated_1200+"
-        path_out = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/Python/PokemonML/data/granted_data_testing/raw_data"
+        path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/pre-processed-ou-dec2019-feb2022/anonymized-ou-incomplete"
+        path_in = os.path.join(path_in, folder)
+        path_out = "../data/granted_data_testing/raw_data"
         copy_to_batches(path_in, path_out, n_batches, batch_size)
 
     if mode == 'pre-process data':
@@ -47,7 +48,6 @@ def main():
     if mode == 'inspect a log':
         folder_path = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/pre-processed-ou-dec2019-feb2022/anonymized-ou-incomplete"
         path_in = os.path.join(folder_path, folder)
-        # path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/Python/PokemonML/data/granted_data_testing/raw_data"
 
         file = os.path.join(path_in, 'battle-gen8ou-' + str(battle_id) + '.log.json')
         f = open(file, 'r')
