@@ -8,7 +8,7 @@ from game_log import GameLog
 
 
 def main():
-    mode = 'read from folder'
+    # mode = 'read from folder'
     # mode = 'read from batch'
     # mode = 'create batches'
     # mode = 'pre-process data'
