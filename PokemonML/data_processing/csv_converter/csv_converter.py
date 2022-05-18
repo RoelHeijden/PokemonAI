@@ -33,11 +33,7 @@ CSV
 - volatile status 2-turn move check
 - header lengths for volatile_status
 
-- add sleep countdown
 - counts for toxic, spikes and tspikes
-
-- remove first_turn_out
-- remove last_used_move
 
 """
 
@@ -84,37 +80,39 @@ def convert_all_games(converter, path_in, file_out, min_game_length=3):
     games_too_short = {}
     ignore_list = json.load(open('games_to_ignore.json', 'r'))
 
-    # open each game_states file
-    for f in files:
-        with open(f) as f_in, open(file_out, 'a') as f_out:
+    # open csv file to write in
+    with open(file_out, 'a') as f_out:
+        # open each game_states file
+        for f in files:
+            with open(f) as f_in:
 
-            all_states = json.load(f_in)
+                all_states = json.load(f_in)
 
-            # skip game if in the ignore list
-            if ignore_list.get(str(all_states[0]['roomid'])):
-                continue
+                # skip game if in the ignore list
+                if ignore_list.get(str(all_states[0]['roomid'])):
+                    continue
 
-            # skip game if game doesn't last long enough
-            if len(all_states) < min_game_length:
-                games_too_short[f] = len(all_states)
-                continue
+                # skip game if game doesn't last long enough
+                if len(all_states) < min_game_length:
+                    games_too_short[f] = len(all_states)
+                    continue
 
-            # select two random states to write
-            states = pick_random_states(all_states, min_turns_apart=math.floor(min_game_length/3))
+                # select two random states to write
+                states = pick_random_states(all_states, min_turns_apart=math.floor(min_game_length/3))
 
-            # write states to file
-            for s in states:
-                input_array = converter.convert_state(s)
-                np.savetxt(f_out, input_array, delimiter=",")
+                # write states to file
+                for s in states:
+                    input_array = converter.convert_state(s)
+                    np.savetxt(f_out, input_array, delimiter=",")
 
-                n_states += 1
+                    n_states += 1
 
-            n_games += 1
+                n_games += 1
 
-            if n_games % 10000 == 0:
-                print(f'{n_games} games processed')
-                print(f'{n_states} states converted')
-                print(f'runtime: {round(time.time() - start_time, 1)}s\n')
+                if n_games % 10000 == 0:
+                    print(f'{n_games} games processed')
+                    print(f'{n_states} states converted')
+                    print(f'runtime: {round(time.time() - start_time, 1)}s\n')
 
     print("finished")
     print(f'{n_games} games processed')
@@ -347,6 +345,9 @@ class Converter:
         elif pokemon['status'] != "fnt":
             logging.debug(f'status "{pokemon["status"]}" does not exist in status.json')
 
+        # the amount of turns the pokemon may stay asleep
+        sleep_countdown = [pokemon['sleep_countdown']]
+
         # one-hot-encode volatile_status
         volatile_status = [0] * len(self.volatile_status_positions)
         for v in pokemon['volatile_status']:
@@ -355,9 +356,6 @@ class Converter:
                 volatile_status[index] = 1
             elif not self.volatiles_to_ignore.get(v):
                 logging.debug(f'volatile_status "{v}" does not exist in volatile_status.json')
-
-        # [1] if its the pokemon's first turn out, [0] otherwise
-        first_turn_out = [int(pokemon['first_turn_out'])]
 
         # amount of moves the pokemon has, range 1-4
         n_moves = [len(pokemon['moves'])]
@@ -372,7 +370,7 @@ class Converter:
             raise ValueError(f'Pokemon {pokemon["name"]} has no moves')
 
         return species + ability + types + item + has_item + level + stats + stat_changes + \
-            health + fainted + status + volatile_status + first_turn_out + n_moves + moves
+            health + fainted + status + sleep_countdown + volatile_status + n_moves + moves
 
     def convert_move(self, move):
         move_name = move['name']
@@ -419,9 +417,6 @@ class Converter:
         # [1] if move can't be used this turn, [0] otherwise
         disabled = [int(move['disabled'])]
 
-        # [1] if move was the last used move by this pokemon, [0] otherwise
-        last_used_move = [int(move['last_used_move'])]
-
         # [1] if the move has been used previously, [0] otherwise
         used = [int(current_pp < max_pp)]
 
@@ -429,7 +424,7 @@ class Converter:
         priority = [self.move_lookup[move_name]['priority']]
 
         return moves + typing + move_category + base_power + accuracy + current_pp + max_pp + \
-            target_self + disabled + last_used_move + used + priority
+            target_self + disabled + used + priority
 
     def create_header(self):
         """ returns a 4*m header """
@@ -443,7 +438,6 @@ class Converter:
                 ['max pp'] +
                 ['target self'] +
                 ['disabled'] +
-                ['last used move'] +
                 ['used'] +
                 ['priority']
         )
@@ -460,8 +454,8 @@ class Converter:
                 ['health'] +
                 ['fainted'] +
                 ['status' for _ in self.status_positions] +
+                ['sleep_countdown'] +
                 ['volatile status' for _ in self.volatile_status_positions] +
-                ['first turn out'] +
                 ['n_moves'] +
                 ['move1' for _ in move_header] +
                 ['move2' for _ in move_header] +
