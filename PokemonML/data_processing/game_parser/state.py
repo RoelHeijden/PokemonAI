@@ -20,8 +20,11 @@ class Battle:
         self.p2 = Battler()
 
         self.weather = None
+        self.weather_count = 0
         self.field = None
+        self.terrain_count = 0
         self.trick_room = False
+        self.trick_room_count = 0
 
         self.turn = False
 
@@ -75,11 +78,11 @@ class Battle:
             'p2': self.p2.to_dict(),
 
             'weather': self.weather if self.weather else "none",
-            'weather_count': 0,
+            'weather_count': self.weather_count,
             'terrain': self.field if self.field else "none",
-            'terrain_count': 0,
+            'terrain_count': self.terrain_count,
             'trick_room': self.trick_room,
-            'trick_room_count': 0,
+            'trick_room_count': self.trick_room_count,
         }
 
 
@@ -116,9 +119,16 @@ class Battler:
     def choice_lock_moves(self):
         # if the active pokemon has a choice item and their last used move was by this pokemon -> lock their other moves
         if self.active.item in constants.CHOICE_ITEMS and self.last_used_move.pokemon_name == self.active.name:
+
             for m in self.active.moves:
                 if m.name != self.last_used_move.move:
                     m.disabled = True
+
+            if 'choicelock' not in self.active.volatile_statuses:
+                self.active.volatile_statuses.append('choicelock')
+
+        elif 'choicelock' in self.active.volatile_statuses:
+            self.active.volatile_statuses.remove('choicelock')
 
     def taunt_lock_moves(self):
         if constants.TAUNT in self.active.volatile_statuses:
@@ -220,6 +230,7 @@ class Pokemon:
         self.fainted = False
         self.status = None
         self.volatile_statuses = []
+        self.sleep_countdown = 0
 
         self.boosts = {'attack': 0, 'defense': 0, 'special-attack': 0, 'special-defense': 0,
                        'speed': 0, 'accuracy': 0, 'evasion': 0}
@@ -291,7 +302,7 @@ class Pokemon:
             'volatile_status': list(self.volatile_statuses),
             'moves': [m.to_dict() for m in self.moves],
             'fainted': self.fainted,
-            'first_turn_out': False
+            'sleep_countdown': self.sleep_countdown,
         }
 
     def __eq__(self, other):
@@ -326,7 +337,6 @@ class Move:
             "name": self.name,
             "pp": self.current_pp,
             "disabled": self.disabled,
-            "last_used_move": False,
         }
 
     def __eq__(self, other):

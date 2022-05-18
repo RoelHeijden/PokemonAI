@@ -8,14 +8,14 @@ from game_log import GameLog
 
 
 def main():
-    # mode = 'read from folder'
-    mode = 'read from batch'
+    mode = 'read from folder'
+    # mode = 'read from batch'
     # mode = 'create batches'
     # mode = 'pre-process data'
-    # mode = 'inspect a log'
+    mode = 'inspect a log'
 
-    folder = 'rated_1400_1599'
-    battle_id = 0000000
+    folder = 'all_rated_1200+'
+    battle_id = 758890
 
     batch = 42
 
@@ -25,7 +25,7 @@ def main():
     if mode == 'read from folder':
         folder_path = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/pre-processed-ou-dec2019-feb2022/anonymized-ou-incomplete"
         path_in = os.path.join(folder_path, folder)
-        path_out = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-dec2019-feb2022/anonymized-ou-incomplete/actual_testing"
+        path_out = 'C:\\Users\\RoelH\\Documents\\Uni\\Bachelor thesis\\data\\processed-ou-incomplete\\all_rated_1200+'
         parse_all(path_in, path_out)
 
     if mode == 'read from batch':
@@ -57,6 +57,13 @@ def main():
             info = ujson.loads(line)
         for line in info['log']:
             print(line)
+        print()
+        for mon in info['p1team']:
+            print(mon)
+        print()
+        for mon in info['p2team']:
+            print(mon)
+
 
 
 def pre_pre_processing(folder_path, save_path):

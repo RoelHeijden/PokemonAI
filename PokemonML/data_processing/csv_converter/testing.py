@@ -19,7 +19,7 @@ def init_category(file_name, relative_path='categories'):
     return data
 
 
-pokemon_list = init_category('pokemon.json')
+# pokemon_list = init_category('pokemon.json')
 # item_list = init_category('items.json')
 # ability_list = init_category('abilities.json')
 # move_list = init_category('moves.json')
@@ -67,13 +67,21 @@ def test_test_states():
     print("Total runtime:", round(toc - tic, 4))
 
 
-test_test_states()
+# test_test_states()
 
 
 ####################################################################################################
 
 
-# file = json.load(open('game-states-gen8ou-6425043.json'))
+
+# folder = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/python/PokemonML/data/granted_data_testing/processed_data"
+#
+# files = []
+# for file_name in os.listdir(folder):
+#     files.append(os.path.join(folder, file_name))
+#
+#
+# file = json.load(open(files[1]))
 #
 # for i, s in enumerate(file):
 #     if i == 0:
@@ -82,8 +90,6 @@ test_test_states()
 
 
 ####################################################################################################
-
-
 
 
 

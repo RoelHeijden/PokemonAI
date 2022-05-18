@@ -2,10 +2,12 @@ from copy import deepcopy
 import logging
 import math
 import json
+import re
 
 from Showdown_Pmariglia import constants
 from Showdown_Pmariglia.data import all_move_json
 from Showdown_Pmariglia.data import pokedex
+from Showdown_Pmariglia.showdown.engine.helpers import normalize_name as normalize_name_include_nums
 
 from helpers import normalize_name
 from PokemonML.data_processing.game_parser.state import Pokemon, LastUsedMove
@@ -191,6 +193,22 @@ def status(battle, split_msg):
     logger.debug("{} got status: {}".format(pkmn.name, status_name))
     pkmn.status = status_name
 
+    if status_name == 'slp':
+        if split_msg[-1] == '[from] move: Rest':
+            pkmn.sleep_countdown = 2
+        else:
+            pkmn.sleep_countdown = 3
+
+
+def cant(battle, split_msg):
+    if is_p2(battle, split_msg):
+        pkmn = battle.p2.active
+    else:
+        pkmn = battle.p1.active
+
+    if split_msg[-1] == 'slp' and pkmn.sleep_countdown > 0:
+        pkmn.sleep_countdown -= 1
+
 
 def activate(battle, split_msg):
     if is_p2(battle, split_msg):
@@ -217,7 +235,11 @@ def prepare(battle, split_msg):
     else:
         pkmn = battle.p1.active
 
-    being_prepared = normalize_name(split_msg[3])
+    being_prepared = normalize_name_include_nums(split_msg[3])
+
+    if (being_prepared == 'solarbeam' or being_prepared == 'solarblade') and battle.weather == constants.SUN:
+        return
+
     if being_prepared in pkmn.volatile_statuses:
         logger.warning("{} already has the volatile status {}".format(pkmn.name, being_prepared))
     else:
@@ -234,7 +256,7 @@ def start_volatile_status(battle, split_msg):
         side = battle.p1
         opp_side = battle.p2
 
-    volatile_status = normalize_name(split_msg[3].split(":")[-1])
+    volatile_status = normalize_name_include_nums(split_msg[3].split(":")[-1])
 
     if volatile_status == 'ingrain' or volatile_status == 'noretreat' :
         pkmn.volatile_statuses.append(constants.TRAPPED)
@@ -275,7 +297,7 @@ def end_volatile_status(battle, split_msg):
     else:
         pkmn = battle.p1.active
 
-    volatile_status = normalize_name(split_msg[3].split(":")[-1])
+    volatile_status = normalize_name_include_nums(split_msg[3].split(":")[-1])
 
     if volatile_status == 'futuresight' or volatile_status == "doomdesire":
         return
@@ -304,7 +326,9 @@ def curestatus(battle, split_msg):
     else:
         side = battle.p1
 
-    side.active.stats = None
+    side.active.status = None
+    side.side_conditions[constants.TOXIC_COUNT] = 0
+    side.active.sleep_countdown = 0
 
 
 def cureteam(battle, split_msg):
@@ -315,14 +339,22 @@ def cureteam(battle, split_msg):
         side = battle.p1
 
     side.active.status = None
+    side.side_conditions[constants.TOXIC_COUNT] = 0
+    side.active.sleep_countdown = 0
+
     for pkmn in filter(lambda p: isinstance(p, Pokemon), side.reserve):
         pkmn.status = None
+        pkmn.sleep_countdown = 0
 
 
 def weather(battle, split_msg):
     weather_name = normalize_name(split_msg[2].split(':')[-1].strip())
-    logger.debug("Weather {} started".format(weather_name))
     battle.weather = weather_name
+
+    if split_msg[-1] == '[upkeep]':
+        battle.weather_count += 1
+    else:
+        battle.weather_count = 0
 
 
 def fieldstart(battle, split_msg):
@@ -333,9 +365,11 @@ def fieldstart(battle, split_msg):
     if field_name == constants.TRICK_ROOM:
         logger.debug("Setting trickroom")
         battle.trick_room = True
+        battle.trick_room_count = 0
     else:
         logger.debug("Setting the field to {}".format(field_name))
         battle.field = field_name
+        battle.terrain_count = 0
 
 
 def fieldend(battle, split_msg):
@@ -346,9 +380,11 @@ def fieldend(battle, split_msg):
     if field_name == constants.TRICK_ROOM:
         logger.debug("Removing trick room")
         battle.trick_room = False
+        battle.trick_room_count = 0
     else:
         logger.debug("Setting the field to None")
         battle.field = None
+        battle.terrain_count = 0
 
 
 def sidestart(battle, split_msg):
@@ -451,7 +487,7 @@ def singleturn(battle, split_msg):
     else:
         side = battle.p1
 
-    move_name = normalize_name(split_msg[3].split(':')[-1])
+    move_name = normalize_name_include_nums(split_msg[3].split(':')[-1])
     if move_name in constants.PROTECT_VOLATILE_STATUSES:
         # set to 2 because the `upkeep` function will decrement by 1 on every end-of-turn
         side.side_conditions[constants.PROTECT] = 2
@@ -483,9 +519,20 @@ def upkeep(battle, _):
         battle.p2.future_sight = (battle.p2.future_sight[0] - 1, battle.p2.future_sight[1])
         logger.debug("Decrementing future_sight to {} for the p2".format(battle.p2.future_sight[0]))
 
-    # increment weather counter?
+    if battle.p1.active.status != constants.TOXIC:
+        battle.p1.side_conditions[constants.TOXIC_COUNT] = 0
+
+    if battle.p2.active.status != constants.TOXIC:
+        battle.p2.side_conditions[constants.TOXIC_COUNT] = 0
+
     # increment terrain counter?
+    if battle.field:
+        battle.terrain_count += 1
+
     # increment Trick room counter?
+    if battle.trick_room:
+        battle.trick_room_count += 1
+
 
 
 def turn(battle, split_msg):
@@ -639,6 +686,21 @@ def update_state(battle, split_msg):
                        f"game aborted and added to games_to_ignore")
         return False
 
+    # old games have something like: -sidestart38555, message.
+    # split this into: -sidestart, p1/p2, message.
+    if action.startswith('-side') and any(i.isdigit() for i in action):
+        action, player_name = re.split('(\d+)', action)[0:2]
+
+        if battle.p1.account_name == player_name:
+            player = 'p1'
+        elif battle.p2.account_name == player_name:
+            player = 'p2'
+        else:
+            raise ValueError(f"none of the players match player name '{player_name}'\n"
+                             f"battle: {battle.battle_tag}, turn: {battle.turn}")
+
+        split_msg = [split_msg[0], action, player + ': ' + str(player_name)] + split_msg[2:]
+
     battle_modifiers_lookup = {
         'switch': switch_or_drag,
         'faint': faint,
@@ -649,6 +711,7 @@ def update_state(battle, split_msg):
         '-boost': boost,
         '-unboost': unboost,
         '-status': status,
+        'cant': cant,
         '-activate': activate,
         '-prepare': prepare,
         '-start': start_volatile_status,
@@ -679,7 +742,7 @@ def update_state(battle, split_msg):
     if function_to_call is not None:
         function_to_call(battle, split_msg)
 
-    if action == 'turn':
+    if action == 'turn' or action == 'upkeep':
         battle.p2.check_if_trapped(battle)
         battle.p2.lock_moves()
         battle.p1.check_if_trapped(battle)

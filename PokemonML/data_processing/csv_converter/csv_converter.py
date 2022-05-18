@@ -28,23 +28,21 @@ CSV
 
 ######################################################################################
 
+CSV implements:
+    - pokemon forms
+    - volatile status 2-turn move check
+    
+    - sleep countdown
+    - counts for toxic, spikes and tspikes
+    - perish counter
+    - header lengths for side_conditions and volatile_status
+    
+    - remove first_turn_out
+    - remove last_used_move
 
-3. collect status conditions
-4. collect volatile statuses
-5. collect side conditions
 
-6. check representation of: encore, light screen, taunt, spike layers, etc.
-7. check Rest sleep representation
-8. check how choice_lock is represented
-9. check weather names
+13. test states
 
-10. implement pokemon form check in csv_converter
-
-11. implement sleep counter
-12. implement weather, terrain, trickroom counter
-13. implement last_used_move and first_turn_out
-
-14. check speedups for to_dict()
 
 
 
@@ -184,6 +182,7 @@ class Converter:
         self.side_condition_positions = {}  # TBD
 
         self.move_lookup = json.load(open('lookups/move_lookup.json'))
+        self.volatiles_to_ignore = json.load(open('lookups/volatiles_to_ignore.json'))
 
     @staticmethod
     def init_category(file_name, relative_path='categories'):
@@ -361,7 +360,7 @@ class Converter:
             index = self.volatile_status_positions.get(v)
             if index is not None:
                 volatile_status[index] = 1
-            else:
+            elif not self.volatiles_to_ignore.get(v):
                 logging.debug(f'volatile_status "{v}" does not exist in volatile_status.json')
 
         # [1] if its the pokemon's first turn out, [0] otherwise

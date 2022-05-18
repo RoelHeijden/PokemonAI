@@ -118,6 +118,7 @@ class GameLog:
 
         state.p1.account_name = self.p1
         state.p2.account_name = self.p2
+
         state.p1.name = 'p1'
         state.p2.name = 'p2'
 
