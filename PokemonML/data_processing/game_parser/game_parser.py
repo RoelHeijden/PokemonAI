@@ -25,7 +25,7 @@ def main():
     if mode == 'read from folder':
         folder_path = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/pre-processed-ou-dec2019-feb2022/anonymized-ou-incomplete"
         path_in = os.path.join(folder_path, folder)
-        path_out = 'C:/Users/RoelH/Documents//Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+'
+        path_out = 'C:/Users/RoelH/Documents//Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training'
         parse_all(path_in, path_out)
 
     if mode == 'read from batch':
