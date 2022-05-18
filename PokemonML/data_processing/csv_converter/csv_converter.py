@@ -28,23 +28,16 @@ CSV
 
 ######################################################################################
 
-CSV implements:
-    - pokemon forms
-    - volatile status 2-turn move check
-    
-    - sleep countdown
-    - counts for toxic, spikes and tspikes
-    - perish counter
-    - header lengths for side_conditions and volatile_status
-    
-    - remove first_turn_out
-    - remove last_used_move
+- check pokemon forms
 
+- volatile status 2-turn move check
+- header lengths for volatile_status
 
-13. test states
+- add sleep countdown
+- counts for toxic, spikes and tspikes
 
-
-
+- remove first_turn_out
+- remove last_used_move
 
 """
 
