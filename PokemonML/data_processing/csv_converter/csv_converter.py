@@ -28,12 +28,10 @@ CSV
 
 ######################################################################################
 
-- check pokemon forms
 
-- volatile status 2-turn move check
-- header lengths for volatile_status
-
-- counts for toxic, spikes and tspikes
+- fix absolute paths
+- fix csv writing speed
+- create test split
 
 """
 
@@ -41,11 +39,8 @@ CSV
 def main():
     converter = Converter()
 
-    path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/python/PokemonML/data/granted_data_testing/processed_data'
-
-    path_out = os.getcwd()
-    file_name = 'training_states.csv'
-    file_out = os.path.join(path_out, file_name)
+    path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+'
+    file_out = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/training_states.csv'
 
     headers = converter.create_header()
     write_csv_headers(file_out, headers)
@@ -78,7 +73,7 @@ def convert_all_games(converter, path_in, file_out, min_game_length=3):
     n_games = 0
 
     games_too_short = {}
-    ignore_list = json.load(open('games_to_ignore.json', 'r'))
+    ignore_list = json.load(open('../games_to_ignore.json', 'r'))
 
     # open csv file to write in
     with open(file_out, 'a') as f_out:
@@ -103,20 +98,19 @@ def convert_all_games(converter, path_in, file_out, min_game_length=3):
                 # write states to file
                 for s in states:
                     input_array = converter.convert_state(s)
-                    np.savetxt(f_out, input_array, delimiter=",")
+                    # np.savetxt(f_out, input_array, delimiter=",")
 
                     n_states += 1
 
                 n_games += 1
 
-                if n_games % 10000 == 0:
+                if n_games % 200 == 0:
                     print(f'{n_games} games processed')
                     print(f'{n_states} states converted')
                     print(f'runtime: {round(time.time() - start_time, 1)}s\n')
 
     print("finished")
-    print(f'{n_games} games processed')
-    print(f'{n_states} states converted')
+    print(f'{n_games} games processed, {n_states} states converted')
     print(f'runtime: {round(time.time() - start_time, 1)}s\n')
 
     print(f"{len(games_too_short)} games skipped because they lasted shorter than {min_game_length} turns")
@@ -169,11 +163,14 @@ class Converter:
         self.types_positions = self.init_category('types.json')
         self.status_positions = self.init_category('status.json')
         self.move_category_positions = self.init_category('move_categories.json')
-        self.volatile_status_positions = {}  # TBD
-        self.side_condition_positions = {}  # TBD
+        self.volatile_status_positions = self.init_category('volatile_statuses.json')
+        self.side_condition_positions = self.init_category('side_conditions.json')
 
         self.move_lookup = json.load(open('lookups/move_lookup.json'))
+        self.form_lookup = json.load(open('lookups/form_lookup.json'))
         self.volatiles_to_ignore = json.load(open('lookups/volatiles_to_ignore.json'))
+        self.invulnerable_stages = json.load(open('lookups/invulnerable_stages.json'))
+        self.vulnerable_stages = json.load(open('lookups/vulnerable_stages.json'))
 
     @staticmethod
     def init_category(file_name, relative_path='categories'):
@@ -242,8 +239,9 @@ class Converter:
         side_conditions = [0] * len(self.side_condition_positions)
         for side_condition in side['side_conditions']:
             index = self.side_condition_positions.get(side_condition)
+            count = side['side_conditions'][side_condition]
             if index is not None:
-                side_conditions[index] = 1
+                side_conditions[index] = count
             else:
                 logging.debug(f'side condition "{side_condition}" not in side_conditions.json')
 
@@ -272,12 +270,16 @@ class Converter:
 
     def convert_pokemon(self, pokemon):
         # one-hot-encode species
+        name = pokemon['name']
+        if self.form_lookup.get(name):
+            name = self.form_lookup.get(name)
         species = [0] * len(self.pkmn_positions)
-        species_index = self.pkmn_positions.get(pokemon['name'])
+
+        species_index = self.pkmn_positions.get(name)
         if species_index is not None:
             species[species_index] = 1
         else:
-            logging.debug(f'pokemon "{pokemon["id"]}" does not exist in pokemon.json')
+            logging.debug(f'pokemon "{pokemon["name"]}" does not exist in pokemon.json')
 
         # one-hot-encode ability
         ability = [0] * len(self.ability_positions)
@@ -351,6 +353,14 @@ class Converter:
         # one-hot-encode volatile_status
         volatile_status = [0] * len(self.volatile_status_positions)
         for v in pokemon['volatile_status']:
+
+            if self.volatiles_to_ignore.get(v):
+                continue
+            if self.vulnerable_stages.get(v):
+                v = 'vulnerablestage'
+            if self.invulnerable_stages.get(v):
+                v = 'invulnerablestage'
+
             index = self.volatile_status_positions.get(v)
             if index is not None:
                 volatile_status[index] = 1

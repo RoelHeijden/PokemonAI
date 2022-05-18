@@ -25,5 +25,7 @@
   "attract": "attract",
   "powertrick": "powertrick",
   "magnetrise": "magnetrise",
-  "choicelock": "choicelock"
+  "choicelock": "choicelock",
+  "vulnerablestage": "vulnerablestage",
+  "invulnerablestage": "invulnerablestage"
 }

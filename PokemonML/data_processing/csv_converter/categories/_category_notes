@@ -30,19 +30,7 @@ MOVES:
 
 POKEMON:
     1033 Pokemon
-    form merges:
-        - magearna
-        - Cramorant
-        - toxtricity
-        - zarude
-        - Keldeo
-    form splits:
-        - Arceus
-        - Silvallu
-        - Zamazenta
-        - Zacian
-        - Aegislash
-        - Genesect
+    merged pokemon aesthetic pokemon forms into one
     Collected from PMariglia's Pokedex, manually removed illegal Pokemon (may contain mistakes)
 
 
@@ -58,10 +46,14 @@ TYPES:
 MOVE_CATEGORIES:
     3 categories
 
+
 SIDE_CONDITIONS:
     11 side conditions
     includes toxic counter
 
+
 VOLATILES_STATUSES:
-    27 volatile status conditions
+    29 volatile status conditions
     includes 4 perish conditions (one for each count 0-3)
+    includes 'choicelock'
+    includes 'vulnerablestage' and 'invulnerablestage' for two turn charging moves
