@@ -47,14 +47,21 @@ POKEMON:
 
 
 STATUS:
-    28 Status conditions + 1 no_status slot
-    counters added for sleep turns and toxic turns
-    sleep form Rest is it's own status
+    6 Status conditions + 1 no_status slot
+
 
 TYPES:
     18 types
     does not include '???' as type
 
 
-MOVE_CATEGORY:
+MOVE_CATEGORIES:
     3 categories
+
+SIDE_CONDITIONS:
+    11 side conditions
+    includes toxic counter
+
+VOLATILES_STATUSES:
+    27 volatile status conditions
+    includes 4 perish conditions (one for each count 0-3)
