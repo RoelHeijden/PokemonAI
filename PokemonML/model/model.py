@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 """
-INPUT LAYER [1 x 56278]
+INPUT LAYER [1 x ???]
 
 - Weather type [8]
 - Weather count [1]
@@ -13,7 +13,7 @@ INPUT LAYER [1 x 56278]
 - Trick room count [1]
 
 - For each player:
-    - Side conditions [?]
+    - Side conditions [11]
     - Future sight [1]
     - Wish [2]
     - Healing wish [1]
@@ -30,12 +30,12 @@ INPUT LAYER [1 x 56278]
         - Stats [6]
         - Level [1]
 
-        - Status conditions: [28]
-        - Volatile status [?]
+        - Status conditions: [7]
+        - Volatile status [27]
+        - Sleep countdown [1]
         - Stat changes [7]
         - Fainted [1]
         - Health [1]
-        - First turn out [1]
         - N moves [1]
         - Moves [4]
 
@@ -48,7 +48,6 @@ INPUT LAYER [1 x 56278]
 
             - Current PP [4]
             - Disabled [1]
-            - Last used [1]
             - Used [1]
             - Targets self [1]
             - Priority [1]
@@ -56,8 +55,9 @@ INPUT LAYER [1 x 56278]
 
 Attributes that may be unavailable in pmariglia's state simulation:
     - weather, terrain and trick room count
-    - Pokemon: First turn out
-    - Move: Last used
+    - sleep countdown
+    - healing wish
+    - choicelock in volatile status
 
 """
 

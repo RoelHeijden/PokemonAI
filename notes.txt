@@ -38,7 +38,7 @@ fix/implement Illusion in game_parser
 
 
 STATE SIMULATOR:
-    - if one pokemon fainted: evaluate possible switches and pick highest/lowest value.
+    - if one pokemon fainted: evaluate possible switches and pick highest/lowest value? (and remove these one-active states from the data)
     - if both pokemon fainted: evaluate normally?
 
 ENVIRONMENT
