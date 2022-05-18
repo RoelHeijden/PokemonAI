@@ -746,7 +746,7 @@ def update_state(battle, split_msg):
         battle.p2.check_if_trapped(battle)
         battle.p2.lock_moves()
         battle.p1.check_if_trapped(battle)
-        battle.p2.lock_moves()
+        battle.p1.lock_moves()
 
     return True
 
