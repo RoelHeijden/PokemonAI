@@ -12,27 +12,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 
 
 """
-
-CSV    
-    Create:
-        - train/test split (90%/10%)
-        - test split with three categories:
-            - turn 1
-            - mid-game
-            - endgame 
-    
-    Check:
-        - that reverse_state() is correct
-        - that the header is correct
-        
-
-######################################################################################
-
-
-- fix absolute paths
 - fix csv writing speed
-- create test split
-
 """
 
 
@@ -415,6 +395,13 @@ class Converter:
         # move accuracy
         accuracy = [self.move_lookup[move_name]['accuracy']]
 
+        # n multi hits of the move: [min_hits, max_hits]
+        multi_hits = [0, 0]
+        if self.move_lookup[move_name].get('multihit'):
+            multi_hits = self.move_lookup[move_name]['multihit']
+            if type(multi_hits) != list:
+                multi_hits = [multi_hits, multi_hits]
+
         # current move pp
         current_pp = [move['pp']]
 
@@ -433,7 +420,7 @@ class Converter:
         # move priority level
         priority = [self.move_lookup[move_name]['priority']]
 
-        return moves + typing + move_category + base_power + accuracy + current_pp + max_pp + \
+        return moves + typing + move_category + base_power + accuracy + multi_hits + current_pp + max_pp + \
             target_self + disabled + used + priority
 
     def create_header(self):
@@ -441,12 +428,13 @@ class Converter:
         move_header = (
                 ['move' for _ in self.move_positions] +
                 ['type' for _ in self.types_positions] +
-                ['move category' for _ in self.move_category_positions] +
-                ['base power'] +
+                ['move_category' for _ in self.move_category_positions] +
+                ['base_power'] +
                 ['accuracy'] +
-                ['current pp'] +
-                ['max pp'] +
-                ['target self'] +
+                ['multi_hits'] * 2 +
+                ['current_pp'] +
+                ['max_pp'] +
+                ['target_self'] +
                 ['disabled'] +
                 ['used'] +
                 ['priority']
@@ -457,15 +445,15 @@ class Converter:
                 ['ability' for _ in self.ability_positions] +
                 ['type' for _ in self.types_positions] +
                 ['item' for _ in self.item_positions] +
-                ['has item'] +
+                ['has_item'] +
                 ['level'] +
                 ['stats'] * 6 +
-                ['stat changes'] * 7 +
+                ['stat_changes'] * 7 +
                 ['health'] +
                 ['fainted'] +
                 ['status' for _ in self.status_positions] +
                 ['sleep_countdown'] +
-                ['volatile status' for _ in self.volatile_status_positions] +
+                ['volatile_status' for _ in self.volatile_status_positions] +
                 ['n_moves'] +
                 ['move1' for _ in move_header] +
                 ['move2' for _ in move_header] +
@@ -474,34 +462,34 @@ class Converter:
         )
 
         player_header = (
-                ['side condition' for _ in self.side_condition_positions] +
+                ['side_conditions' for _ in self.side_condition_positions] +
                 ['wish'] * 2 +
-                ['future sight'] +
-                ['healing wish'] +
-                ['is trapped'] +
-                ['has active'] +
-                ['active pokemon' for _ in pokemon_header] +
-                ['reserve pokemon1' for _ in pokemon_header] +
-                ['reserve pokemon2' for _ in pokemon_header] +
-                ['reserve pokemon3' for _ in pokemon_header] +
-                ['reserve pokemon4' for _ in pokemon_header] +
-                ['reserve pokemon5' for _ in pokemon_header]
+                ['future_sight'] +
+                ['healing_wish'] +
+                ['is_trapped'] +
+                ['has_active'] +
+                ['active' for _ in pokemon_header] +
+                ['reserve1' for _ in pokemon_header] +
+                ['reserve2' for _ in pokemon_header] +
+                ['reserve3' for _ in pokemon_header] +
+                ['reserve4' for _ in pokemon_header] +
+                ['reserve5' for _ in pokemon_header]
         )
 
         game_header = (
-                ['p1 win'] +
-                ['p1 rating'] +
-                ['p2 rating'] +
-                ['avg rating'] +
-                ['rated battle'] +
-                ['room id'] +
+                ['p1_win'] +
+                ['p1_rating'] +
+                ['p2_rating'] +
+                ['avg_rating'] +
+                ['rated_battle'] +
+                ['room_id'] +
                 ['turn'] +
                 ['weather' for _ in self.weather_positions] +
-                ['weather count'] +
+                ['weather_count'] +
                 ['terrain' for _ in self.terrain_positions] +
-                ['terrain count'] +
-                ['trick room'] +
-                ['trick room count'] +
+                ['terrain_count'] +
+                ['trick_room'] +
+                ['trick_room_count'] +
                 ['p1' for _ in player_header] +
                 ['p2' for _ in player_header]
         )
@@ -517,7 +505,7 @@ class Converter:
         third_header = (
                 game_header[:game_header.index('p1')] +
                 (
-                        player_header[:player_header.index('active pokemon')] +
+                        player_header[:player_header.index('active')] +
                         pokemon_header * 6
                 ) * 2
         )
@@ -525,7 +513,7 @@ class Converter:
         fourth_header = (
                 game_header[:game_header.index('p1')] +
                 (
-                        player_header[:player_header.index('active pokemon')] +
+                        player_header[:player_header.index('active')] +
                         (
                                 pokemon_header[:pokemon_header.index('move1')] +
                                 move_header * 4

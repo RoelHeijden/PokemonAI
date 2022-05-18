@@ -15,7 +15,7 @@ def main():
     # mode = 'inspect a log'
 
     folder = 'all_rated_1200+'
-    battle_id = 00000000
+    battle_id = 0000000000
 
     batch = 0
 
@@ -142,7 +142,7 @@ def pre_pre_processing(folder_path, save_path):
 
                 match_count += 1
 
-                if match_count % 20000 == 0:
+                if match_count % 10000 == 0:
                     print(f'{match_count} games processed, {round(time.time() - tic)} seconds passed')
 
     toc = time.time()
@@ -236,7 +236,7 @@ def parse_all(folder_path, save_path):
                 match_count += 1
 
                 if match_count % 10000 == 0:
-                    print(f'{match_count} games processed, {round(time.time() - tic)} seconds passed')
+                    print(f'{match_count} games processed, {round(time.time() - tic)}s')
 
     toc = time.time()
 
