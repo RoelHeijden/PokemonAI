@@ -14,8 +14,9 @@ logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 
 1. understand the embedding pipeline (how to split p1's attributes from p2??)
 2. make category jsons with indices for pokemon, moves, items and abilities 
-3. scale data (e.g. stats = stats / 250)
-4. convert to dict[str: tensor]
+3. remove unnecessary variables (rating, etc)
+4. scale data (e.g. stats = stats / 250)
+5. convert to dict[str: tensor]
 
 
 """
