@@ -34,23 +34,14 @@ fix move pp updating for unknown moves (e.g. Struggle. I the move is now permane
 
 fix/implement Illusion in game_parser
 
+
 ----------------------------------------------------------------------------------------------------------------
 
 
-STATE SIMULATOR:
-    - if one pokemon fainted: evaluate possible switches and pick highest/lowest value? (and remove these one-active states from the data)
-    - if both pokemon fainted: evaluate normally?
-
-ENVIRONMENT
-    3. check role of hidden_power_type in battler.from_team_json()
-
-ONCE NN WORKS
-    1. return max/min value when game state is win/loss
-    2. add weather/terrain/trick room counter to state (in engine and simulator)
-    3. add last_used to move (in engine and simulator)
-    4. add first_turn_out to Pokemon (in engine and simulator)
-    5. check how NE u-turn decisions change once evaluation is proper
-
+GAME PARSER
+    1. fix numbers in normalize name function (porygon2 wrongfully becomes porygon)
+    2. fix gravity overwriting terrain?
+    3. add gravity as separate field
 
 
 INFO MANAGEMENT
@@ -72,10 +63,31 @@ INFO MANAGEMENT
         - for each possible item (temporarily set the item)
         - for each bulk/offense/speed range(?)
 
+
 NASH EQUILIBRIUM
     1. when NE is uniform (doesn't matter which of the N options you pick), pick one with highest average in the case the opp deviates from calculated NE
     2. find the 'best' NE (check if this is being done in Quantecon)
     3. Figure out if Bayesian NE is possible via Quantecon
+
+
+----------------------------------------------------------------------------------------------------------------
+
+
+STATE SIMULATOR:
+    1. if one pokemon fainted: evaluate possible switches and pick highest/lowest value? (and remove these one-active states from the data)
+    2. if both pokemon fainted: evaluate normally?
+
+
+ENVIRONMENT
+    1. check role of hidden_power_type in battler.from_team_json()
+
+
+ONCE NN WORKS
+    1. return max/min value when game state is win/loss
+    2. add weather/terrain/trick room counter to state (in engine and simulator)
+    3. add last_used to move (in engine and simulator)
+    4. add first_turn_out to Pokemon (in engine and simulator)
+    5. check how NE u-turn decisions change once evaluation is proper
 
 
 
