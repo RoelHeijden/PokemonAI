@@ -7,37 +7,18 @@ import ujson
 import math
 import logging
 
-
 logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 
 
-"""
-- fix csv writing speed
-"""
-
-
 def main():
+    path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training'
+    path_out = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/ou-incomplete-csv-files/training'
+
     converter = Converter()
-
-    path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+'
-    file_out = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/training_states.csv'
-
-    headers = converter.create_header()
-    write_csv_headers(file_out, headers)
-
-    convert_all_games(converter, path_in, file_out)
+    convert_all_games(converter, path_in, path_out)
 
 
-def write_csv_headers(file, headers):
-    """ writes multiple headers to csv file """
-    with open(file, 'w') as f_out:
-        writer = csv.writer(f_out)
-        for header in headers:
-            writer.writerow(header)
-        f_out.close()
-
-
-def convert_all_games(converter, path_in, file_out, min_game_length=3):
+def convert_all_games(converter, path_in, path_out, min_game_length=3, n_csv_rows=20000):
     """ converts each game into one or two number-converted game states """
 
     print("starting\n")
@@ -55,46 +36,69 @@ def convert_all_games(converter, path_in, file_out, min_game_length=3):
     games_too_short = {}
     ignore_list = json.load(open('../games_to_ignore.json', 'r'))
 
-    # open csv file to write in
-    with open(file_out, 'a') as f_out:
-        # open each game_states file
-        for f in files:
-            with open(f) as f_in:
+    headers = converter.create_header()
+    converted_data = []
+    n_files_written = 0
 
-                all_states = json.load(f_in)
+    # open each game_states file
+    for f in files:
+        with open(f) as f_in:
+            all_states = json.load(f_in)
 
-                # skip game if in the ignore list
-                if ignore_list.get(str(all_states[0]['roomid'])):
-                    continue
+            # skip game if in the ignore list
+            if ignore_list.get(str(all_states[0]['roomid'])):
+                continue
 
-                # skip game if game doesn't last long enough
-                if len(all_states) < min_game_length:
-                    games_too_short[f] = len(all_states)
-                    continue
+            # skip game if game doesn't last long enough
+            if len(all_states) < min_game_length:
+                games_too_short[f] = len(all_states)
+                continue
 
-                # select two random states to write
-                states = pick_random_states(all_states, min_turns_apart=math.floor(min_game_length/3))
+            # select two random states to write
+            states = pick_random_states(all_states, min_turns_apart=math.floor(min_game_length/3))
 
-                # write states to file
-                for s in states:
-                    input_array = converter.convert_state(s)
-                    # np.savetxt(f_out, input_array, delimiter=",")
+            # write states to file
+            for s in states:
+                input_array = converter.convert_state(s)
+                converted_data.append(input_array)
+                n_states += 1
 
-                    n_states += 1
+            # write csv file once converted data reaches n_csv_rows amount of data points
+            if len(converted_data) >= n_csv_rows:
+                file = os.path.join(path_out, 'ou_dec19_feb20_' + str(n_files_written) + '.csv')
+                write_csv(file, converted_data, headers)
+                n_files_written += 1
+                converted_data = []
 
-                n_games += 1
+            n_games += 1
 
-                if n_games % 200 == 0:
-                    print(f'{n_games} games processed')
-                    print(f'{n_states} states converted')
-                    print(f'runtime: {round(time.time() - start_time, 1)}s\n')
+            if n_games % 2000 == 0:
+                print(f'{n_games} games processed')
+                print(f'{n_states} states converted')
+                print(f'runtime: {round(time.time() - start_time, 1)}s\n')
 
-    print("finished")
-    print(f'{n_games} games processed, {n_states} states converted')
-    print(f'runtime: {round(time.time() - start_time, 1)}s\n')
+    # write csv file with the data that's left, but below the n_csv_rows threshold
+    file = os.path.join(path_out, 'ou_dec19_feb20_' + str(n_files_written) + '.csv')
+    write_csv(file, converted_data, headers)
+    n_files_written += 1
+
+    print("finished\n")
 
     print(f"{len(games_too_short)} games skipped because they lasted shorter than {min_game_length} turns")
     print(ujson.dumps(games_too_short))
+
+    print(f'\n{n_games} games processed, {n_states} states converted')
+    print(f'{n_files_written} csv files written with {n_csv_rows} rows ({len(converted_data)} for the final csv)')
+    print(f'runtime: {round(time.time() - start_time, 1)}s\n')
+
+
+def write_csv(file, data, headers):
+    """ writes the converted data to a csv file """
+    with open(file, 'w') as f_out:
+        writer = csv.writer(f_out)
+        for header in headers:
+            writer.writerow(header)
+        np.savetxt(f_out, np.asarray(data), delimiter=",")
 
 
 def pick_random_states(all_states, min_turns_apart=1):
@@ -169,12 +173,12 @@ class Converter:
         else:
             p1_win = [0]
 
-        p1_rating = [game_state['p1rating']]
-        p2_rating = [game_state['p2rating']]
-        avg_rating = [game_state['average_rating']]
-        rated_battle = [game_state['rated_battle']]
-        room_id = [game_state['roomid']]
-        turn = [game_state['turn']]
+        p1_rating = [int(game_state['p1rating'])]
+        p2_rating = [int(game_state['p2rating'])]
+        avg_rating = [int(game_state['average_rating'])]
+        rated_battle = [int(game_state['rated_battle'])]
+        room_id = [int(game_state['roomid'])]
+        turn = [int(game_state['turn'])]
 
         fields = self.convert_fields(game_state)
         player1 = self.convert_side(game_state['p1'])
@@ -240,13 +244,19 @@ class Converter:
         # [1] if the player's active pokemon is alive, [0] otherwise
         has_active = [int(not side['active']['fainted'])]
 
+        # amount of pokemon the player has
+        n_pokemon = [len(side['reserve']) + 1]
+
         # the player's active pokemon -- fainted or alive
         active = self.convert_pokemon(side['active'])
 
         # the player's reserve pokemon -- fainted or alive
         reserve = [val for pkmn in [self.convert_pokemon(pkmn) for pkmn in side['reserve']] for val in pkmn]
 
-        return side_conditions + wish + future_sight + healing_wish + trapped + has_active + active + reserve
+        # create empty arrays when the player has less than 6 pokemon
+        reserve += [0] * len(active) * (6-n_pokemon[0])
+
+        return side_conditions + wish + future_sight + healing_wish + trapped + has_active + n_pokemon + active + reserve
 
     def convert_pokemon(self, pokemon):
         # one-hot-encode species
@@ -316,8 +326,8 @@ class Converter:
         # pokemon hp range 0-100
         health = [int(pokemon['hp'] / pokemon['maxhp'] * 100)]
 
-        # [1] if pokemon fainted, [0] if still alive
-        fainted = [int(pokemon['fainted'])]
+        # [0] if pokemon fainted, [1] if still alive
+        is_alive = [int(not pokemon['fainted'])]
 
         # one-hot-encode status conditions
         status = [0] * len(self.status_positions)
@@ -360,7 +370,7 @@ class Converter:
             raise ValueError(f'Pokemon {pokemon["name"]} has no moves')
 
         return species + ability + types + item + has_item + level + stats + stat_changes + \
-            health + fainted + status + sleep_countdown + volatile_status + n_moves + moves
+            health + is_alive + status + sleep_countdown + volatile_status + n_moves + moves
 
     def convert_move(self, move):
         move_name = move['name']
@@ -450,7 +460,7 @@ class Converter:
                 ['stats'] * 6 +
                 ['stat_changes'] * 7 +
                 ['health'] +
-                ['fainted'] +
+                ['is_alive'] +
                 ['status' for _ in self.status_positions] +
                 ['sleep_countdown'] +
                 ['volatile_status' for _ in self.volatile_status_positions] +
@@ -468,6 +478,7 @@ class Converter:
                 ['healing_wish'] +
                 ['is_trapped'] +
                 ['has_active'] +
+                ['n_pokemon'] +
                 ['active' for _ in pokemon_header] +
                 ['reserve1' for _ in pokemon_header] +
                 ['reserve2' for _ in pokemon_header] +
