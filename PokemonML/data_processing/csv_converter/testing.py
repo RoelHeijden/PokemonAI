@@ -99,14 +99,15 @@ def test_test_states():
 ####################################################################################################
 
 
-file = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/ou-incomplete-csv-files/training/ou_dec19_feb20_2.csv'
+file = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/ou-incomplete-csv-files/training/ou_dec19_feb20_0.csv'
 df = pd.read_csv(file, header=[0, 1, 2, 3])
 
-# print(df['p2']['side_conditions'][2:])
-#
+print(df)
+# print(df['p2']['active']['move1']['accuracy'])
+
 # for i in range(len(df)):
 #     row = df.iloc[i, :]
-#     print(row['p2']['side_conditions'][:5])
+#     print(row['p2']['side_conditions'][:3])
 
 
 

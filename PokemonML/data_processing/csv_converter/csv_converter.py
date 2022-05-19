@@ -65,6 +65,8 @@ def convert_all_games(converter, path_in, path_out, min_game_length=3, n_csv_row
 
             # write csv file once converted data reaches n_csv_rows amount of data points
             if len(converted_data) >= n_csv_rows:
+                print("writing file\n")
+
                 file = os.path.join(path_out, 'ou_dec19_feb20_' + str(n_files_written) + '.csv')
                 write_csv(file, converted_data, headers)
                 n_files_written += 1
@@ -98,7 +100,7 @@ def write_csv(file, data, headers):
         writer = csv.writer(f_out)
         for header in headers:
             writer.writerow(header)
-        np.savetxt(f_out, np.asarray(data), delimiter=",")
+        np.savetxt(f_out, np.asarray(data), delimiter=",", fmt='%i')
 
 
 def pick_random_states(all_states, min_turns_apart=1):
@@ -185,7 +187,7 @@ class Converter:
         player2 = self.convert_side(game_state['p2'])
 
         return np.asarray(p1_win + p1_rating + p2_rating + avg_rating +
-                          rated_battle + room_id + turn + fields + player1 + player2)
+                          rated_battle + room_id + turn + fields + player1 + player2).astype(int)
 
     def convert_fields(self, state):
         # one-hot-encode weather
