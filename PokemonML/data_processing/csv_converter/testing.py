@@ -46,12 +46,16 @@ def test_test_states():
     files = sorted([os.path.join('test_states', file_name)
                     for file_name in os.listdir('test_states')])
 
+    files = [files[5]]
+
     tic = time.time()
 
     for i, f in enumerate(files):
         with open(f, 'r') as f_in:
 
             state = json.load(f_in)
+
+            state['p1']['reserve'] = state['p1']['reserve'][2:]
 
             start_time = time.time()
             output = cv.convert_state(state)
@@ -95,22 +99,15 @@ def test_test_states():
 ####################################################################################################
 
 
-# from csv_converter import Converter
-# cv = Converter()
+file = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/ou-incomplete-csv-files/training/ou_dec19_feb20_2.csv'
+df = pd.read_csv(file, header=[0, 1, 2, 3])
+
+# print(df['p2']['side_conditions'][2:])
 #
-# file = 'test_states/test_state_20.txt'
-# test_state = json.load(open(file))
-#
-# headers = cv.create_header()
-# input_array = cv.convert_state(test_state)
-#
-# df = pd.DataFrame([input_array], columns=headers)
-#
-# sub_df = df['p2']['side_conditions']
-#
-# for i in range(sub_df.size):
-#     value = int(sub_df.iloc[:, i])
-#     print(i, value)
+# for i in range(len(df)):
+#     row = df.iloc[i, :]
+#     print(row['p2']['side_conditions'][:5])
+
 
 
 

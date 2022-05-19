@@ -12,10 +12,10 @@ def main():
     # mode = 'read from batch'
     # mode = 'create batches'
     # mode = 'pre-process data'
-    # mode = 'inspect a log'
+    mode = 'inspect a log'
 
     folder = 'all_rated_1200+'
-    battle_id = 0000000000
+    battle_id = 1021737
 
     batch = 0
 
