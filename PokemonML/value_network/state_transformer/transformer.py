@@ -1,144 +1,27 @@
 import json
 import os
 import numpy as np
-import csv
 import time
-import ujson
-import math
+import random
+import torch
+
 import logging
 
 logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 
 
-def main():
-    path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training'
-    path_out = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/ou-incomplete-csv-files/training'
+"""
 
-    converter = Converter()
-    convert_all_games(converter, path_in, path_out)
-
-
-def convert_all_games(converter, path_in, path_out, min_game_length=3, n_csv_rows=20000):
-    """ converts each game into one or two number-converted game states """
-
-    print("starting\n")
-
-    # collect file names
-    files = sorted([os.path.join(path_in, file_name)
-                    for file_name in os.listdir(path_in)])
-
-    print(f'{len(files)} files found\n')
-
-    start_time = time.time()
-    n_states = 0
-    n_games = 0
-
-    games_too_short = {}
-    ignore_list = json.load(open('../games_to_ignore.json', 'r'))
-
-    headers = converter.create_header()
-    converted_data = []
-    n_files_written = 0
-
-    # open each game_states file
-    for f in files:
-        with open(f) as f_in:
-            all_states = json.load(f_in)
-
-            # skip game if in the ignore list
-            if ignore_list.get(str(all_states[0]['roomid'])):
-                continue
-
-            # skip game if game doesn't last long enough
-            if len(all_states) < min_game_length:
-                games_too_short[f] = len(all_states)
-                continue
-
-            # select two random states to write
-            states = pick_random_states(all_states, min_turns_apart=math.floor(min_game_length/3))
-
-            # write states to file
-            for s in states:
-                input_array = converter.convert_state(s)
-                converted_data.append(input_array)
-                n_states += 1
-
-            # write csv file once converted data reaches n_csv_rows amount of data points
-            if len(converted_data) >= n_csv_rows:
-                print("writing file\n")
-
-                file = os.path.join(path_out, 'ou_dec19_feb20_' + str(n_files_written) + '.csv')
-                write_csv(file, converted_data, headers)
-                n_files_written += 1
-                converted_data = []
-
-            n_games += 1
-
-            if n_games % 2000 == 0:
-                print(f'{n_games} games processed')
-                print(f'{n_states} states converted')
-                print(f'runtime: {round(time.time() - start_time, 1)}s\n')
-
-    # write csv file with the data that's left, but below the n_csv_rows threshold
-    file = os.path.join(path_out, 'ou_dec19_feb20_' + str(n_files_written) + '.csv')
-    write_csv(file, converted_data, headers)
-    n_files_written += 1
-
-    print("finished\n")
-
-    print(f"{len(games_too_short)} games skipped because they lasted shorter than {min_game_length} turns")
-    print(ujson.dumps(games_too_short))
-
-    print(f'\n{n_games} games processed, {n_states} states converted')
-    print(f'{n_files_written} csv files written with {n_csv_rows} rows ({len(converted_data)} for the final csv)')
-    print(f'runtime: {round(time.time() - start_time, 1)}s\n')
+1. understand the embedding pipeline (how to split p1's attributes from p2??)
+2. make category jsons with indices for pokemon, moves, items and abilities 
+3. scale data (e.g. stats = stats / 250)
+4. convert to dict[str: tensor]
 
 
-def write_csv(file, data, headers):
-    """ writes the converted data to a csv file """
-    with open(file, 'w') as f_out:
-        writer = csv.writer(f_out)
-        for header in headers:
-            writer.writerow(header)
-        np.savetxt(f_out, np.asarray(data), delimiter=",", fmt='%i')
+"""
 
 
-def pick_random_states(all_states, min_turns_apart=1):
-    """ selects two random non-preview states from a game_state list,
-        one for each of the players POV and at least n turns apart """
-
-    # rolling from (1, ..) in order to skip the team_preview state
-    state_idx1 = np.random.randint(1, len(all_states) - min_turns_apart)
-    state_idx2 = np.random.randint(state_idx1 + min_turns_apart, len(all_states))
-
-    state1 = all_states[state_idx1]
-    state2 = all_states[state_idx2]
-
-    return [state1, reverse_pov(state2)]
-
-
-def reverse_pov(state):
-    """ flips the POV of a state """
-    if state['winner'] == 'p1':
-        state['winner'] = 'p2'
-    elif state['winner'] == 'p2':
-        state['winner'] = 'p1'
-    else:
-        # tie
-        pass
-
-    hold_my_beer = state['p1']
-    state['p1'] = state['p2']
-    state['p2'] = hold_my_beer
-
-    hold_my_beer = state['p1rating']
-    state['p1rating'] = state['p2rating']
-    state['p2rating'] = hold_my_beer
-
-    return state
-
-
-class Converter:
+class Transformer:
     def __init__(self):
         self.pkmn_positions = self.init_category('pokemon.json')
         self.item_positions = self.init_category('items.json')
@@ -187,7 +70,7 @@ class Converter:
         player2 = self.convert_side(game_state['p2'])
 
         return np.asarray(p1_win + p1_rating + p2_rating + avg_rating +
-                          rated_battle + room_id + turn + fields + player1 + player2).astype(int)
+                          rated_battle + room_id + turn + fields + player1 + player2)
 
     def convert_fields(self, state):
         # one-hot-encode weather
@@ -406,9 +289,11 @@ class Converter:
 
         # move accuracy
         accuracy = [self.move_lookup[move_name]['accuracy']]
+        if accuracy[0] == 1:
+            accuracy[0] = 100
 
         # n multi hits of the move: [min_hits, max_hits]
-        multi_hits = [0, 0]
+        multi_hits = [1, 1]
         if self.move_lookup[move_name].get('multihit'):
             multi_hits = self.move_lookup[move_name]['multihit']
             if type(multi_hits) != list:
@@ -435,7 +320,7 @@ class Converter:
         return moves + typing + move_category + base_power + accuracy + multi_hits + current_pp + max_pp + \
             target_self + disabled + used + priority
 
-    def create_header(self):
+    def create_headers(self):
         """ returns a 4*m header """
         move_header = (
                 ['move' for _ in self.move_positions] +
@@ -537,14 +422,46 @@ class Converter:
         return [first_header, second_header, third_header, fourth_header]
 
 
-if __name__ == "__main__":
-    main()
+def transformer_testing():
+    transformer = Transformer()
+
+    headers = transformer.create_headers()
+
+    folder_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training_states'
+    files = sorted([os.path.join(folder_path, file_name)
+                    for file_name in os.listdir(folder_path)])
+
+    print(f'{len(files)} files found\n')
+
+    random.shuffle(files)
+    files = files[:10]
+
+    tic = time.time()
+
+    for i, f in enumerate(files):
+        with open(f, 'r') as f_in:
+
+            state = json.load(f_in)
+            roomid = state['roomid']
+
+            start_time = time.time()
+            output = transformer.convert_state(state)
+            end_time = time.time() - start_time
+
+            print(f"battle: {roomid}, turn: {state['turn']}")
+            print("output length:", len(output))
+            print(f'{round(end_time, 8)}s')
+            print()
+
+    toc = time.time()
+
+    print(f'header size: {len(headers[0])}\n')
+    print("-----------------------------------------------")
+    print(len(files), "states converted")
+    print("Total runtime:", round(toc - tic, 4))
 
 
-
-
-
-
-
+if __name__ == '__main__':
+    transformer_testing()
 
 

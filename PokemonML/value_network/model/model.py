@@ -60,6 +60,7 @@ Attributes that may be unavailable in pmariglia's state simulation:
     - healing wish
     - choicelock in volatile status
 
+    
 """
 
 

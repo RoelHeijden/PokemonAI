@@ -9,7 +9,7 @@ from Showdown_Pmariglia.data import all_move_json
 from Showdown_Pmariglia.data import pokedex
 from Showdown_Pmariglia.showdown.engine.helpers import normalize_name as normalize_name_include_nums
 
-from helpers import normalize_name
+from game_parser.helpers import normalize_name
 from PokemonML.data_processing.game_parser.state import Pokemon, LastUsedMove
 
 
