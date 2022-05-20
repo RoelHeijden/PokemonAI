@@ -10,18 +10,6 @@ import logging
 logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 
 
-"""
-
-1. understand the embedding pipeline (how to split p1's attributes from p2??)
-2. make category jsons with indices for pokemon, moves, items and abilities 
-3. remove unnecessary variables (rating, etc)
-4. scale data (e.g. stats = stats / 250)
-5. convert to dict[str: tensor]
-
-
-"""
-
-
 class Transformer:
     def __init__(self):
         self.pkmn_positions = self.init_category('pokemon.json')
@@ -50,7 +38,7 @@ class Transformer:
         data = {key: i for i, key in enumerate(json.load(file))}
         return data
 
-    def convert_state(self, game_state):
+    def __call__(self, game_state):
         """ convert state information to an array numbers """
 
         # [1] for a win, [-1] for a loss, [0] for a (rare) tie
@@ -59,21 +47,23 @@ class Transformer:
         else:
             p1_win = [0]
 
-        p1_rating = [int(game_state['p1rating'])]
-        p2_rating = [int(game_state['p2rating'])]
-        avg_rating = [int(game_state['average_rating'])]
-        rated_battle = [int(game_state['rated_battle'])]
-        room_id = [int(game_state['roomid'])]
-        turn = [int(game_state['turn'])]
+        return p1_win
 
-        fields = self.convert_fields(game_state)
-        player1 = self.convert_side(game_state['p1'])
-        player2 = self.convert_side(game_state['p2'])
+        # p1_rating = [int(game_state['p1rating'])]
+        # p2_rating = [int(game_state['p2rating'])]
+        # avg_rating = [int(game_state['average_rating'])]
+        # rated_battle = [int(game_state['rated_battle'])]
+        # room_id = [int(game_state['roomid'])]
+        # turn = [int(game_state['turn'])]
+        #
+        # fields = self.transform_fields(game_state)
+        # player1 = self.transform_side(game_state['p1'])
+        # player2 = self.transform_side(game_state['p2'])
+        #
+        # return np.asarray(p1_win + p1_rating + p2_rating + avg_rating +
+        #                   rated_battle + room_id + turn + fields + player1 + player2)
 
-        return np.asarray(p1_win + p1_rating + p2_rating + avg_rating +
-                          rated_battle + room_id + turn + fields + player1 + player2)
-
-    def convert_fields(self, state):
+    def transform_fields(self, state):
         # one-hot-encode weather
         weather = [0] * len(self.weather_positions)
         weather_index = self.weather_positions.get(state['weather'])
@@ -104,7 +94,7 @@ class Transformer:
 
         return weather + weather_count + terrain + terrain_count + trick_room + trick_room_count
 
-    def convert_side(self, side):
+    def transform_side(self, side):
         # one-hot-encode side conditions
         side_conditions = [0] * len(self.side_condition_positions)
         for side_condition in side['side_conditions']:
@@ -134,17 +124,17 @@ class Transformer:
         n_pokemon = [len(side['reserve']) + 1]
 
         # the player's active pokemon -- fainted or alive
-        active = self.convert_pokemon(side['active'])
+        active = self.transform_pokemon(side['active'])
 
         # the player's reserve pokemon -- fainted or alive
-        reserve = [val for pkmn in [self.convert_pokemon(pkmn) for pkmn in side['reserve']] for val in pkmn]
+        reserve = [val for pkmn in [self.transform_pokemon(pkmn) for pkmn in side['reserve']] for val in pkmn]
 
         # create empty arrays when the player has less than 6 pokemon
         reserve += [0] * len(active) * (6-n_pokemon[0])
 
         return side_conditions + wish + future_sight + healing_wish + trapped + has_active + n_pokemon + active + reserve
 
-    def convert_pokemon(self, pokemon):
+    def transform_pokemon(self, pokemon):
         # one-hot-encode species
         name = pokemon['name']
         if self.form_lookup.get(name):
@@ -247,7 +237,7 @@ class Transformer:
         n_moves = [len(pokemon['moves'])]
 
         # pokemon's moves
-        moves = [val for move in [self.convert_move(move) for move in pokemon['moves']] for val in move]
+        moves = [val for move in [self.transform_move(move) for move in pokemon['moves']] for val in move]
 
         # account for a pokemon having less than 4 moves
         if n_moves[0] < 4:
@@ -258,7 +248,7 @@ class Transformer:
         return species + ability + types + item + has_item + level + stats + stat_changes + \
             health + is_alive + status + sleep_countdown + volatile_status + n_moves + moves
 
-    def convert_move(self, move):
+    def transform_move(self, move):
         move_name = move['name']
 
         # one-hot-encode moves
@@ -424,9 +414,9 @@ class Transformer:
 
 
 def transformer_testing():
-    transformer = Transformer()
+    transform = Transformer()
 
-    headers = transformer.create_headers()
+    headers = transform.create_headers()
 
     folder_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training_states'
     files = sorted([os.path.join(folder_path, file_name)
@@ -446,7 +436,7 @@ def transformer_testing():
             roomid = state['roomid']
 
             start_time = time.time()
-            output = transformer.convert_state(state)
+            output = transform(state)
             end_time = time.time() - start_time
 
             print(f"battle: {roomid}, turn: {state['turn']}")
