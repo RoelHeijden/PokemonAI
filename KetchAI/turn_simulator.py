@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import time
 
 from Showdown_Pmariglia.showdown.engine.objects import *
 from Showdown_Pmariglia.showdown.engine.find_state_instructions import *
@@ -44,6 +45,9 @@ class TurnSimulator:
         opp_outspeeds_matrix = np.zeros((len(user_options), len(opponent_options)))
         outspeed_probability_matrix = np.zeros((len(user_options), len(opponent_options)))
 
+        n_simulations = 0
+        start_time = time.time()
+
         # for each move the bot could use
         for i, full_user_move_str in enumerate(user_options):
 
@@ -68,8 +72,10 @@ class TurnSimulator:
 
                 # runs scenario where the user outspeeds, given that it can outspeed
                 if user_can_outspeed:
-                    score = 0
                     state_instructions = self.get_all_state_instructions(mutator, user_move_str, opponent_move_str, user_move, opponent_move, user_switch, opp_switch, user_outspeeds=True)
+                    n_simulations += len(state_instructions)
+
+                    score = 0
                     for instructions in state_instructions:
                         mutator.apply(instructions.instructions)
                         t_score = evaluate(mutator.state)
@@ -79,8 +85,10 @@ class TurnSimulator:
 
                 # runs scenario where the opponent outspeeds, given that it can outspeed
                 if opp_can_outspeed:
-                    score = 0
                     state_instructions = self.get_all_state_instructions(mutator, user_move_str, opponent_move_str, user_move, opponent_move, user_switch, opp_switch, user_outspeeds=False)
+                    n_simulations += len(state_instructions)
+
+                    score = 0
                     for instructions in state_instructions:
                         mutator.apply(instructions.instructions)
                         t_score = evaluate(mutator.state)
@@ -95,6 +103,9 @@ class TurnSimulator:
                     outspeed_probability_matrix[i][j] = 1
                 else:
                     outspeed_probability_matrix[i][j] = 0
+
+        # save search time
+        search_time = time.time() - start_time
 
         # create weighted matrices
         user_outspeeds_matrix = np.multiply(user_outspeeds_matrix, outspeed_probability_matrix)
@@ -144,7 +155,7 @@ class TurnSimulator:
                 payoff_matrix[(full_user_move_str, full_opponent_move_str)] = score
                 bimatrix[i][j][0], bimatrix[i][j][1] = score, -score
 
-        return payoff_matrix, bimatrix
+        return payoff_matrix, bimatrix, n_simulations, search_time
 
     def get_effective_speed_range(self, state, side, user_is_bot):
         """ Calculates the effective speed range of a pokemon given their speed stat or speed_range.
