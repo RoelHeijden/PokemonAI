@@ -4,6 +4,7 @@ import numpy as np
 import time
 import ujson
 import math
+import random
 
 from game_parser.game_log import GameLog
 
@@ -22,21 +23,21 @@ NOTEWORTHY:
 
 
 def main():
-    # mode = 'parse games'
-    mode = 'create training state batches'
+    # mode = 'parse all games'
+    mode = 'create training batches'
     # mode = 'inspect a game'
 
     inspect_battle_id = 1021737
 
-    if mode == 'parse games':
+    if mode == 'parse all games':
         path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/raw-ou-incomplete"
         path_out = 'C:/Users/RoelH/Documents//Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training_games'
         parse_all(path_in, path_out, min_rating=1200)
 
-    if mode == 'create training state batches':
+    if mode == 'create training batches':
         path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training_games'
-        path_out = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training_states_large'
-        extract_training_states(path_in, path_out, file_name='ou_game_states', batch_size=10000, min_game_length=3)
+        path_out = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training_states'
+        create_training_batches(path_in, path_out, file_name='ou_game_states', batch_size=10000, min_game_length=3)
 
     if mode == 'inspect a game':
         path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/raw-ou-incomplete"
@@ -163,7 +164,7 @@ def get_player_ratings(game_input_log, battle_id):
     return is_rated_battle, p1_rating, p2_rating
 
 
-def extract_training_states(path_in, path_out, file_name='ou_game_states', batch_size=10000, min_game_length=3):
+def create_training_batches(path_in, path_out, file_name='ou_game_states', batch_size=10000, min_game_length=3):
     """
     - extracts two game states from each game-states file
     - switches player's POV for one of the states
@@ -175,6 +176,8 @@ def extract_training_states(path_in, path_out, file_name='ou_game_states', batch
     # collect file names
     files = sorted([os.path.join(path_in, file_name)
                     for file_name in os.listdir(path_in)])
+
+    random.shuffle(files)
 
     print(f'{len(files)} files found\n')
 
@@ -228,7 +231,7 @@ def extract_training_states(path_in, path_out, file_name='ou_game_states', batch
                 n_written += 1
 
             # keeping you updated
-            if n_games % 2000 == 0:
+            if n_games % 5000 == 0:
                 print(f'{n_games} games opened')
                 print(f'{n_states} states extracted')
                 print(f'{n_written} batch files created')
@@ -239,7 +242,9 @@ def extract_training_states(path_in, path_out, file_name='ou_game_states', batch
 
     print(f'{n_games} games opened')
     print(f'{n_states} states extracted')
-    print(f'{n_written} batch files created')
+    print(f'{n_written} batch files created with {batch_size} states each')
+    print(f'final file contains {n_states % batch_size} states\n')
+
     print(f'runtime: {round(time.time() - start_time, 1)}s\n')
 
 
