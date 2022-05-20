@@ -24,8 +24,8 @@ NOTEWORTHY:
 
 def main():
     # mode = 'parse all games'
-    mode = 'create training batches'
-    # mode = 'inspect a game'
+    # mode = 'create training batches'
+    mode = 'inspect a game'
 
     inspect_battle_id = 1021737
 
@@ -237,8 +237,8 @@ def create_training_batches(path_in, path_out, file_name='ou_game_states', batch
                 print(f'{n_written} batch files created')
                 print(f'runtime: {round(time.time() - start_time, 1)}s\n')
 
-    print(ujson.dumps(games_too_short))
-    print(f"{len(games_too_short)} games skipped because they lasted shorter than {min_game_length} turns")
+    print(ujson.dumps(games_too_short, indent=2), '\n')
+    print(f"{len(games_too_short)} games skipped because they lasted shorter than {min_game_length} turns\n")
 
     print(f'{n_games} games opened')
     print(f'{n_states} states extracted')
