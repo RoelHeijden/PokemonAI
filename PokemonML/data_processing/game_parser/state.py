@@ -21,10 +21,21 @@ class Battle:
 
         self.weather = None
         self.weather_count = 0
-        self.field = None
+
+        self.terrain = None
         self.terrain_count = 0
+
         self.trick_room = False
         self.trick_room_count = 0
+
+        self.gravity = False
+        self.gravity_count = 0
+
+        self.wonder_room = False
+        self.wonder_room_count = 0
+
+        self.magic_room = False
+        self.magic_room_count = 0
 
         self.turn = False
 
@@ -79,10 +90,17 @@ class Battle:
 
             'weather': self.weather if self.weather else "none",
             'weather_count': self.weather_count,
-            'terrain': self.field if self.field else "none",
+            'terrain': self.terrain if self.terrain else "none",
             'terrain_count': self.terrain_count,
+
             'trick_room': self.trick_room,
             'trick_room_count': self.trick_room_count,
+            'gravity': self.gravity,
+            'gravity_count': self.gravity_count,
+            'wonder_room': self.wonder_room,
+            'wonder_room_count': self.wonder_room_count,
+            'magic_room': self.magic_room,
+            'magic_room_count': self.magic_room_count,
         }
 
 

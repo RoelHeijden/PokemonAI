@@ -361,15 +361,28 @@ def fieldstart(battle, split_msg):
     """Set the battle's field condition"""
     field_name = normalize_name(split_msg[2].split(':')[-1].strip())
 
-    # trick room shows up as a `-fieldstart` item but is separate from the other fields
     if field_name == constants.TRICK_ROOM:
-        logger.debug("Setting trickroom")
         battle.trick_room = True
         battle.trick_room_count = 0
-    else:
-        logger.debug("Setting the field to {}".format(field_name))
-        battle.field = field_name
+
+    elif field_name == 'gravity':
+        battle.gravity = True
+        battle.gravity_count = 0
+
+    elif field_name == 'magicroom':
+        battle.magic_room = True
+        battle.magic_room_count = 0
+
+    elif field_name == 'wonderroom':
+        battle.wonder_room = True
+        battle.wonder_room_count = 0
+
+    elif field_name in constants.TERRAIN:
+        battle.terrain = field_name
         battle.terrain_count = 0
+
+    else:
+        logger.warning(f'field {field_name} not recognized, battle id {battle.battle_tag}')
 
 
 def fieldend(battle, split_msg):
@@ -378,13 +391,27 @@ def fieldend(battle, split_msg):
 
     # trick room shows up as a `-fieldend` item but is separate from the other fields
     if field_name == constants.TRICK_ROOM:
-        logger.debug("Removing trick room")
         battle.trick_room = False
         battle.trick_room_count = 0
-    else:
-        logger.debug("Setting the field to None")
-        battle.field = None
+
+    elif field_name == 'gravity':
+        battle.gravity = False
+        battle.gravity_count = 0
+
+    elif field_name == 'magicroom':
+        battle.magic_room = False
+        battle.magic_room_count = 0
+
+    elif field_name == 'wonderroom':
+        battle.wonder_room = False
+        battle.wonder_room_count = 0
+
+    elif field_name in constants.TERRAIN:
+        battle.terrain = None
         battle.terrain_count = 0
+
+    else:
+        logger.warning(f'field {field_name} not recognized, battle id {battle.battle_tag}')
 
 
 def sidestart(battle, split_msg):
@@ -525,13 +552,20 @@ def upkeep(battle, _):
     if battle.p2.active.status != constants.TOXIC:
         battle.p2.side_conditions[constants.TOXIC_COUNT] = 0
 
-    # increment terrain counter?
-    if battle.field:
+    if battle.terrain:
         battle.terrain_count += 1
 
-    # increment Trick room counter?
     if battle.trick_room:
         battle.trick_room_count += 1
+
+    if battle.magic_room:
+        battle.magic_room_count += 1
+
+    if battle.gravity:
+        battle.gravity += 1
+
+    if battle.wonder_room:
+        battle.wonder_room += 1
 
 
 

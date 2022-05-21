@@ -11,12 +11,9 @@ from game_parser.game_log import GameLog
 
 """
 
-BUGS:
-    - normalize_name() removes numbers (e.g. Porygon2 -> porygon)
-    - Gravity, Magic room and Wonder room(?) override terrains in Battle.field
-
 NOTEWORTHY:
-    - states consists of moments in a turn where one of the sides has a fainted Pokemon
+    - states includes moments in a turn where one of the sides has a fainted Pokemon
+    - team preview is not extracted as a states
     - Zoroark/Illusion is not implemented yet
     
 """
