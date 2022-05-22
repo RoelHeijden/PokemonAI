@@ -11,7 +11,7 @@ from torch.utils import data
 from state_transformer.transformer import Transformer
 
 
-def turn_loader(folder_path, batch_size, num_workers=0):
+def data_loader(folder_path, batch_size, num_workers=0):
     files = sorted(
         [
             os.path.join(folder_path, file_name)
@@ -29,8 +29,6 @@ def turn_loader(folder_path, batch_size, num_workers=0):
 
 
 class TurnsDataset(data.IterableDataset, ABC):
-    """ Datareader for a sunseries turns document"""
-
     def __init__(self, file: str, transform: Transformer):
         super().__init__()
         self.file = file
@@ -45,8 +43,6 @@ class TurnsDataset(data.IterableDataset, ABC):
 
 
 class MultiDataDataset(data.IterableDataset, ABC):
-    """Combines a list of datasets into one """
-
     def __init__(self, datasets: List[data.IterableDataset]) -> None:
         super().__init__()
         self.datasets = datasets
