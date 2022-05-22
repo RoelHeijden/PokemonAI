@@ -5,6 +5,7 @@ import time
 import ujson
 import math
 import random
+import shutil
 
 from game_parser.game_log import GameLog
 
@@ -25,6 +26,7 @@ NOTEWORTHY:
 
 def main():
     # mode = 'parse all games'
+    # mode = 'create test split'
     mode = 'create training batches'
     # mode = 'inspect a game'
 
@@ -34,6 +36,11 @@ def main():
         path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/raw-ou-incomplete"
         path_out = 'C:/Users/RoelH/Documents//Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training_games'
         parse_all(path_in, path_out, min_rating=1200)
+
+    if mode == 'create test split':
+        train_path = 'C:/Users/RoelH/Documents//Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training_games'
+        test_path = 'C:/Users/RoelH/Documents//Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/test_games'
+        create_test_split(train_path, test_path, test_split=0.10)
 
     if mode == 'create training batches':
         path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training_games'
@@ -163,6 +170,40 @@ def get_player_ratings(game_input_log, battle_id):
     p2_rating = get_rating('p2', game_input_log, is_rated_battle)
 
     return is_rated_battle, p1_rating, p2_rating
+
+
+def create_test_split(train_path, test_path, test_split=0.10):
+    """ moves files from the training folder to test folder """
+    files = [
+        (
+            os.path.join(train_path, file_name),
+            os.path.join(test_path, file_name)
+        )
+        for file_name in os.listdir(train_path)]
+
+    print(f'{len(files)} files collected')
+
+    random.shuffle(files)
+    n_test_files = int(test_split * len(files))
+    test_files = files[: n_test_files]
+
+    files_moved = 0
+    for f_in, f_out in test_files:
+        shutil.move(f_in, f_out)
+        files_moved += 1
+        if files_moved % 10000 == 0:
+            print(f'{files_moved} files moved')
+
+    print(f'finished, {files_moved} files moved')
+
+    train = [os.path.join(train_path, file_name)
+             for file_name in os.listdir(train_path)]
+
+    test = [os.path.join(test_path, file_name)
+            for file_name in os.listdir(test_path)]
+
+    print(f'train files: {len(train)}')
+    print(f'test files: {len(test)}')
 
 
 def create_training_batches(path_in, path_out, file_name='ou_game_states', batch_size=10000, min_game_length=3):
