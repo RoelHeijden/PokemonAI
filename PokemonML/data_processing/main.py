@@ -27,8 +27,8 @@ NOTEWORTHY:
 def main():
     # mode = 'parse all games'
     # mode = 'create test split'
-    mode = 'create training batches'
-    # mode = 'inspect a game'
+    # mode = 'create training batches'
+    mode = 'inspect a game'
 
     inspect_battle_id = 1021737
 
