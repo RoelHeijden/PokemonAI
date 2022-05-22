@@ -11,18 +11,22 @@ from game_parser.game_log import GameLog
 
 """
 
+TO DO:
+    - implement last_used_move
+    - implement Zoroark/Illusion
+    - implement turn counts for Encore, Lightscreen, etc.
+
 NOTEWORTHY:
     - states includes moments in a turn where one of the sides has a fainted Pokemon
     - team preview is not extracted as a states
-    - Zoroark/Illusion is not implemented yet
     
 """
 
 
 def main():
     # mode = 'parse all games'
-    # mode = 'create training batches'
-    mode = 'inspect a game'
+    mode = 'create training batches'
+    # mode = 'inspect a game'
 
     inspect_battle_id = 1021737
 
