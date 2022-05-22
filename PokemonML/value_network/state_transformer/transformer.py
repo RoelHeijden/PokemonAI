@@ -1,254 +1,300 @@
-import json
-import os
-import numpy as np
-import time
 import random
 import torch
+from typing import Dict, Any
+
+from state_transformer.categories import (
+    SPECIES,
+    ITEMS,
+    ABILITIES,
+    MOVES,
+    WEATHERS,
+    TERRAINS,
+    TYPES,
+    STATUS,
+    MOVE_CATEGORIES,
+    VOLATILE_STATUS,
+    SIDE_CONDITIONS,
+)
+
+from state_transformer.lookups import (
+    MOVE_LOOKUP,
+    FORM_LOOKUP,
+    VOLATILES_TO_IGNORE,
+    INVULNERABLE_STAGES,
+    VULNERABLE_STAGES
+)
 
 import logging
-
 logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 
 
 class Transformer:
     def __init__(self):
-        self.pkmn_positions = self.init_category('pokemon.json')
-        self.item_positions = self.init_category('items.json')
-        self.ability_positions = self.init_category('abilities.json')
-        self.move_positions = self.init_category('moves.json')
-        self.weather_positions = self.init_category('weathers.json')
-        self.terrain_positions = self.init_category('terrains.json')
-        self.types_positions = self.init_category('types.json')
-        self.status_positions = self.init_category('status.json')
-        self.move_category_positions = self.init_category('move_categories.json')
-        self.volatile_status_positions = self.init_category('volatile_statuses.json')
-        self.side_condition_positions = self.init_category('side_conditions.json')
+        pass
 
-        self.move_lookup = json.load(open('lookups/move_lookup.json'))
-        self.form_lookup = json.load(open('lookups/form_lookup.json'))
-        self.volatiles_to_ignore = json.load(open('lookups/volatiles_to_ignore.json'))
-        self.invulnerable_stages = json.load(open('lookups/invulnerable_stages.json'))
-        self.vulnerable_stages = json.load(open('lookups/vulnerable_stages.json'))
+    def __call__(self, state: Dict[str, Any]) -> Dict[str, torch.tensor]:
+        """ transforms the game state information to a tensor """
+        out = dict()
 
-    @staticmethod
-    def init_category(file_name, relative_path='categories'):
-        """ opens a category file and converts it to a dictionary with the position index as value """
-        path = os.path.join(relative_path, file_name)
-        file = open(path, 'r')
-        data = {key: i for i, key in enumerate(json.load(file))}
-        return data
+        out['result'] = self._result(state['winner'])
+        out['fields'] = self._fields(state)
+        out['p1'] = self._side(state['p1'])
+        out['p2'] = self._side(state['p2'])
 
-    def __call__(self, game_state):
-        """ convert state information to an array numbers """
+        return out
 
-        # [1] for a win, [-1] for a loss, [0] for a (rare) tie
-        if game_state['winner']:
-            p1_win = [1 if game_state['winner'] == 'p1' else -1]
+    def _result(self, winner: str) -> torch.tensor:
+        """
+        Result:
+            1 for a win
+           -1 for a loss
+            0 for a (rare) tie
+        """
+
+        if winner:
+            result = 1 if winner == 'p1' else -1
         else:
-            p1_win = [0]
+            result = 0
 
-        return p1_win
+        return torch.tensor(result, dtype=torch.int)
 
-        # p1_rating = [int(game_state['p1rating'])]
-        # p2_rating = [int(game_state['p2rating'])]
-        # avg_rating = [int(game_state['average_rating'])]
-        # rated_battle = [int(game_state['rated_battle'])]
-        # room_id = [int(game_state['roomid'])]
-        # turn = [int(game_state['turn'])]
-        #
-        # fields = self.transform_fields(game_state)
-        # player1 = self.transform_side(game_state['p1'])
-        # player2 = self.transform_side(game_state['p2'])
-        #
-        # return np.asarray(p1_win + p1_rating + p2_rating + avg_rating +
-        #                   rated_battle + room_id + turn + fields + player1 + player2)
+    def _fields(self, state: Dict[str, Any]) -> torch.tensor:
+        """
+        weather: weather type, turn count
+        terrain: terrain type, turn count
+        trick_room: rick room, turn count
+        """
 
-    def transform_fields(self, state):
-        # one-hot-encode weather
-        weather = [0] * len(self.weather_positions)
-        weather_index = self.weather_positions.get(state['weather'])
-        if weather_index is not None:
-            weather[weather_index] = 1
+        # one-hot encoded weather
+        weather = [0] * len(WEATHERS)
+        weather_pos = WEATHERS.get(state['weather'])
+        if weather_pos is not None:
+            weather[weather_pos] = 1
         else:
             logging.debug(f'weather "{state["weather"]}" does not exist in weathers.json')
 
-        # n turns the weather has been active
-        weather_count = [state['weather_count']]
-
-        # one-hot-encode terrain
-        terrain = [0] * len(self.terrain_positions)
-        terrain_index = self.terrain_positions.get(state['terrain'])
-        if terrain_index is not None:
-            terrain[terrain_index] = 1
+        # one-hot encoded terrain
+        terrain = [0] * len(TERRAINS)
+        terrain_pos = TERRAINS.get(state['terrain'])
+        if terrain_pos is not None:
+            terrain[terrain_pos] = 1
         else:
-            logging.debug(f'terrain "{state["terrain"]}" does not exist in terrains.json')
+            logging.debug(f'terrain "{state["terrain"]}" does not exist in terrain.json')
 
-        # n turns the terrain has been active
-        terrain_count = [state['terrain_count']]
+        # 1 if trick room is active, 0 otherwise
+        trick_room = int(state['trick_room'])
 
-        # [1] if trick room is active, [0] otherwise
-        trick_room = [int(state['trick_room'])]
+        # weather turn count
+        weather_count = state['weather_count']
 
-        # n turns the trick room has been active
-        trick_room_count = [state['trick_room_count']]
+        # terrain turn count
+        terrain_count = state['terrain_count']
 
-        return weather + weather_count + terrain + terrain_count + trick_room + trick_room_count
+        # n turns trick room has been active
+        trick_room_count = state['trick_room_count']
 
-    def transform_side(self, side):
-        # one-hot-encode side conditions
-        side_conditions = [0] * len(self.side_condition_positions)
-        for side_condition in side['side_conditions']:
-            index = self.side_condition_positions.get(side_condition)
-            count = side['side_conditions'][side_condition]
-            if index is not None:
-                side_conditions[index] = count
+        return torch.tensor(
+            weather +
+            terrain +
+            [trick_room, weather_count, terrain_count, trick_room_count],
+            dtype=torch.float
+        )
+
+    def _side(self, side: Dict[str, Any]) -> Dict[str, torch.tensor]:
+        """
+        TBD
+        """
+
+        out = {}
+
+        # one-hot encode side conditions
+        side_conditions = []
+        for s_con in SIDE_CONDITIONS:
+            if s_con in side['side_conditions']:
+                count = side['side_conditions'].get(s_con)
+                side_conditions.append(count)
             else:
-                logging.debug(f'side condition "{side_condition}" not in side_conditions.json')
+                side_conditions.append(0)
 
         # two wish variables: [turn, amount]
         wish = [side['wish']['countdown'], side['wish']['hp_amount']]
 
-        # one future sight variable: [turn]
-        future_sight = [side['future_sight']['countdown']]
+        # future sight turn count
+        future_sight = side['future_sight']['countdown']
 
-        # [1] if the Healing wish/Lunar dance effect is incoming, [0] otherwise
-        healing_wish = [int(side['healing_wish'])]
+        # 1 if the Healing wish/Lunar dance effect is incoming, 0 otherwise
+        healing_wish = int(side['healing_wish'])
 
-        # player's pokemon is trapped
-        trapped = [int(side['trapped'])]
+        # 1 if side's active is trapped, 0 otherwise
+        trapped = int(side['trapped'])
 
-        # [1] if the player's active pokemon is alive, [0] otherwise
-        has_active = [int(not side['active']['fainted'])]
+        # 1 if the side's active pokemon is alive, 0 otherwise
+        has_active = int(not side['active']['fainted'])
 
-        # amount of pokemon the player has
-        n_pokemon = [len(side['reserve']) + 1]
+        # n amount of pokemon the player has
+        n_pokemon = (len(side['reserve']) + 1) / 6
+
+        out['player_state'] = torch.tensor(
+            side_conditions +
+            wish +
+            [future_sight, healing_wish, trapped, has_active, n_pokemon],
+            dtype=torch.float
+        )
 
         # the player's active pokemon -- fainted or alive
-        active = self.transform_pokemon(side['active'])
+        out['active'] = self._pokemon(side['active'])
 
         # the player's reserve pokemon -- fainted or alive
-        reserve = [val for pkmn in [self.transform_pokemon(pkmn) for pkmn in side['reserve']] for val in pkmn]
+        out['reserve'] = [self._pokemon(pkmn) for pkmn in side['reserve']]
 
-        # create empty arrays when the player has less than 6 pokemon
-        reserve += [0] * len(active) * (6-n_pokemon[0])
+        # create empty pokemon when the player has less than 6 pokemon
+        for _ in range(5 - len(side['reserve'])):
+            out['reserve'].append(
+                {
+                    'species': torch.tensor(0, dtype=torch.float),
+                    'ability': torch.tensor(0, dtype=torch.float),
+                    'item': torch.tensor(0, dtype=torch.float),
+                    # 'moves': torch.tensor(0, dtype=torch.float),
+                    'attributes': torch.tensor(
+                        [0] * len(out['active']['attributes']),
+                        dtype=torch.float
+                    )
+                }
+            )
 
-        return side_conditions + wish + future_sight + healing_wish + trapped + has_active + n_pokemon + active + reserve
+        return out
 
-    def transform_pokemon(self, pokemon):
-        # one-hot-encode species
+    def _pokemon(self, pokemon: Dict[str, Any]) -> Dict[str, torch.tensor]:
+        """
+        TBD
+        """
+        # revert aesthetic forms back to original
         name = pokemon['name']
-        if self.form_lookup.get(name):
-            name = self.form_lookup.get(name)
-        species = [0] * len(self.pkmn_positions)
+        if FORM_LOOKUP.get(name):
+            name = FORM_LOOKUP.get(name)
 
-        species_index = self.pkmn_positions.get(name)
-        if species_index is not None:
-            species[species_index] = 1
-        else:
-            logging.debug(f'pokemon "{pokemon["name"]}" does not exist in pokemon.json')
+        # species
+        species = SPECIES.get(name)
+        if species is None:
+            species = 0
+            logging.debug(f'pokemon "{pokemon["name"]}" does not exist in species.json')
 
-        # one-hot-encode ability
-        ability = [0] * len(self.ability_positions)
-        ability_index = self.ability_positions.get(pokemon['ability'])
-        if ability_index is not None:
-            ability[ability_index] = 1
-        else:
+        # ability
+        ability = ABILITIES.get(pokemon['ability'])
+        if ability is None:
+            ability = 0
             logging.debug(f'ability "{pokemon["ability"]}" does not exist in ability.json')
 
-        # one-hot-encode types
-        types = [0] * len(self.types_positions)
-        for t in pokemon['types']:
-            index = self.types_positions.get(t)
-            if index is not None:
-                types[index] = 1
+        # item
+        item = ITEMS.get(pokemon['item'])
+        if item is None:
+            if pokemon['item'] == "none":
+                item = 0
             else:
-                logging.debug(f'type "{t}" does not exist in types.json')
+                item = ITEMS.get("USELESS_ITEM")
 
-        # one-hot-encode item
-        item = [0] * len(self.item_positions)
-        item_index = self.item_positions.get(pokemon['item'])
-        if item_index is not None:
-            item[item_index] = 1
-        elif pokemon['item'] != "none":
-            logging.debug(f'item "{pokemon["item"]}" does not exist in items.json')
-
-        # [1] if has item, [0] if has no item
-        has_item = [int(pokemon['item'] != "none")]
-
-        # pokemon level
-        level = [pokemon['level']]
+        # one-hot encode types
+        types = []
+        for t in TYPES:
+            if t in pokemon['types']:
+                types.append(1)
+            else:
+                types.append(0)
 
         # pokemon stats
         stats = [
-            pokemon['stats']['hp'],
-            pokemon['stats']['attack'],
-            pokemon['stats']['defense'],
-            pokemon['stats']['special-attack'],
-            pokemon['stats']['special-defense'],
-            pokemon['stats']['speed'],
+            stat / 250 for stat in
+            [
+                pokemon['stats']['hp'],
+                pokemon['stats']['attack'],
+                pokemon['stats']['defense'],
+                pokemon['stats']['special-attack'],
+                pokemon['stats']['special-defense'],
+                pokemon['stats']['speed'],
+            ]
         ]
 
         # pokemon stat boosts/drops
         stat_changes = [
-            pokemon['stat_changes']['attack'],
-            pokemon['stat_changes']['defense'],
-            pokemon['stat_changes']['special-attack'],
-            pokemon['stat_changes']['special-defense'],
-            pokemon['stat_changes']['speed'],
-            pokemon['stat_changes']['accuracy'],
-            pokemon['stat_changes']['evasion']
+            change / 6 for change in
+            [
+                pokemon['stat_changes']['attack'],
+                pokemon['stat_changes']['defense'],
+                pokemon['stat_changes']['special-attack'],
+                pokemon['stat_changes']['special-defense'],
+                pokemon['stat_changes']['speed'],
+                pokemon['stat_changes']['accuracy'],
+                pokemon['stat_changes']['evasion']
+            ]
         ]
 
-        # pokemon hp range 0-100
-        health = [int(pokemon['hp'] / pokemon['maxhp'] * 100)]
+        # pokemon level
+        level = pokemon['level'] / 100
 
-        # [0] if pokemon fainted, [1] if still alive
-        is_alive = [int(not pokemon['fainted'])]
+        # pokemon health range
+        health = int(pokemon['hp'] / pokemon['maxhp'])
 
-        # one-hot-encode status conditions
-        status = [0] * len(self.status_positions)
-        status_index = self.status_positions.get(pokemon['status'])
-        if status_index is not None:
-            status[status_index] = 1
-        elif pokemon['status'] != "fnt":
-            logging.debug(f'status "{pokemon["status"]}" does not exist in status.json')
+        # 1 if still alive, 0 if fainted
+        is_alive = int(not pokemon['fainted'])
 
         # the amount of turns the pokemon may stay asleep
-        sleep_countdown = [pokemon['sleep_countdown']]
+        sleep_countdown = pokemon['sleep_countdown'] / 3
 
-        # one-hot-encode volatile_status
-        volatile_status = [0] * len(self.volatile_status_positions)
+        # one-hot encode status conditions
+        status = [0] * (len(STATUS) + 1)
+        status_pos = STATUS.get(pokemon['status'])
+        if status_pos is None:
+            status_pos = 0
+        status[status_pos] = 1
+
+        # one-hot encode volatile_status
+        volatile_status = [0] * len(VOLATILE_STATUS)
         for v in pokemon['volatile_status']:
 
-            if self.volatiles_to_ignore.get(v):
+            if VOLATILES_TO_IGNORE.get(v):
                 continue
-            if self.vulnerable_stages.get(v):
+            if VULNERABLE_STAGES.get(v):
                 v = 'vulnerablestage'
-            if self.invulnerable_stages.get(v):
+            if INVULNERABLE_STAGES.get(v):
                 v = 'invulnerablestage'
 
-            index = self.volatile_status_positions.get(v)
+            index = VOLATILE_STATUS.get(v)
+
             if index is not None:
                 volatile_status[index] = 1
-            elif not self.volatiles_to_ignore.get(v):
-                logging.debug(f'volatile_status "{v}" does not exist in volatile_status.json')
+            else:
+                logging.debug(f'volatile_status "{v}" does not exist in '
+                              f'volatile_status.json and volatiles_to_ignore.json')
 
         # amount of moves the pokemon has, range 1-4
-        n_moves = [len(pokemon['moves'])]
+        n_moves = len(pokemon['moves'])
 
         # pokemon's moves
-        moves = [val for move in [self.transform_move(move) for move in pokemon['moves']] for val in move]
+        # moves = [self._move(move) for move in pokemon['moves']]
 
-        # account for a pokemon having less than 4 moves
-        if n_moves[0] < 4:
-            moves += [0] * int(len(moves) / n_moves[0]) * (4 - n_moves[0])
-        elif n_moves[0] <= 0:
-            raise ValueError(f'Pokemon {pokemon["name"]} has no moves')
+        # # account for a pokemon having less than 4 moves
+        # if n_moves[0] < 4:
+        #     moves += [0] * int(len(moves) / n_moves[0]) * (4 - n_moves[0])
+        # elif n_moves[0] <= 0:
+        #     raise ValueError(f'Pokemon {pokemon["name"]} has no moves')
 
-        return species + ability + types + item + has_item + level + stats + stat_changes + \
-            health + is_alive + status + sleep_countdown + volatile_status + n_moves + moves
+        return {
+            'species': torch.tensor(species, dtype=torch.float),
+            'ability': torch.tensor(ability, dtype=torch.float),
+            'item': torch.tensor(item, dtype=torch.float),
+            # 'moves': moves,
+            'attributes': torch.tensor(
+                types +
+                stats +
+                stat_changes +
+                status +
+                volatile_status +
+                [level, health, is_alive, sleep_countdown, n_moves],
+                dtype=torch.float)
+        }
 
-    def transform_move(self, move):
+
+    def _move(self, move: Dict[str, Any]) -> Dict[str, torch.tensor]:
         move_name = move['name']
 
         # one-hot-encode moves
@@ -311,148 +357,5 @@ class Transformer:
         return moves + typing + move_category + base_power + accuracy + multi_hits + current_pp + max_pp + \
             target_self + disabled + used + priority
 
-    def create_headers(self):
-        """ returns a 4*m header """
-        move_header = (
-                ['move' for _ in self.move_positions] +
-                ['type' for _ in self.types_positions] +
-                ['move_category' for _ in self.move_category_positions] +
-                ['base_power'] +
-                ['accuracy'] +
-                ['multi_hits'] * 2 +
-                ['current_pp'] +
-                ['max_pp'] +
-                ['target_self'] +
-                ['disabled'] +
-                ['used'] +
-                ['priority']
-        )
-
-        pokemon_header = (
-                ['name' for _ in self.pkmn_positions] +
-                ['ability' for _ in self.ability_positions] +
-                ['type' for _ in self.types_positions] +
-                ['item' for _ in self.item_positions] +
-                ['has_item'] +
-                ['level'] +
-                ['stats'] * 6 +
-                ['stat_changes'] * 7 +
-                ['health'] +
-                ['is_alive'] +
-                ['status' for _ in self.status_positions] +
-                ['sleep_countdown'] +
-                ['volatile_status' for _ in self.volatile_status_positions] +
-                ['n_moves'] +
-                ['move1' for _ in move_header] +
-                ['move2' for _ in move_header] +
-                ['move3' for _ in move_header] +
-                ['move4' for _ in move_header]
-        )
-
-        player_header = (
-                ['side_conditions' for _ in self.side_condition_positions] +
-                ['wish'] * 2 +
-                ['future_sight'] +
-                ['healing_wish'] +
-                ['is_trapped'] +
-                ['has_active'] +
-                ['n_pokemon'] +
-                ['active' for _ in pokemon_header] +
-                ['reserve1' for _ in pokemon_header] +
-                ['reserve2' for _ in pokemon_header] +
-                ['reserve3' for _ in pokemon_header] +
-                ['reserve4' for _ in pokemon_header] +
-                ['reserve5' for _ in pokemon_header]
-        )
-
-        game_header = (
-                ['p1_win'] +
-                ['p1_rating'] +
-                ['p2_rating'] +
-                ['avg_rating'] +
-                ['rated_battle'] +
-                ['room_id'] +
-                ['turn'] +
-                ['weather' for _ in self.weather_positions] +
-                ['weather_count'] +
-                ['terrain' for _ in self.terrain_positions] +
-                ['terrain_count'] +
-                ['trick_room'] +
-                ['trick_room_count'] +
-                ['p1' for _ in player_header] +
-                ['p2' for _ in player_header]
-        )
-
-        first_header = game_header
-
-        second_header = (
-                game_header[:game_header.index('p1')] +
-                player_header +
-                player_header
-        )
-
-        third_header = (
-                game_header[:game_header.index('p1')] +
-                (
-                        player_header[:player_header.index('active')] +
-                        pokemon_header * 6
-                ) * 2
-        )
-
-        fourth_header = (
-                game_header[:game_header.index('p1')] +
-                (
-                        player_header[:player_header.index('active')] +
-                        (
-                                pokemon_header[:pokemon_header.index('move1')] +
-                                move_header * 4
-                        ) * 6
-                ) * 2
-        )
-
-        return [first_header, second_header, third_header, fourth_header]
-
-
-def transformer_testing():
-    transform = Transformer()
-
-    headers = transform.create_headers()
-
-    folder_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training_states'
-    files = sorted([os.path.join(folder_path, file_name)
-                    for file_name in os.listdir(folder_path)])
-
-    print(f'{len(files)} files found\n')
-
-    random.shuffle(files)
-    files = files[:10]
-
-    tic = time.time()
-
-    for i, f in enumerate(files):
-        with open(f, 'r') as f_in:
-
-            state = json.load(f_in)
-            roomid = state['roomid']
-
-            start_time = time.time()
-            output = transform(state)
-            end_time = time.time() - start_time
-
-            print(f"battle: {roomid}, turn: {state['turn']}")
-            print("output length:", len(output))
-            print(f'{round(end_time, 8)}s')
-            print()
-
-    toc = time.time()
-
-    print(f'header size: {len(headers[0])}\n')
-    print("-----------------------------------------------")
-    print(len(files), "states converted")
-    print("Total runtime:", round(toc - tic, 4))
-
-
-if __name__ == '__main__':
-    transformer_testing()
 
 
