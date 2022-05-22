@@ -320,6 +320,8 @@ GRASSY_TERRAIN = "grassyterrain"
 MISTY_TERRAIN = "mistyterrain"
 PSYCHIC_TERRAIN = "psychicterrain"
 
+TERRAINS = [ELECTRIC_TERRAIN, GRASSY_TERRAIN, MISTY_TERRAIN, PSYCHIC_TERRAIN]
+
 # switch-out moves
 SWITCH_OUT_MOVES = {"uturn", "voltswitch", "partingshot", "teleport", 'flipturn'}
 
