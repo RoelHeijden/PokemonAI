@@ -377,7 +377,7 @@ def fieldstart(battle, split_msg):
         battle.wonder_room = True
         battle.wonder_room_count = 0
 
-    elif field_name in constants.TERRAIN:
+    elif field_name in constants.TERRAINS:
         battle.terrain = field_name
         battle.terrain_count = 0
 
@@ -406,7 +406,7 @@ def fieldend(battle, split_msg):
         battle.wonder_room = False
         battle.wonder_room_count = 0
 
-    elif field_name in constants.TERRAIN:
+    elif field_name in constants.TERRAINS:
         battle.terrain = None
         battle.terrain_count = 0
 
