@@ -1,10 +1,10 @@
 {
-    "none": "NO_WEATHER",
-    "sunnyday": "sunnyday",
-    "raindance": "raindance",
-    "sandstorm": "sandstorm",
-    "hail": "hail",
-    "desolateland": "desolateland",
-    "primordialsea": "primordialsea",
-    "deltastream": "deltastream"
+  "none": 0,
+  "sunnyday": 1,
+  "raindance": 2,
+  "sandstorm": 3,
+  "hail": 4,
+  "desolateland": 5,
+  "primordialsea": 6,
+  "deltastream": 7
 }

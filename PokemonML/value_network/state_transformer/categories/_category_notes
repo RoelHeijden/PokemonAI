@@ -4,17 +4,18 @@ ABILITIES:
 
 
 WEATHERS:
-    7 weathers + 1 no_weather slot
-    counters not added yet
+    7 weathers + 1 no_weather
+    counters not included
 
 
 TERRAINS
-    4 terrains + 1 no_terrain slot
-    counters not added yet
+    4 terrains + 1 no_terrain
+    counters not included
 
 
 ITEMS:
     196 items
+    contains USELESS_ITEM slot
     does not contain a 'no item' slot
     useless items removed
     collected from training dataset
@@ -35,7 +36,7 @@ POKEMON:
 
 
 STATUS:
-    6 Status conditions + 1 no_status slot
+    6 Status conditions
 
 
 TYPES:

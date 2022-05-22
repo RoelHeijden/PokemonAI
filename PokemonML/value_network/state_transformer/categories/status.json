@@ -1,9 +1,8 @@
 {
-    "none": "HEALTHY",
-    "tox": "tox",
-    "slp": "slp",
-    "par": "par",
-    "psn": "psn",
-    "frz": "frz",
-    "brn": "brn"
+  "tox": 1,
+  "slp": 2,
+  "par": 3,
+  "psn": 4,
+  "frz": 5,
+  "brn": 6
 }
