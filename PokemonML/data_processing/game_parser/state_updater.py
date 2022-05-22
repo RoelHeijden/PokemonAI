@@ -562,10 +562,10 @@ def upkeep(battle, _):
         battle.magic_room_count += 1
 
     if battle.gravity:
-        battle.gravity += 1
+        battle.gravity_count += 1
 
     if battle.wonder_room:
-        battle.wonder_room += 1
+        battle.wonder_room_count += 1
 
 
 
