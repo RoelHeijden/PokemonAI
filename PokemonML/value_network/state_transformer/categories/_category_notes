@@ -15,9 +15,8 @@ TERRAINS
 
 ITEMS:
     196 items
-    contains USELESS_ITEM slot
-    does not contain a 'no item' slot
-    useless items removed
+    contains USELESS_ITEM slot for items without any competitive use
+    contains a 'none' slot for itemless pokemon
     collected from training dataset
 
 
