@@ -38,11 +38,6 @@ fix/implement Illusion in game_parser
 ----------------------------------------------------------------------------------------------------------------
 
 
-GAME PARSER
-    1. fix numbers in normalize name function (porygon2 wrongfully becomes porygon)
-    2. fix gravity overwriting terrain?
-    3. add gravity as separate field
-
 
 INFO MANAGEMENT
     1. Items
