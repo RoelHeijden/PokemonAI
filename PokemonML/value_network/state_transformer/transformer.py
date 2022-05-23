@@ -34,25 +34,26 @@ class Transformer:
         self.shuffle_pokemon = shuffle_pokemon
         self.shuffle_moves = shuffle_moves
 
-        # field
+        # field scaling
         self.turn_count_scaling = 5
 
-        # side
+        # side scaling
         self.wish_scaling = 200
         self.n_pokemon_scaling = 6
 
-        # pokemon
-        self.n_moves_scaling = 4
-
-        # move
-        self.pp_scaling = 16
+        # pokemon scaling
         self.stat_scaling = 250
-        self.boost_scaling = 3
-        self.accuracy_scaling = 100
-        self.bp_scaling = 100
-        self.multihit_scaling = 3
-        self.priority_scaler = 3
+        self.stat_change_scaling = 3
+        self.level_scaling = 100
+        self.n_moves_scaling = 4
+        self.sleep_count_scaling = 3
 
+        # move scaling
+        self.pp_scaling = 16
+        self.bp_scaling = 100
+        self.acc_scaling = 100
+        self.priority_scaling = 3
+        self.multihit_scaling = 3
 
     def __call__(self, state: Dict[str, Any]) -> Dict[str, torch.tensor]:
         """ transforms the game state information to a tensor """
@@ -71,8 +72,8 @@ class Transformer:
 
         out['result'] = self._get_result(state['winner'])
         out['fields'] = self._transform_field(state)
-        out['p1_attributes'] = self._transform_side(state['p1'])
-        out['p2_attributes'] = self._transform_side(state['p2'])
+        out['p1_attributes'] = self._transform_side(state[self.p1])
+        out['p2_attributes'] = self._transform_side(state[self.p2])
         out['pokemon'] = self._transform_pokemon(state)
 
         return out
@@ -86,7 +87,7 @@ class Transformer:
         """
 
         if winner:
-            result = 1 if winner == 'p1' else -1
+            result = 1 if winner == self.p1 else -1
         else:
             result = 0
 
@@ -132,19 +133,19 @@ class Transformer:
         gravity = int(state['gravity'])
 
         # weather turn count
-        weather_count = state['weather_count'] / 5
+        weather_count = state['weather_count'] / self.turn_count_scaling
 
         # terrain turn count
-        terrain_count = state['terrain_count'] / 5
+        terrain_count = state['terrain_count'] / self.turn_count_scaling
 
         # n turns trick room has been active
-        trick_room_count = state['trick_room_count'] / 5
+        trick_room_count = state['trick_room_count'] / self.turn_count_scaling
 
         # n turns magic room has been active
-        magic_room_count = state['magic_room_count'] / 5
+        magic_room_count = state['magic_room_count'] / self.turn_count_scaling
 
         # n turns gravity has been active
-        gravity_count = state['gravity_count'] / 5
+        gravity_count = state['gravity_count'] / self.turn_count_scaling
 
         return torch.tensor(
             weather +
@@ -183,7 +184,7 @@ class Transformer:
                 side_conditions.append(0)
 
         # two wish variables: [turn, amount]
-        wish = [side['wish']['countdown'], side['wish']['hp_amount']]
+        wish = [side['wish']['countdown'], side['wish']['hp_amount'] / self.wish_scaling]
 
         # future sight turn count
         future_sight = side['future_sight']['countdown']
@@ -198,7 +199,7 @@ class Transformer:
         has_active = int(not side['active']['fainted'])
 
         # n amount of pokemon the player has
-        n_pokemon = (len(side['reserve']) + 1) / 6
+        n_pokemon = (len(side['reserve']) + 1) / self.n_pokemon_scaling
 
         player_attributes = side_conditions + wish + [future_sight, healing_wish, trapped, has_active, n_pokemon]
         return torch.tensor(player_attributes, dtype=torch.float)
@@ -213,13 +214,15 @@ class Transformer:
         """
         out = {}
 
+        # shuffle reserve pokemon positions
         if self.shuffle_pokemon:
-            random.shuffle(state['p1']['reserve'])
-            random.shuffle(state['p2']['reserve'])
+            random.shuffle(state[self.p1]['reserve'])
+            random.shuffle(state[self.p2]['reserve'])
 
-        p1_team = [state['p1']['active']] + state['p1']['reserve']
-        p2_team = [state['p2']['active']] + state['p2']['reserve']
+        p1_team = [state[self.p1]['active']] + state[self.p1]['reserve']
+        p2_team = [state[self.p2]['active']] + state[self.p2]['reserve']
 
+        # shuffle move positions
         if self.shuffle_moves:
             for pokemon in p1_team + p1_team:
                 random.shuffle(pokemon['moves'])
@@ -227,10 +230,12 @@ class Transformer:
         species = []
         items = []
         abilities = []
-        moves = []
-        move_attributes = []
         pokemon_attributes = []
 
+        moves = []
+        move_attributes = []
+
+        # for each player, collect the pokemon data
         for team in [p1_team, p2_team]:
             team_size = len(team)
 
@@ -263,6 +268,16 @@ class Transformer:
             abilities.append(
                 [
                     ABILITIES[ability_names[i]] if i < team_size else 0
+                    for i in range(6)
+                ]
+            )
+
+            # pokemon attributes
+            pokemon_attributes.append(
+                [
+                    self._pokemon_attributes(team[i])
+                    if i < team_size
+                    else self._pokemon_attributes(team[0], return_zeros=True)
                     for i in range(6)
                 ]
             )
@@ -301,7 +316,118 @@ class Transformer:
         out['items'] = torch.tensor(items, dtype=torch.long)
         out['abilites'] = torch.tensor(abilities, dtype=torch.long)
         out['moves'] = torch.tensor(moves, dtype=torch.long)
+
         out['move_attributes'] = torch.tensor(move_attributes, dtype=torch.float)
+        out['pokemon_attributes'] = torch.tensor(pokemon_attributes, dtype=torch.float)
+
+        return out
+
+    def _pokemon_attributes(self, pokemon, return_zeros=False) -> list:
+        """
+        Types
+        Stats
+        Stat_changes
+        Level
+        n_moves
+        Health
+        Is_alive
+        Sleep_countdown
+        Status
+        Volatile_status
+        """
+
+        # one-hot encode pokemon types
+        types = []
+        for t in TYPES:
+            if t in pokemon['types']:
+                types.append(1)
+            else:
+                types.append(0)
+
+        # pokemon stats
+        stats = [
+            stat / self.stat_scaling for stat in
+            [
+                pokemon['stats']['hp'],
+                pokemon['stats']['attack'],
+                pokemon['stats']['defense'],
+                pokemon['stats']['special-attack'],
+                pokemon['stats']['special-defense'],
+                pokemon['stats']['speed'],
+            ]
+        ]
+
+        # pokemon stat boosts/drops
+        stat_changes = [
+            change / self.stat_change_scaling for change in
+            [
+                pokemon['stat_changes']['attack'],
+                pokemon['stat_changes']['defense'],
+                pokemon['stat_changes']['special-attack'],
+                pokemon['stat_changes']['special-defense'],
+                pokemon['stat_changes']['speed'],
+                pokemon['stat_changes']['accuracy'],
+                pokemon['stat_changes']['evasion']
+            ]
+        ]
+
+        # pokemon level
+        level = pokemon['level'] / self.level_scaling
+
+        # n pokemon moves
+        n_moves = len(pokemon['moves']) / self.n_moves_scaling
+
+        # pokemon health range
+        health = pokemon['hp'] / pokemon['maxhp']
+
+        # pokemon is alive
+        is_alive = int(not pokemon['fainted'])
+
+        # n turns pokemon may stay asleep
+        sleep_countdown = pokemon['sleep_countdown'] / self.sleep_count_scaling
+
+        # one-hot encode status conditions
+        status = []
+        for s in STATUS:
+            if s == pokemon['status']:
+                status.append(1)
+            else:
+                status.append(0)
+
+        # one-hot encode volatile_status
+        volatile_status = [0] * len(VOLATILE_STATUS)
+        for v in pokemon['volatile_status']:
+
+            if VOLATILES_TO_IGNORE.get(v):
+                continue
+            if VULNERABLE_STAGES.get(v):
+                v = 'vulnerablestage'
+            if INVULNERABLE_STAGES.get(v):
+                v = 'invulnerablestage'
+
+            index = VOLATILE_STATUS.get(v)
+
+            if index is not None:
+                volatile_status[index] = 1
+            else:
+                logging.debug(f'volatile_status "{v}" does not exist in '
+                              f'volatile_status.json and volatiles_to_ignore.json')
+
+        out = [
+            level,
+            n_moves,
+            health,
+            is_alive,
+            sleep_countdown,
+        ]
+        out.extend(types)
+        out.extend(stats)
+        out.extend(stat_changes)
+        out.extend(status)
+        out.extend(volatile_status)
+
+        if return_zeros:
+            return [0] * len(out)
 
         return out
 
@@ -322,30 +448,39 @@ class Transformer:
         """
         name = move['name']
 
+        # move is disabled
         disabled = int(move['disabled'])
 
-        pp = move['pp']
+        # current move pp
+        pp = move['pp'] / self.pp_scaling
 
-        max_pp = int(MOVE_LOOKUP[name]['pp'] * 1.6)
+        # max move pp
+        max_pp = int(MOVE_LOOKUP[name]['pp'] * 1.6) / self.pp_scaling
 
-        base_power = MOVE_LOOKUP[name]['basePower']
+        # move base power
+        base_power = MOVE_LOOKUP[name]['basePower'] / self.bp_scaling
 
-        accuracy = MOVE_LOOKUP[name]['accuracy'] if MOVE_LOOKUP[name]['accuracy'] != 1 else 100
+        # move accuracy
+        accuracy = (MOVE_LOOKUP[name]['accuracy'] if MOVE_LOOKUP[name]['accuracy'] != 1 else 100) / self.acc_scaling
 
-        priority = MOVE_LOOKUP[name]['priority']
+        # move priority
+        priority = MOVE_LOOKUP[name]['priority'] / self.priority_scaling
 
+        # move has been used
         is_used = int(pp < max_pp)
 
+        # move targets the user
         target_self = int(MOVE_LOOKUP[name]['target'] == 'self')
 
+        # min and max amount of hits the move may consist of
         multi_hits = MOVE_LOOKUP[name].get('multihit')
         if not multi_hits:
             multi_hits = [1, 1]
         elif type(multi_hits) != list:
             multi_hits = [multi_hits, multi_hits]
-        min_hits = multi_hits[0]
-        max_hits = multi_hits[1]
+        min_hits, max_hits = multi_hits[0] / self.multihit_scaling, multi_hits[1] / self.multihit_scaling
 
+        # # one-hot encode move category type
         # move_category = []
         # for c in MOVE_CATEGORIES:
         #     if c == MOVE_LOOKUP[name]['category']:
@@ -353,6 +488,7 @@ class Transformer:
         #     else:
         #         move_category.append(0)
         #
+        # # one-hot encode move typing
         # typing = []
         # for t in TYPES:
         #     if t == MOVE_LOOKUP[name]['type']:
@@ -379,88 +515,4 @@ class Transformer:
             return [0] * len(out)
 
         return out
-
-
-
-
-    def old_pokemon(self, pokemon: Dict[str, Any]) -> Dict[str, torch.tensor]:
-        # one-hot encode types
-        types = []
-        for t in TYPES:
-            if t in pokemon['types']:
-                types.append(1)
-            else:
-                types.append(0)
-
-        # pokemon stats
-        stats = [
-            stat / 250 for stat in
-            [
-                pokemon['stats']['hp'],
-                pokemon['stats']['attack'],
-                pokemon['stats']['defense'],
-                pokemon['stats']['special-attack'],
-                pokemon['stats']['special-defense'],
-                pokemon['stats']['speed'],
-            ]
-        ]
-
-        # pokemon stat boosts/drops
-        stat_changes = [
-            change / 6 for change in
-            [
-                pokemon['stat_changes']['attack'],
-                pokemon['stat_changes']['defense'],
-                pokemon['stat_changes']['special-attack'],
-                pokemon['stat_changes']['special-defense'],
-                pokemon['stat_changes']['speed'],
-                pokemon['stat_changes']['accuracy'],
-                pokemon['stat_changes']['evasion']
-            ]
-        ]
-
-        # pokemon level
-        level = pokemon['level'] / 100
-
-        # pokemon health range
-        health = int(pokemon['hp'] / pokemon['maxhp'])
-
-        # 1 if still alive, 0 if fainted
-        is_alive = int(not pokemon['fainted'])
-
-        # the amount of turns the pokemon may stay asleep
-        sleep_countdown = pokemon['sleep_countdown'] / 3
-
-        # one-hot encode status conditions
-        status = [0] * (len(STATUS) + 1)
-        status_pos = STATUS.get(pokemon['status'])
-        if status_pos is None:
-            status_pos = 0
-        status[status_pos] = 1
-
-        # one-hot encode volatile_status
-        volatile_status = [0] * len(VOLATILE_STATUS)
-        for v in pokemon['volatile_status']:
-
-            if VOLATILES_TO_IGNORE.get(v):
-                continue
-            if VULNERABLE_STAGES.get(v):
-                v = 'vulnerablestage'
-            if INVULNERABLE_STAGES.get(v):
-                v = 'invulnerablestage'
-
-            index = VOLATILE_STATUS.get(v)
-
-            if index is not None:
-                volatile_status[index] = 1
-            else:
-                logging.debug(f'volatile_status "{v}" does not exist in '
-                              f'volatile_status.json and volatiles_to_ignore.json')
-
-        # amount of moves the pokemon has, range 1-4
-        n_moves = len(pokemon['moves'])
-
-
-
-
 
