@@ -1,103 +1,172 @@
 from tqdm import tqdm
+import torch
+import os
+import time
+import math
 
-from data_loader import data_loader
+from data.data_loader import data_loader
+from model.network import ValueNet, Hidden, Output
+from model.loss import Loss
+from data.transformer import StateTransformer
+
 
 """
-INPUT LAYER
-
-- Weather type [8]
-- Weather count [1]
-- Terrain type [5]
-- Terrain count [1]
-- Trick room [1]
-- Trick room count [1]
-
-- For each player:
-    - Side conditions [11]
-    - Future sight [1]
-    - Wish [2]
-    - Healing wish [1]
-    - Has active [1]
-    - N pokemon [1]
-    - Active [1]
-    - Reserve [5]
-
-    - For each Pokemon
-        - Species [1033] -> embedding: [64]
-        - Abilities [263] -> embedding: [16]
-        - Item [196] -> embedding: [16]
-        - Has item [1]
-        - Types [18]
-        - Stats [6]
-        - Level [1]
-
-        - Status conditions: [7]
-        - Volatile status [27]
-        - Sleep countdown [1]
-        - Stat changes [7]
-        - Is alive [1]
-        - Health [1]
-        - N moves [1]
-        - Moves [4]
-
-        - For each move:
-            - Name [757] -> embedding: [64]
-            - Type [18]
-            - Move category [3]
-            - Base power [1]
-            - Max PP [4]
-
-            - Current PP [4]
-            - Disabled [1]
-            - Used [1]
-            - Targets self [1]
-            - Priority [1]
-
-
-Attributes that may be unavailable in pmariglia's state simulation:
-    - weather, terrain and trick room count
-    - sleep countdown
-    - healing wish
-    - choicelock in volatile status
-
-
-
 ---------------------- TO DO ----------------------
 
-0. check if normalize name is fine, and if gravity, terrain, etc work
+1. re-parse games, create test split and create state files
 
-1. create training to test split
-2. create new jsonl batches
+2. check encode len(..) +1 vs len(..) +2
+3. change model to where each pokemon is passed individually
 
-3. implement gravity, magic room and wonder room in transformer
-
-4. see how embedding works with 2dim arrays [2*6 pokemon] when splitting afterwards
-5. finish transformer with tensors for:
-    - result [1x1]
-    - field state [1xn]
-    - player state conditions [2xn]
-    - pokemon names [2x6]
-    - pokemon abilities [2x6]
-    - pokemon items [2x6]
-    - pokemon moves [2x6x4]
-    - pokemon attributes [2x6xn]
-    
-
-6. scale data (e.g. stats = stats / 250)
-7. shuffle moves and reserve pokemon (as final step)
-8. split game results from dataset
-
+4. fix imports?
 
 """
 
 
 def main():
-    training_files = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training_states_testfolder'
-    loader = data_loader(training_files, batch_size=100)
+    # initialize model
+    hidden_layers = Hidden(input_size=3801, output_size=512)
+    output_layer = Output(input_size=512)
+    model = ValueNet(hidden_layers, output_layer)
 
-    for batch in tqdm(loader):
-        # print(batch['fields'])
-        pass
+    # train model
+    train = Trainer(model, save_model=True)
+    train()
+
+
+class Trainer:
+    def __init__(self, model, n_epochs=20, batch_size=128, n_workers=4, lr=0.0003, save_model=False):
+        self.model = model
+
+        # training settings
+        self.n_epochs = n_epochs
+        self.batch_size = batch_size
+        self.n_workers = n_workers
+
+        self.optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+        self.loss_function = Loss()
+
+        # data settings
+        train_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training_states/train_test/'
+        val_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training_states/val_test/'
+
+        shuffle_transform = StateTransformer(shuffle_players=True, shuffle_pokemon=True)
+        no_shuffle_transform = StateTransformer(shuffle_players=False, shuffle_pokemon=False)
+
+        self.train_samples = sum([10000 for f in os.listdir(train_path)])
+        self.validation_samples = sum([10000 for f in os.listdir(val_path)])
+
+        self.train_loader = data_loader(train_path, shuffle_transform, batch_size=batch_size, num_workers=n_workers)
+        self.val_loader = data_loader(val_path, no_shuffle_transform, batch_size=batch_size, num_workers=n_workers)
+
+        # misc. settings
+        self.running_loss_freq = math.ceil(20_000 / self.batch_size)
+
+        if save_model:
+            self.save_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/models/'
+        else:
+            self.save_path = None
+
+    def __call__(self):
+        self.batch_count = 0
+
+        # start epoch iteration
+        start_time = time.time()
+        for epoch in range(1, self.n_epochs + 1):
+            out_str = ""
+
+            # training loop
+            start_epoch_time = time.time()
+            epoch_train_loss = self.train()
+            out_str += "Epoch {} | Train loss: {:.3f} | ".format(
+                epoch, epoch_train_loss
+            )
+            print(out_str, end="")
+
+            # validating loop
+            epoch_val_loss = self.validate()
+            out_str += "Val loss: {:.3f} | Epoch time: {:.1f}s".format(
+                epoch_val_loss, time.time() - start_epoch_time
+            )
+            print("\r" + out_str + '\n')
+
+            # save model
+            if self.save_path:
+                obj = {
+                    "epoch": epoch,
+                    "optimizer": self.optimizer.state_dict(),
+                    "model": self.model.state_dict(),
+                }
+                torch.save(obj, f"{self.save_path}epoch_{epoch}.pt")
+
+        print('Finished training')
+        print("Total time: {:.1f}s".format(time.time() - start_time))
+
+    def train(self):
+        self.model.train()
+
+        # init progress bar
+        pbar = (
+            tqdm(total=self.train_samples) if self.train_samples else tqdm()
+        )
+
+        running_loss = 0.0
+        epoch_train_loss = 0.0
+
+        i = 0
+
+        # iterate training batches
+        for i, sample in enumerate(self.train_loader, start=1):
+            self.optimizer.zero_grad()
+            out, labels = self.forward_pass(sample)
+            loss = self.loss_function(out, labels)
+
+            running_loss += loss.item()
+            epoch_train_loss += loss.item()
+
+            loss.backward()
+            self.optimizer.step()
+
+            if i % self.running_loss_freq == 0:
+                train_loss = running_loss / self.running_loss_freq
+                running_loss = 0.0
+
+                pbar.update(self.running_loss_freq * self.batch_size)
+                pbar.set_description("Train loss: {:.3f}".format(train_loss))
+
+        if self.train_samples:
+            pbar.update(self.train_samples - pbar.n)
+
+        pbar.close()
+
+        self.batch_count += i
+        epoch_train_loss = epoch_train_loss / i
+
+        return epoch_train_loss
+
+    def validate(self):
+        self.model.eval()
+        epoch_val_loss = 0.0
+        i = 0
+
+        for i, sample in enumerate(self.val_loader, start=1):
+            with torch.no_grad():
+                out, labels = self.forward_pass(sample)
+                loss = self.loss_function(out, labels)
+                epoch_val_loss += loss.item()
+
+        epoch_val_loss = epoch_val_loss / i
+
+        return epoch_val_loss
+
+    def forward_pass(self, sample):
+        fields = sample["fields"]
+        sides = sample["sides"]
+        pokemon = sample["pokemon"]
+        result = sample["result"]
+
+        out = self.model(fields, sides, pokemon)
+        return out, result
 
 
 if __name__ == '__main__':
