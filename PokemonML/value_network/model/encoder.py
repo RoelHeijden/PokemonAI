@@ -1,27 +1,61 @@
 import torch
 from torch import nn
-import numpy as np
+
+from state_transformer.categories import (
+    SPECIES,
+    MOVES,
+    ITEMS,
+    ABILITIES
+)
 
 
 class Encoder(nn.Module):
-    def __init__(self, embeddings: nn.ModuleDict):
+    def __init__(self):
         super().__init__()
-        # Initialize a flatten layer
         self.flatten = nn.Flatten(start_dim=1)
 
-        # Get embeddings
-        self.species_embedding = embeddings["species"]
-        self.move_embedding = embeddings["move"]
-        self.item_embedding = embeddings["item"]
-        self.ability_embedding = embeddings["ability"]
+        self.species_embedding = nn.Embedding(len(SPECIES) + 1, 64, padding_idx=0)
+        self.move_embedding = nn.Embedding(len(MOVES) + 1, 64, padding_idx=0)
+        self.item_embedding = nn.Embedding(len(ITEMS) + 1, 16, padding_idx=0)
+        self.ability_embedding = nn.Embedding(len(ABILITIES) + 1, 16, padding_idx=0)
+
+    def _concat_fields(self, fields):
+        return fields
+
+    def _concat_sides(self, sides):
+        return self.flatten(sides)
+
+    def _concat_pokemon(self, pokemon):
+        species = self.species_embedding(pokemon["species"])
+        moves = self.move_embedding(pokemon["moves"])
+        items = self.item_embedding(pokemon["items"])
+        abilities = self.ability_embedding(pokemon["abilities"])
+
+        return [
+            [
+                torch.cat(
+                    (
+                        species[:, j][:, i],
+                        items[:, j][:, i],
+                        abilities[:, j][:, i],
+                        pokemon['pokemon_attributes'][:, j][:, i],
+                        self.flatten(moves[:, j][:, i]),
+                        self.flatten(pokemon['move_attributes'][:, j][:, i])
+                    ),
+                    dim=1
+                )
+                for i in range(6)
+            ]
+            for j in range(2)
+        ]
+
+    def forward(self, fields, sides, pokemon):
+        fields = self._concat_fields(fields)
+        sides = self._concat_sides(sides)
+        pokemon = self._concat_pokemon(pokemon)
+
+        return fields, sides, pokemon
 
 
-def create_embeddings(categories: list, embedding_dim):
-    embeddings = nn.ModuleDict()
 
-    for category in categories:
-        num_embeddings = len() + 1  # or + 2???
-        embedding = nn.Embedding(num_embeddings, embedding_dim, padding_idx=0)
-        embeddings[category] = embedding
 
-    return embeddings
