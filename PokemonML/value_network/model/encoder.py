@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from state_transformer.categories import (
+from data.categories import (
     SPECIES,
     MOVES,
     ITEMS,
@@ -15,7 +15,7 @@ class Encoder(nn.Module):
         self.flatten = nn.Flatten(start_dim=1)
 
         self.species_embedding = nn.Embedding(len(SPECIES) + 1, 64, padding_idx=0)
-        self.move_embedding = nn.Embedding(len(MOVES) + 1, 64, padding_idx=0)
+        self.move_embedding = nn.Embedding(len(MOVES) + 1, 32, padding_idx=0)
         self.item_embedding = nn.Embedding(len(ITEMS) + 1, 16, padding_idx=0)
         self.ability_embedding = nn.Embedding(len(ABILITIES) + 1, 16, padding_idx=0)
 
