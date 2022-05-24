@@ -30,7 +30,7 @@ def main():
     # mode = 'create training batches'
     mode = 'inspect a game'
 
-    inspect_battle_id = 1021737
+    inspect_battle_id = 4421651
 
     if mode == 'parse all games':
         path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/raw-ou-incomplete"

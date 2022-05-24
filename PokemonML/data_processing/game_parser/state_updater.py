@@ -531,11 +531,15 @@ def upkeep(battle, _):
         logger.debug("Setting protect to {} for the p2".format(battle.p2.side_conditions[constants.PROTECT]))
 
     if battle.p1.wish[0] > 0:
-        battle.p1.wish = (battle.p1.wish[0] - 1, battle.p1.wish[1])
+        countdown = battle.p1.wish[0] - 1
+        hp_amount = battle.p1.wish[1] if countdown > 0 else 0
+        battle.p1.wish = (countdown, hp_amount)
         logger.debug("Decrementing wish to {} for the bot".format(battle.p1.wish[0]))
 
     if battle.p2.wish[0] > 0:
-        battle.p2.wish = (battle.p2.wish[0] - 1, battle.p2.wish[1])
+        countdown = battle.p2.wish[0] - 1
+        hp_amount = battle.p2.wish[1] if countdown > 0 else 0
+        battle.p2.wish = (countdown, hp_amount)
         logger.debug("Decrementing wish to {} for the p2".format(battle.p2.wish[0]))
 
     if battle.p1.future_sight[0] > 0:
@@ -777,9 +781,9 @@ def update_state(battle, split_msg):
         function_to_call(battle, split_msg)
 
     if action == 'turn' or action == 'upkeep':
-        battle.p2.check_if_trapped(battle)
+        battle.p2.check_if_trapped(user_mon=battle.p2.active, opp_mon=battle.p1.active)
         battle.p2.lock_moves()
-        battle.p1.check_if_trapped(battle)
+        battle.p1.check_if_trapped(user_mon=battle.p1.active, opp_mon=battle.p2.active)
         battle.p1.lock_moves()
 
     return True

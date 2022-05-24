@@ -170,28 +170,25 @@ class Battler:
                 switches.append("{} {}".format(constants.SWITCH_STRING, pkmn.name))
         return switches
 
-    def check_if_trapped(self, battle):
+    def check_if_trapped(self, user_mon, opp_mon):
         """ sets the 'trapped' flag"""
-        pkmn = self.active
-        opp_pkmn = battle.p1.active
 
-        # check via items/abilities
-        if pkmn.item == 'shedshell' or 'ghost' in pkmn.types or pkmn.ability == 'shadowtag':
+        if user_mon.item == 'shedshell' or 'ghost' in user_mon.types or user_mon.ability == 'shadowtag':
             self.trapped = False
             return
-        elif constants.PARTIALLY_TRAPPED in pkmn.volatile_statuses:
+        elif constants.PARTIALLY_TRAPPED in user_mon.volatile_statuses:
             self.trapped = True
             return
-        elif constants.TRAPPED in pkmn.volatile_statuses:
+        elif constants.TRAPPED in user_mon.volatile_statuses:
             self.trapped = True
             return
-        elif opp_pkmn.ability == 'shadowtag':
+        elif opp_mon.ability == 'shadowtag':
             self.trapped = True
             return
-        elif opp_pkmn.ability == 'magnetpull' and 'steel' in pkmn.types:
+        elif opp_mon.ability == 'magnetpull' and 'steel' in user_mon.types:
             self.trapped = True
             return
-        elif opp_pkmn.ability == 'arenatrap' and pkmn.is_grounded():
+        elif opp_mon.ability == 'arenatrap' and user_mon.is_grounded():
             self.trapped = True
             return
         else:
