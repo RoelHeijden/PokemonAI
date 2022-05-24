@@ -87,7 +87,7 @@ class StateTransformer:
         else:
             result = 0.5
 
-        return torch.tensor(result, dtype=torch.int)
+        return torch.tensor(result, dtype=torch.float)
 
     def _transform_field(self, state: Dict[str, Any]) -> torch.tensor:
         """
