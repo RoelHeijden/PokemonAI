@@ -8,7 +8,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils import data
 
-from state_transformer.transformer import Transformer
+from state_transformer.transformer import StateTransformer
 
 
 def data_loader(folder_path, batch_size, num_workers=0):
@@ -20,7 +20,7 @@ def data_loader(folder_path, batch_size, num_workers=0):
         ]
     )[:]
 
-    transform = Transformer()
+    transform = StateTransformer()
     datasets = [TurnsDataset(file, transform) for file in files]
     dataset = MultiDataDataset(datasets)
 
@@ -29,7 +29,7 @@ def data_loader(folder_path, batch_size, num_workers=0):
 
 
 class TurnsDataset(data.IterableDataset, ABC):
-    def __init__(self, file: str, transform: Transformer):
+    def __init__(self, file: str, transform: StateTransformer):
         super().__init__()
         self.file = file
         self.transform = transform
