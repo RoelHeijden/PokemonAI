@@ -38,21 +38,21 @@ class StateTransformer:
         self.turn_count_scaling = 5
 
         # side scaling
-        self.wish_scaling = 200
         self.n_pokemon_scaling = 6
+        self.wish_scaling = 200
 
         # pokemon scaling
-        self.stat_scaling = 250
-        self.stat_change_scaling = 3
         self.level_scaling = 100
         self.n_moves_scaling = 4
         self.sleep_count_scaling = 3
+        self.stat_scaling = 250
+        self.stat_change_scaling = 3
 
         # move scaling
-        self.pp_scaling = 16
+        self.pp_scaling = 32
+        self.priority_scaling = 3
         self.bp_scaling = 100
         self.acc_scaling = 100
-        self.priority_scaling = 3
         self.multihit_scaling = 3
 
     def __call__(self, state: Dict[str, Any]) -> Dict[str, torch.tensor]:
@@ -161,18 +161,36 @@ class StateTransformer:
 
     def _transform_sides(self, state: Dict[str, Any]) -> torch.tensor:
         """
-        Side_conditions
-        Wish
-        Future_sight
-        Healing_wish
-        Trapped
         Has_active
         N_pokemon
+        Trapped
+        Future_sight
+        Healing_wish
+        Wish
+        Side_conditions
         """
 
         side_attributes = []
 
         for side in [state[self.p1], state[self.p2]]:
+
+            # 1 if the side's active pokemon is alive, 0 otherwise
+            has_active = int(not side['active']['fainted'])
+
+            # n amount of pokemon the player has
+            n_pokemon = (len(side['reserve']) + 1) / self.n_pokemon_scaling
+
+            # 1 if side's active is trapped, 0 otherwise
+            trapped = int(side['trapped'])
+
+            # future sight turn count
+            future_sight = side['future_sight']['countdown']
+
+            # 1 if the Healing wish/Lunar dance effect is incoming, 0 otherwise
+            healing_wish = int(side['healing_wish'])
+
+            # two wish variables: [turn, amount]
+            wish = [side['wish']['countdown'], side['wish']['hp_amount'] / self.wish_scaling]
 
             # one-hot encode side conditions
             side_conditions = []
@@ -183,25 +201,18 @@ class StateTransformer:
                 else:
                     side_conditions.append(0)
 
-            # two wish variables: [turn, amount]
-            wish = [side['wish']['countdown'], side['wish']['hp_amount'] / self.wish_scaling]
+            # concat output
+            out = [
+                has_active,
+                n_pokemon,
+                trapped,
+                future_sight,
+                healing_wish,
+            ]
+            out.extend(wish)
+            out.extend(side_conditions)
 
-            # future sight turn count
-            future_sight = side['future_sight']['countdown']
-
-            # 1 if the Healing wish/Lunar dance effect is incoming, 0 otherwise
-            healing_wish = int(side['healing_wish'])
-
-            # 1 if side's active is trapped, 0 otherwise
-            trapped = int(side['trapped'])
-
-            # 1 if the side's active pokemon is alive, 0 otherwise
-            has_active = int(not side['active']['fainted'])
-
-            # n amount of pokemon the player has
-            n_pokemon = (len(side['reserve']) + 1) / self.n_pokemon_scaling
-
-            side_attributes.append(side_conditions + wish + [future_sight, healing_wish, trapped, has_active, n_pokemon])
+            side_attributes.append(out)
 
         return torch.tensor(side_attributes, dtype=torch.float)
 
@@ -325,17 +336,32 @@ class StateTransformer:
 
     def _pokemon_attributes(self, pokemon, return_zeros=False) -> list:
         """
-        Types
-        Stats
-        Stat_changes
         Level
-        n_moves
+        N_moves
         Health
         Is_alive
         Sleep_countdown
+        Types
+        Stats
+        Stat_changes
         Status
         Volatile_status
         """
+
+        # pokemon level
+        level = pokemon['level'] / self.level_scaling
+
+        # n pokemon moves
+        n_moves = len(pokemon['moves']) / self.n_moves_scaling
+
+        # pokemon health range
+        health = pokemon['hp'] / pokemon['maxhp']
+
+        # pokemon is alive
+        is_alive = int(not pokemon['fainted'])
+
+        # n turns pokemon may stay asleep
+        sleep_countdown = pokemon['sleep_countdown'] / self.sleep_count_scaling
 
         # one-hot encode pokemon types
         types = []
@@ -372,21 +398,6 @@ class StateTransformer:
             ]
         ]
 
-        # pokemon level
-        level = pokemon['level'] / self.level_scaling
-
-        # n pokemon moves
-        n_moves = len(pokemon['moves']) / self.n_moves_scaling
-
-        # pokemon health range
-        health = pokemon['hp'] / pokemon['maxhp']
-
-        # pokemon is alive
-        is_alive = int(not pokemon['fainted'])
-
-        # n turns pokemon may stay asleep
-        sleep_countdown = pokemon['sleep_countdown'] / self.sleep_count_scaling
-
         # one-hot encode status conditions
         status = []
         for s in STATUS:
@@ -414,6 +425,7 @@ class StateTransformer:
                 logging.debug(f'volatile_status "{v}" does not exist in '
                               f'volatile_status.json and volatiles_to_ignore.json')
 
+        # concat output
         out = [
             level,
             n_moves,
@@ -437,9 +449,9 @@ class StateTransformer:
         disabled
         pp
         max_pp
+        priority
         base_power
         accuracy
-        priority
         is_used
         target_self
         min_hits
@@ -458,29 +470,29 @@ class StateTransformer:
         # max move pp
         max_pp = int(MOVE_LOOKUP[name]['pp'] * 1.6) / self.pp_scaling
 
-        # move base power
-        base_power = MOVE_LOOKUP[name]['basePower'] / self.bp_scaling
-
-        # move accuracy
-        accuracy = (MOVE_LOOKUP[name]['accuracy'] if MOVE_LOOKUP[name]['accuracy'] != 1 else 100) / self.acc_scaling
-
         # move priority
         priority = MOVE_LOOKUP[name]['priority'] / self.priority_scaling
 
-        # move has been used
-        is_used = int(pp < max_pp)
-
-        # move targets the user
-        target_self = int(MOVE_LOOKUP[name]['target'] == 'self')
-
-        # min and max amount of hits the move may consist of
-        multi_hits = MOVE_LOOKUP[name].get('multihit')
-        if not multi_hits:
-            multi_hits = [1, 1]
-        elif type(multi_hits) != list:
-            multi_hits = [multi_hits, multi_hits]
-        min_hits, max_hits = multi_hits[0] / self.multihit_scaling, multi_hits[1] / self.multihit_scaling
-
+        # # move base power
+        # base_power = MOVE_LOOKUP[name]['basePower'] / self.bp_scaling
+        #
+        # # move accuracy
+        # accuracy = (MOVE_LOOKUP[name]['accuracy'] if MOVE_LOOKUP[name]['accuracy'] != 1 else 100) / self.acc_scaling
+        #
+        # # move has been used
+        # is_used = int(pp < max_pp)
+        #
+        # # move targets the user
+        # target_self = int(MOVE_LOOKUP[name]['target'] == 'self')
+        #
+        # # min and max amount of hits the move may consist of
+        # multi_hits = MOVE_LOOKUP[name].get('multihit')
+        # if not multi_hits:
+        #     multi_hits = [1, 1]
+        # elif type(multi_hits) != list:
+        #     multi_hits = [multi_hits, multi_hits]
+        # min_hits, max_hits = multi_hits[0] / self.multihit_scaling, multi_hits[1] / self.multihit_scaling
+        #
         # # one-hot encode move category type
         # move_category = []
         # for c in MOVE_CATEGORIES:
@@ -501,13 +513,13 @@ class StateTransformer:
             disabled,
             pp,
             max_pp,
-            base_power,
-            accuracy,
             priority,
-            is_used,
-            target_self,
-            min_hits,
-            max_hits,
+            # base_power,
+            # accuracy,
+            # is_used,
+            # target_self,
+            # min_hits,
+            # max_hits,
         ]
         # out.extend(move_category)
         # out.extend(typing)
