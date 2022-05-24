@@ -54,7 +54,26 @@ class Encoder(nn.Module):
         sides = self._concat_sides(sides)
         pokemon = self._concat_pokemon(pokemon)
 
-        return fields, sides, pokemon
+        # temporary test
+        return torch.cat(
+            (
+                fields,
+                sides,
+                pokemon[0][0],
+                pokemon[0][1],
+                pokemon[0][2],
+                pokemon[0][3],
+                pokemon[0][4],
+                pokemon[0][5],
+                pokemon[1][0],
+                pokemon[1][1],
+                pokemon[1][2],
+                pokemon[1][3],
+                pokemon[1][4],
+                pokemon[1][5],
+            ),
+            dim=1
+        )
 
 
 
