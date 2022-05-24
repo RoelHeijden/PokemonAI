@@ -8,10 +8,10 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils import data
 
-from state_transformer.transformer import StateTransformer
+from data.transformer import StateTransformer
 
 
-def data_loader(folder_path, batch_size, num_workers=0):
+def data_loader(folder_path, transformer: StateTransformer, batch_size=50, num_workers=0):
     files = sorted(
         [
             os.path.join(folder_path, file_name)
@@ -20,8 +20,7 @@ def data_loader(folder_path, batch_size, num_workers=0):
         ]
     )[:]
 
-    transform = StateTransformer()
-    datasets = [TurnsDataset(file, transform) for file in files]
+    datasets = [TurnsDataset(file, transformer) for file in files]
     dataset = MultiDataDataset(datasets)
 
     loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
