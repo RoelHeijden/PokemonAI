@@ -28,7 +28,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 
 
-class Transformer:
+class StateTransformer:
     def __init__(self, shuffle_players=True, shuffle_pokemon=False, shuffle_moves=False):
         self.shuffle_players = shuffle_players
         self.shuffle_pokemon = shuffle_pokemon
@@ -65,9 +65,6 @@ class Transformer:
                 self.p1 = "p1"
                 self.p2 = "p2"
 
-        # import json
-        # print(json.dumps(state, indent=3))
-
         out = dict()
 
         out['result'] = self._get_result(state['winner'])
@@ -82,14 +79,14 @@ class Transformer:
         """
         Result:
             1 for a win
-           -1 for a loss
-            0 for a (rare) tie
+            0 for a loss
+            0.5 for a (rare) tie
         """
 
         if winner:
-            result = 1 if winner == self.p1 else -1
+            result = 1 if winner == self.p1 else 0
         else:
-            result = 0
+            result = 0.5
 
         return torch.tensor(result, dtype=torch.int)
 
@@ -314,7 +311,7 @@ class Transformer:
 
         out['species'] = torch.tensor(species, dtype=torch.long)
         out['items'] = torch.tensor(items, dtype=torch.long)
-        out['abilites'] = torch.tensor(abilities, dtype=torch.long)
+        out['abilities'] = torch.tensor(abilities, dtype=torch.long)
         out['moves'] = torch.tensor(moves, dtype=torch.long)
 
         out['move_attributes'] = torch.tensor(move_attributes, dtype=torch.float)
