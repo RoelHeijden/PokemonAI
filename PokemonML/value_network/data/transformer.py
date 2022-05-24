@@ -2,7 +2,7 @@ import random
 import torch
 from typing import Dict, Any
 
-from state_transformer.categories import (
+from data.categories import (
     SPECIES,
     ITEMS,
     ABILITIES,
@@ -16,7 +16,7 @@ from state_transformer.categories import (
     SIDE_CONDITIONS,
 )
 
-from state_transformer.lookups import (
+from data.lookups import (
     MOVE_LOOKUP,
     FORM_LOOKUP,
     VOLATILES_TO_IGNORE,
@@ -33,6 +33,9 @@ class StateTransformer:
         self.shuffle_players = shuffle_players
         self.shuffle_pokemon = shuffle_pokemon
         self.shuffle_moves = shuffle_moves
+
+        self.p1 = "p1"
+        self.p2 = "p2"
 
         # field scaling
         self.turn_count_scaling = 5
