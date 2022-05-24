@@ -67,6 +67,12 @@ NASH EQUILIBRIUM
 
 ----------------------------------------------------------------------------------------------------------------
 
+NN ATTRIBUTES TO ADD:
+    - weather, terrain and trick room count
+    - sleep countdown
+    - healing wish
+    - choicelock in volatile status
+
 
 STATE SIMULATOR:
     1. if one pokemon fainted: evaluate possible switches and pick highest/lowest value? (and remove these one-active states from the data)
