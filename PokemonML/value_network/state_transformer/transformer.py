@@ -69,8 +69,7 @@ class StateTransformer:
 
         out['result'] = self._get_result(state['winner'])
         out['fields'] = self._transform_field(state)
-        out['p1_attributes'] = self._transform_side(state[self.p1])
-        out['p2_attributes'] = self._transform_side(state[self.p2])
+        out['sides'] = self._transform_sides(state)
         out['pokemon'] = self._transform_pokemon(state)
 
         return out
@@ -160,7 +159,7 @@ class StateTransformer:
             dtype=torch.float
         )
 
-    def _transform_side(self, side: Dict[str, Any]) -> torch.tensor:
+    def _transform_sides(self, state: Dict[str, Any]) -> torch.tensor:
         """
         Side_conditions
         Wish
@@ -171,35 +170,40 @@ class StateTransformer:
         N_pokemon
         """
 
-        # one-hot encode side conditions
-        side_conditions = []
-        for s_con in SIDE_CONDITIONS:
-            if s_con in side['side_conditions']:
-                count = side['side_conditions'].get(s_con)
-                side_conditions.append(count)
-            else:
-                side_conditions.append(0)
+        side_attributes = []
 
-        # two wish variables: [turn, amount]
-        wish = [side['wish']['countdown'], side['wish']['hp_amount'] / self.wish_scaling]
+        for side in [state[self.p1], state[self.p2]]:
 
-        # future sight turn count
-        future_sight = side['future_sight']['countdown']
+            # one-hot encode side conditions
+            side_conditions = []
+            for s_con in SIDE_CONDITIONS:
+                if s_con in side['side_conditions']:
+                    count = side['side_conditions'].get(s_con)
+                    side_conditions.append(count)
+                else:
+                    side_conditions.append(0)
 
-        # 1 if the Healing wish/Lunar dance effect is incoming, 0 otherwise
-        healing_wish = int(side['healing_wish'])
+            # two wish variables: [turn, amount]
+            wish = [side['wish']['countdown'], side['wish']['hp_amount'] / self.wish_scaling]
 
-        # 1 if side's active is trapped, 0 otherwise
-        trapped = int(side['trapped'])
+            # future sight turn count
+            future_sight = side['future_sight']['countdown']
 
-        # 1 if the side's active pokemon is alive, 0 otherwise
-        has_active = int(not side['active']['fainted'])
+            # 1 if the Healing wish/Lunar dance effect is incoming, 0 otherwise
+            healing_wish = int(side['healing_wish'])
 
-        # n amount of pokemon the player has
-        n_pokemon = (len(side['reserve']) + 1) / self.n_pokemon_scaling
+            # 1 if side's active is trapped, 0 otherwise
+            trapped = int(side['trapped'])
 
-        player_attributes = side_conditions + wish + [future_sight, healing_wish, trapped, has_active, n_pokemon]
-        return torch.tensor(player_attributes, dtype=torch.float)
+            # 1 if the side's active pokemon is alive, 0 otherwise
+            has_active = int(not side['active']['fainted'])
+
+            # n amount of pokemon the player has
+            n_pokemon = (len(side['reserve']) + 1) / self.n_pokemon_scaling
+
+            side_attributes.append(side_conditions + wish + [future_sight, healing_wish, trapped, has_active, n_pokemon])
+
+        return torch.tensor(side_attributes, dtype=torch.float)
 
     def _transform_pokemon(self, state: Dict[str, Any]) -> Dict[str, torch.tensor]:
         """
