@@ -1,0 +1,728 @@
+{
+   "turn": 2,
+   "p1": {
+      "active": {
+         "name": "kyuremblack",
+         "base_name": "kyuremblack",
+         "level": 100,
+         "types": [
+            "dragon",
+            "ice"
+         ],
+         "hp": 318,
+         "maxhp": 391,
+         "ability": "teravolt",
+         "item": "leftovers",
+         "stats": {
+            "hp": 391,
+            "attack": 482,
+            "defense": 236,
+            "special-attack": 248,
+            "special-defense": 217,
+            "speed": 289
+         },
+         "stat_changes": {
+            "attack": 0,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 0,
+            "accuracy": 0,
+            "evasion": 0
+         },
+         "status": "none",
+         "volatile_status": [
+            "substitute"
+         ],
+         "moves": [
+            {
+               "name": "dragondance",
+               "pp": 32,
+               "disabled": false
+            },
+            {
+               "name": "iciclespear",
+               "pp": 48,
+               "disabled": false
+            },
+            {
+               "name": "fusionbolt",
+               "pp": 8,
+               "disabled": false
+            },
+            {
+               "name": "substitute",
+               "pp": 15,
+               "disabled": false
+            }
+         ],
+         "fainted": false,
+         "sleep_countdown": 0
+      },
+      "reserve": [
+         {
+            "name": "seismitoad",
+            "base_name": "seismitoad",
+            "level": 100,
+            "types": [
+               "water",
+               "ground"
+            ],
+            "hp": 414,
+            "maxhp": 414,
+            "ability": "waterabsorb",
+            "item": "leftovers",
+            "stats": {
+               "hp": 414,
+               "attack": 175,
+               "defense": 273,
+               "special-attack": 206,
+               "special-defense": 187,
+               "speed": 184
+            },
+            "stat_changes": {
+               "attack": 0,
+               "defense": 0,
+               "special-attack": 0,
+               "special-defense": 0,
+               "speed": 0,
+               "accuracy": 0,
+               "evasion": 0
+            },
+            "status": "none",
+            "volatile_status": [],
+            "moves": [
+               {
+                  "name": "stealthrock",
+                  "pp": 32,
+                  "disabled": false
+               },
+               {
+                  "name": "scald",
+                  "pp": 24,
+                  "disabled": false
+               },
+               {
+                  "name": "earthpower",
+                  "pp": 16,
+                  "disabled": false
+               },
+               {
+                  "name": "toxic",
+                  "pp": 16,
+                  "disabled": false
+               }
+            ],
+            "fainted": false,
+            "sleep_countdown": 0
+         },
+         {
+            "name": "rotomheat",
+            "base_name": "rotomheat",
+            "level": 100,
+            "types": [
+               "electric",
+               "fire"
+            ],
+            "hp": 241,
+            "maxhp": 241,
+            "ability": "levitate",
+            "item": "heavydutyboots",
+            "stats": {
+               "hp": 241,
+               "attack": 121,
+               "defense": 250,
+               "special-attack": 309,
+               "special-defense": 251,
+               "speed": 298
+            },
+            "stat_changes": {
+               "attack": 0,
+               "defense": 0,
+               "special-attack": 0,
+               "special-defense": 0,
+               "speed": 0,
+               "accuracy": 0,
+               "evasion": 0
+            },
+            "status": "none",
+            "volatile_status": [],
+            "moves": [
+               {
+                  "name": "nastyplot",
+                  "pp": 32,
+                  "disabled": false
+               },
+               {
+                  "name": "voltswitch",
+                  "pp": 32,
+                  "disabled": false
+               },
+               {
+                  "name": "overheat",
+                  "pp": 8,
+                  "disabled": false
+               },
+               {
+                  "name": "defog",
+                  "pp": 24,
+                  "disabled": false
+               }
+            ],
+            "fainted": false,
+            "sleep_countdown": 0
+         },
+         {
+            "name": "dugtrio",
+            "base_name": "dugtrio",
+            "level": 100,
+            "types": [
+               "ground"
+            ],
+            "hp": 211,
+            "maxhp": 211,
+            "ability": "arenatrap",
+            "item": "focussash",
+            "stats": {
+               "hp": 211,
+               "attack": 299,
+               "defense": 136,
+               "special-attack": 122,
+               "special-defense": 177,
+               "speed": 372
+            },
+            "stat_changes": {
+               "attack": 0,
+               "defense": 0,
+               "special-attack": 0,
+               "special-defense": 0,
+               "speed": 0,
+               "accuracy": 0,
+               "evasion": 0
+            },
+            "status": "none",
+            "volatile_status": [],
+            "moves": [
+               {
+                  "name": "earthquake",
+                  "pp": 16,
+                  "disabled": false
+               },
+               {
+                  "name": "reversal",
+                  "pp": 24,
+                  "disabled": false
+               },
+               {
+                  "name": "screech",
+                  "pp": 64,
+                  "disabled": false
+               },
+               {
+                  "name": "suckerpunch",
+                  "pp": 8,
+                  "disabled": false
+               }
+            ],
+            "fainted": false,
+            "sleep_countdown": 0
+         },
+         {
+            "name": "clefable",
+            "base_name": "clefable",
+            "level": 100,
+            "types": [
+               "fairy"
+            ],
+            "hp": 394,
+            "maxhp": 394,
+            "ability": "unaware",
+            "item": "leftovers",
+            "stats": {
+               "hp": 394,
+               "attack": 130,
+               "defense": 182,
+               "special-attack": 227,
+               "special-defense": 306,
+               "speed": 156
+            },
+            "stat_changes": {
+               "attack": 0,
+               "defense": 0,
+               "special-attack": 0,
+               "special-defense": 0,
+               "speed": 0,
+               "accuracy": 0,
+               "evasion": 0
+            },
+            "status": "none",
+            "volatile_status": [],
+            "moves": [
+               {
+                  "name": "thunderwave",
+                  "pp": 32,
+                  "disabled": false
+               },
+               {
+                  "name": "moonblast",
+                  "pp": 24,
+                  "disabled": false
+               },
+               {
+                  "name": "wish",
+                  "pp": 16,
+                  "disabled": false
+               },
+               {
+                  "name": "protect",
+                  "pp": 16,
+                  "disabled": false
+               }
+            ],
+            "fainted": false,
+            "sleep_countdown": 0
+         },
+         {
+            "name": "gengar",
+            "base_name": "gengar",
+            "level": 100,
+            "types": [
+               "ghost",
+               "poison"
+            ],
+            "hp": 261,
+            "maxhp": 261,
+            "ability": "cursedbody",
+            "item": "choicespecs",
+            "stats": {
+               "hp": 261,
+               "attack": 121,
+               "defense": 156,
+               "special-attack": 359,
+               "special-defense": 187,
+               "speed": 350
+            },
+            "stat_changes": {
+               "attack": 0,
+               "defense": 0,
+               "special-attack": 0,
+               "special-defense": 0,
+               "speed": 0,
+               "accuracy": 0,
+               "evasion": 0
+            },
+            "status": "none",
+            "volatile_status": [],
+            "moves": [
+               {
+                  "name": "shadowball",
+                  "pp": 24,
+                  "disabled": false
+               },
+               {
+                  "name": "sludgewave",
+                  "pp": 16,
+                  "disabled": false
+               },
+               {
+                  "name": "focusblast",
+                  "pp": 8,
+                  "disabled": false
+               },
+               {
+                  "name": "trick",
+                  "pp": 16,
+                  "disabled": false
+               }
+            ],
+            "fainted": false,
+            "sleep_countdown": 0
+         }
+      ],
+      "side_conditions": {
+         "stealthrock": 1,
+         "protect": 0,
+         "toxic_count": 0
+      },
+      "trapped": false,
+      "wish": {
+         "countdown": 0,
+         "hp_amount": 0
+      },
+      "future_sight": {
+         "countdown": 0,
+         "p1": 0
+      },
+      "healing_wish": false
+   },
+   "p2": {
+      "active": {
+         "name": "torkoal",
+         "base_name": "torkoal",
+         "level": 100,
+         "types": [
+            "fire"
+         ],
+         "hp": 344,
+         "maxhp": 344,
+         "ability": "drought",
+         "item": "leftovers",
+         "stats": {
+            "hp": 344,
+            "attack": 207,
+            "defense": 416,
+            "special-attack": 206,
+            "special-defense": 176,
+            "speed": 68
+         },
+         "stat_changes": {
+            "attack": 0,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 0,
+            "accuracy": 0,
+            "evasion": 0
+         },
+         "status": "none",
+         "volatile_status": [],
+         "moves": [
+            {
+               "name": "stealthrock",
+               "pp": 31,
+               "disabled": false
+            },
+            {
+               "name": "rapidspin",
+               "pp": 64,
+               "disabled": false
+            },
+            {
+               "name": "lavaplume",
+               "pp": 24,
+               "disabled": false
+            },
+            {
+               "name": "bodypress",
+               "pp": 16,
+               "disabled": false
+            }
+         ],
+         "fainted": false,
+         "sleep_countdown": 0
+      },
+      "reserve": [
+         {
+            "name": "terrakion",
+            "base_name": "terrakion",
+            "level": 100,
+            "types": [
+               "rock",
+               "fighting"
+            ],
+            "hp": 323,
+            "maxhp": 323,
+            "ability": "justified",
+            "item": "lifeorb",
+            "stats": {
+               "hp": 323,
+               "attack": 357,
+               "defense": 216,
+               "special-attack": 162,
+               "special-defense": 217,
+               "speed": 346
+            },
+            "stat_changes": {
+               "attack": 0,
+               "defense": 0,
+               "special-attack": 0,
+               "special-defense": 0,
+               "speed": 0,
+               "accuracy": 0,
+               "evasion": 0
+            },
+            "status": "none",
+            "volatile_status": [],
+            "moves": [
+               {
+                  "name": "swordsdance",
+                  "pp": 32,
+                  "disabled": false
+               },
+               {
+                  "name": "stoneedge",
+                  "pp": 8,
+                  "disabled": false
+               },
+               {
+                  "name": "closecombat",
+                  "pp": 8,
+                  "disabled": false
+               },
+               {
+                  "name": "ironhead",
+                  "pp": 24,
+                  "disabled": false
+               }
+            ],
+            "fainted": false,
+            "sleep_countdown": 0
+         },
+         {
+            "name": "hydreigon",
+            "base_name": "hydreigon",
+            "level": 100,
+            "types": [
+               "dark",
+               "dragon"
+            ],
+            "hp": 326,
+            "maxhp": 326,
+            "ability": "levitate",
+            "item": "lumberry",
+            "stats": {
+               "hp": 326,
+               "attack": 193,
+               "defense": 216,
+               "special-attack": 349,
+               "special-defense": 216,
+               "speed": 324
+            },
+            "stat_changes": {
+               "attack": 0,
+               "defense": 0,
+               "special-attack": 0,
+               "special-defense": 0,
+               "speed": 0,
+               "accuracy": 0,
+               "evasion": 0
+            },
+            "status": "none",
+            "volatile_status": [],
+            "moves": [
+               {
+                  "name": "nastyplot",
+                  "pp": 32,
+                  "disabled": false
+               },
+               {
+                  "name": "roost",
+                  "pp": 16,
+                  "disabled": false
+               },
+               {
+                  "name": "darkpulse",
+                  "pp": 24,
+                  "disabled": false
+               },
+               {
+                  "name": "flashcannon",
+                  "pp": 16,
+                  "disabled": false
+               }
+            ],
+            "fainted": false,
+            "sleep_countdown": 0
+         },
+         {
+            "name": "hatterene",
+            "base_name": "hatterene",
+            "level": 100,
+            "types": [
+               "psychic",
+               "fairy"
+            ],
+            "hp": 318,
+            "maxhp": 318,
+            "ability": "healer",
+            "item": "leftovers",
+            "stats": {
+               "hp": 318,
+               "attack": 194,
+               "defense": 317,
+               "special-attack": 309,
+               "special-defense": 242,
+               "speed": 94
+            },
+            "stat_changes": {
+               "attack": 0,
+               "defense": 0,
+               "special-attack": 0,
+               "special-defense": 0,
+               "speed": 0,
+               "accuracy": 0,
+               "evasion": 0
+            },
+            "status": "none",
+            "volatile_status": [],
+            "moves": [
+               {
+                  "name": "drainingkiss",
+                  "pp": 16,
+                  "disabled": false
+               },
+               {
+                  "name": "aromatherapy",
+                  "pp": 8,
+                  "disabled": false
+               },
+               {
+                  "name": "nuzzle",
+                  "pp": 32,
+                  "disabled": false
+               },
+               {
+                  "name": "psychic",
+                  "pp": 16,
+                  "disabled": false
+               }
+            ],
+            "fainted": false,
+            "sleep_countdown": 0
+         },
+         {
+            "name": "melmetal",
+            "base_name": "melmetal",
+            "level": 100,
+            "types": [
+               "steel"
+            ],
+            "hp": 466,
+            "maxhp": 466,
+            "ability": "ironfist",
+            "item": "metalcoat",
+            "stats": {
+               "hp": 466,
+               "attack": 423,
+               "defense": 322,
+               "special-attack": 176,
+               "special-defense": 166,
+               "speed": 113
+            },
+            "stat_changes": {
+               "attack": 0,
+               "defense": 0,
+               "special-attack": 0,
+               "special-defense": 0,
+               "speed": 0,
+               "accuracy": 0,
+               "evasion": 0
+            },
+            "status": "none",
+            "volatile_status": [],
+            "moves": [
+               {
+                  "name": "doubleironbash",
+                  "pp": 8,
+                  "disabled": false
+               },
+               {
+                  "name": "earthquake",
+                  "pp": 16,
+                  "disabled": false
+               },
+               {
+                  "name": "thunderpunch",
+                  "pp": 24,
+                  "disabled": false
+               },
+               {
+                  "name": "superpower",
+                  "pp": 8,
+                  "disabled": false
+               }
+            ],
+            "fainted": false,
+            "sleep_countdown": 0
+         },
+         {
+            "name": "jirachi",
+            "base_name": "jirachi",
+            "level": 100,
+            "types": [
+               "steel",
+               "psychic"
+            ],
+            "hp": 341,
+            "maxhp": 341,
+            "ability": "serenegrace",
+            "item": "choicescarf",
+            "stats": {
+               "hp": 341,
+               "attack": 299,
+               "defense": 236,
+               "special-attack": 212,
+               "special-defense": 237,
+               "speed": 328
+            },
+            "stat_changes": {
+               "attack": 0,
+               "defense": 0,
+               "special-attack": 0,
+               "special-defense": 0,
+               "speed": 0,
+               "accuracy": 0,
+               "evasion": 0
+            },
+            "status": "none",
+            "volatile_status": [],
+            "moves": [
+               {
+                  "name": "ironhead",
+                  "pp": 24,
+                  "disabled": false
+               },
+               {
+                  "name": "healingwish",
+                  "pp": 16,
+                  "disabled": false
+               },
+               {
+                  "name": "uturn",
+                  "pp": 32,
+                  "disabled": false
+               },
+               {
+                  "name": "firepunch",
+                  "pp": 24,
+                  "disabled": false
+               }
+            ],
+            "fainted": false,
+            "sleep_countdown": 0
+         }
+      ],
+      "side_conditions": {
+         "protect": 0,
+         "toxic_count": 0
+      },
+      "trapped": false,
+      "wish": {
+         "countdown": 0,
+         "hp_amount": 0
+      },
+      "future_sight": {
+         "countdown": 0,
+         "p1": 0
+      },
+      "healing_wish": false
+   },
+   "weather": "sunnyday",
+   "weather_count": 1,
+   "terrain": "none",
+   "terrain_count": 0,
+   "trick_room": false,
+   "trick_room_count": 0,
+   "gravity": false,
+   "gravity_count": 0,
+   "wonder_room": false,
+   "wonder_room_count": 0,
+   "magic_room": false,
+   "magic_room_count": 0,
+   "winner": "p2",
+   "p1rating": 1302,
+   "p2rating": 1355,
+   "average_rating": 1328,
+   "rated_battle": true,
+   "roomid": 6071366
+}
