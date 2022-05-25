@@ -9,5 +9,4 @@ class Loss(nn.Module):
         self.bce_loss = nn.BCELoss()
 
     def forward(self, x, result):
-
         return self.bce_loss(torch.squeeze(x), result)
