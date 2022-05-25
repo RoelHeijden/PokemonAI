@@ -34,17 +34,17 @@ def main():
 
     if mode == 'parse all games':
         path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/raw-ou-incomplete"
-        path_out = 'C:/Users/RoelH/Documents//Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training_games'
-        parse_all(path_in, path_out, min_rating=1200)
+        path_out = 'C:/Users/RoelH/Documents//Uni/Bachelor thesis/data/processed-ou-incomplete/training_games'
+        parse_all(path_in, path_out, min_rating=1250)
 
     if mode == 'create test split':
-        train_path = 'C:/Users/RoelH/Documents//Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training_games'
-        test_path = 'C:/Users/RoelH/Documents//Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/test_games'
+        train_path = 'C:/Users/RoelH/Documents//Uni/Bachelor thesis/data/processed-ou-incomplete/training_games'
+        test_path = 'C:/Users/RoelH/Documents//Uni/Bachelor thesis/data/processed-ou-incomplete/test_games'
         create_test_split(train_path, test_path, test_split=0.10)
 
     if mode == 'create training batches':
-        path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training_games'
-        path_out = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training_states'
+        path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_games'
+        path_out = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_states/training'
         create_training_batches(path_in, path_out, file_name='ou_game_states', batch_size=10000, min_game_length=3)
 
     if mode == 'inspect a game':
