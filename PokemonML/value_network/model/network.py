@@ -136,7 +136,9 @@ class TeamLayer(nn.Module):
         self.relu = nn.ReLU()
 
     def forward(self, x: torch.tensor) -> torch.tensor:
-        x = torch.squeeze(self.team_mp(x.unsqueeze(0)))
+        # for some reason the max pool wants 3 dimensions.
+        # Adding a temporary dimension by unsqueezing pre and squeezing post computation
+        x = torch.squeeze(self.team_mp(x.unsqueeze(0)), dim=0)
         x = self.relu(self.team_fc(x))
         x = self.team_bn(x)
         return x
