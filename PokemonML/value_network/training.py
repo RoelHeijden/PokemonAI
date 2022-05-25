@@ -9,11 +9,18 @@ from data.transformer import StateTransformer
 
 
 class Trainer:
-    """
-    1700+
-    batch_size=256, lr=1e-4, 128 move embedding -- epoch 30: 0.179
-    """
-    def __init__(self, model, n_epochs=50, batch_size=256, update_every=5, lr=1e-4, num_workers=4, save_model=True):
+    def __init__(self,
+                 model,
+                 n_epochs=100,
+                 batch_size=128,
+                 update_every=5,
+                 lr=1e-4,
+                 lr_gamma=0.9,
+                 lr_decay_steps=5,
+                 num_workers=4,
+                 save_model=True
+                 ):
+
         self.model = model
 
         # training settings
@@ -21,6 +28,7 @@ class Trainer:
         self.batch_size = batch_size
 
         self.optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, lr_decay_steps, gamma=lr_gamma)
         self.loss_function = Loss()
 
         # data settings
@@ -53,14 +61,13 @@ class Trainer:
         # start epoch iteration
         start_time = time.time()
         for epoch in range(1, self.n_epochs + 1):
-            out_str = ""
+            start_epoch_time = time.time()
+            out_str = ''
 
             # training loop
-            start_epoch_time = time.time()
             epoch_train_loss = self.train()
-            out_str += "Epoch {} | Train loss: {:.3f} | ".format(
-                epoch, epoch_train_loss
-            )
+            current_lr = self.optimizer.param_groups[0]['lr']
+            out_str += f"Epoch {epoch} | LR: {current_lr} | Train loss: {epoch_train_loss:.3f} | "
             # print(out_str, end="")
             #
             # # validating loop
@@ -69,6 +76,9 @@ class Trainer:
             #     epoch_val_loss, time.time() - start_epoch_time
             # )
             print("\r" + out_str + '\n')
+
+            # change learning rate each n epochs
+            self.scheduler.step()
 
             # save model
             if self.save_path:
