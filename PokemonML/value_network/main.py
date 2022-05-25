@@ -7,7 +7,8 @@ from testing import Tester
 ---------------------- TO DO ----------------------
 
 1. set decaying lr
-2. create test module
+
+2. expand test module
 
 3. find google cloud gpu details
 4. set cuda
@@ -32,13 +33,13 @@ def main():
     )
 
     # # train model
-    # train = Trainer(model)
-    # train()
+    train = Trainer(model)
+    train()
 
     # test model
-    model_file = 'epoch_30.pt'
-    test = Tester(model, model_file)
-    test()
+    # model_file = 'epoch_30.pt'
+    # test = Tester(model, model_file)
+    # test()
 
 
 if __name__ == '__main__':
