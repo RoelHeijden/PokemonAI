@@ -2,10 +2,9 @@ from tqdm import tqdm
 import torch
 import os
 import time
-import math
 
 from data.data_loader import data_loader
-from model.network import ValueNet, Hidden, Output
+from model.network import ValueNet
 from model.loss import Loss
 from data.transformer import StateTransformer
 
@@ -13,54 +12,66 @@ from data.transformer import StateTransformer
 """
 ---------------------- TO DO ----------------------
 
-1. re-parse games, create test split and create state files
+1. add batch norm
+2. create test module
 
-2. check encode len(..) +1 vs len(..) +2
-3. change model to where each pokemon is passed individually
-
-4. fix imports?
+3. find right model parameters
+4. incorporate model into KetchAI
 
 """
 
 
 def main():
+    # full input size: ((pokemon_size + pokemon_attributes_size) * 6 + side_attributes_size) * 2 + field_attributes_size
+    pokemon_size = (64 + 64 + 32 + 4 * 128) + 88
+    attributes_size = 88
+    field_size = 21
+    side_size = 18
+
     # initialize model
-    hidden_layers = Hidden(input_size=3801, output_size=512)
-    output_layer = Output(input_size=512)
-    model = ValueNet(hidden_layers, output_layer)
+    model = ValueNet(
+            field_size=field_size,
+            side_size=side_size,
+            pokemon_size=pokemon_size
+    )
 
     # train model
-    train = Trainer(model, save_model=True)
+    train = Trainer(model)
     train()
 
 
 class Trainer:
-    def __init__(self, model, n_epochs=20, batch_size=128, n_workers=4, lr=0.0003, save_model=False):
+    """
+    batch_size=256, lr=1e-4, 128 move embedding -- epoch 30: 0.179
+    """
+    def __init__(self, model, n_epochs=50, batch_size=256, update_every=10, lr=1e-4, num_workers=4, save_model=True):
         self.model = model
 
         # training settings
         self.n_epochs = n_epochs
         self.batch_size = batch_size
-        self.n_workers = n_workers
 
         self.optimizer = torch.optim.Adam(model.parameters(), lr=lr)
         self.loss_function = Loss()
 
         # data settings
-        train_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training_states/train_test/'
-        val_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/all_rated_1200+/training_states/val_test/'
+        train_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_states/_test_training/'
+        val_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_states/_test_validating/'
 
-        shuffle_transform = StateTransformer(shuffle_players=True, shuffle_pokemon=True)
-        no_shuffle_transform = StateTransformer(shuffle_players=False, shuffle_pokemon=False)
+        shuffle_transform = StateTransformer(shuffle_players=True, shuffle_pokemon=True, shuffle_moves=True)
+        no_shuffle_transform = StateTransformer(shuffle_players=False, shuffle_pokemon=False, shuffle_moves=False)
 
-        self.train_samples = sum([10000 for f in os.listdir(train_path)])
-        self.validation_samples = sum([10000 for f in os.listdir(val_path)])
+        file_size = 10000
+        last_file_size = 7906
 
-        self.train_loader = data_loader(train_path, shuffle_transform, batch_size=batch_size, num_workers=n_workers)
-        self.val_loader = data_loader(val_path, no_shuffle_transform, batch_size=batch_size, num_workers=n_workers)
+        self.train_samples = sum([file_size for f in os.listdir(train_path)]) - (file_size - last_file_size)
+        self.validation_samples = sum([file_size for f in os.listdir(val_path)])
+
+        self.train_loader = data_loader(train_path, shuffle_transform, batch_size=batch_size, num_workers=num_workers)
+        self.val_loader = data_loader(val_path, no_shuffle_transform, batch_size=batch_size, num_workers=num_workers)
 
         # misc. settings
-        self.running_loss_freq = math.ceil(20_000 / self.batch_size)
+        self.update_every_n_batches = update_every
 
         if save_model:
             self.save_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/models/'
@@ -81,13 +92,13 @@ class Trainer:
             out_str += "Epoch {} | Train loss: {:.3f} | ".format(
                 epoch, epoch_train_loss
             )
-            print(out_str, end="")
-
-            # validating loop
-            epoch_val_loss = self.validate()
-            out_str += "Val loss: {:.3f} | Epoch time: {:.1f}s".format(
-                epoch_val_loss, time.time() - start_epoch_time
-            )
+            # print(out_str, end="")
+            #
+            # # validating loop
+            # epoch_val_loss = self.validate()
+            # out_str += "Val loss: {:.3f} | Epoch time: {:.1f}s".format(
+            #     epoch_val_loss, time.time() - start_epoch_time
+            # )
             print("\r" + out_str + '\n')
 
             # save model
@@ -118,25 +129,29 @@ class Trainer:
         # iterate training batches
         for i, sample in enumerate(self.train_loader, start=1):
             self.optimizer.zero_grad()
+
+            # forward pass
             out, labels = self.forward_pass(sample)
             loss = self.loss_function(out, labels)
 
             running_loss += loss.item()
             epoch_train_loss += loss.item()
 
+            # backpropagation
             loss.backward()
             self.optimizer.step()
 
-            if i % self.running_loss_freq == 0:
-                train_loss = running_loss / self.running_loss_freq
+            # update progress bar
+            if i % self.update_every_n_batches == 0:
+                train_loss = running_loss / self.update_every_n_batches
                 running_loss = 0.0
 
-                pbar.update(self.running_loss_freq * self.batch_size)
+                pbar.update(self.update_every_n_batches * self.batch_size)
                 pbar.set_description("Train loss: {:.3f}".format(train_loss))
 
+        # complete progress bar
         if self.train_samples:
             pbar.update(self.train_samples - pbar.n)
-
         pbar.close()
 
         self.batch_count += i
@@ -149,8 +164,11 @@ class Trainer:
         epoch_val_loss = 0.0
         i = 0
 
+        # iterate batches
         for i, sample in enumerate(self.val_loader, start=1):
             with torch.no_grad():
+
+                # forward pass
                 out, labels = self.forward_pass(sample)
                 loss = self.loss_function(out, labels)
                 epoch_val_loss += loss.item()
