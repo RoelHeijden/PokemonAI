@@ -29,7 +29,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(message)s')
 
 
 class StateTransformer:
-    def __init__(self, shuffle_players=True, shuffle_pokemon=False, shuffle_moves=False):
+    def __init__(self, shuffle_players=False, shuffle_pokemon=False, shuffle_moves=False):
         self.shuffle_players = shuffle_players
         self.shuffle_pokemon = shuffle_pokemon
         self.shuffle_moves = shuffle_moves
