@@ -35,7 +35,7 @@ def main():
     if mode == 'parse all games':
         path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/raw-ou-incomplete"
         path_out = 'C:/Users/RoelH/Documents//Uni/Bachelor thesis/data/processed-ou-incomplete/training_games'
-        parse_all(path_in, path_out, min_rating=1250)
+        parse_all(path_in, path_out)
 
     if mode == 'create test split':
         train_path = 'C:/Users/RoelH/Documents//Uni/Bachelor thesis/data/processed-ou-incomplete/training_games'
@@ -43,9 +43,10 @@ def main():
         create_test_split(train_path, test_path, test_split=0.10)
 
     if mode == 'create training batches':
-        path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_games'
-        path_out = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_states/training'
-        create_training_batches(path_in, path_out, file_name='ou_game_states', batch_size=10000, min_game_length=3)
+        path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/test_games'
+        path_out = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/test_states/1500+'
+        f_out_name = 'ou_game_states'
+        create_training_batches(path_in, path_out, f_out_name, min_rating=1500, batch_size=10000, min_game_length=3)
 
     if mode == 'inspect a game':
         path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/raw-ou-incomplete"
@@ -65,7 +66,7 @@ def main():
             print(mon)
 
 
-def parse_all(folder_path, save_path, min_rating=1200):
+def parse_all(folder_path, save_path):
     """ Parses the game states, writes new json files to folders sorted on average rating """
 
     print("collecting file names\n")
@@ -114,10 +115,6 @@ def parse_all(folder_path, save_path, min_rating=1200):
                 info['p2rating'] = p2_rating
                 info['roomid'] = battle_id
                 info['average_rating'] = int((p1_rating + p2_rating) / 2)
-
-                # skip if rating is too low
-                if info['average_rating'] < min_rating:
-                    continue
 
                 # parse game and extract game states
                 game = GameLog(info, battle_id)
@@ -206,7 +203,7 @@ def create_test_split(train_path, test_path, test_split=0.10):
     print(f'test files: {len(test)}')
 
 
-def create_training_batches(path_in, path_out, file_name='ou_game_states', batch_size=10000, min_game_length=3):
+def create_training_batches(path_in, path_out, f_out_name, min_rating=1200, batch_size=10000, min_game_length=3):
     """
     - extracts two game states from each game-states file
     - switches player's POV for one of the states
@@ -233,7 +230,7 @@ def create_training_batches(path_in, path_out, file_name='ou_game_states', batch
     ignore_list = json.load(open('games_to_ignore.json', 'r'))
 
     # initialize first out file
-    f_out = open(os.path.join(path_out, file_name + '0.jsonl'), 'w')
+    f_out = open(os.path.join(path_out, f_out_name + '0.jsonl'), 'w')
     n_written += 1
 
     # open each game_states file
@@ -243,8 +240,14 @@ def create_training_batches(path_in, path_out, file_name='ou_game_states', batch
             all_states = json.load(f_in)
             room_id = all_states[0]['roomid']
 
+            n_games += 1
+
             # skip game if in the ignore list
             if ignore_list.get(str(room_id)):
+                continue
+
+            # skip if rating is too low
+            if all_states[0]['average_rating'] < min_rating:
                 continue
 
             # skip game if game doesn't last long enough
@@ -254,8 +257,6 @@ def create_training_batches(path_in, path_out, file_name='ou_game_states', batch
 
             # select two random states to write
             states = pick_random_states(all_states, min_turns_apart=math.floor(min_game_length/3))
-
-            n_games += 1
 
             # write each extracted state to batch file
             for s in states:
@@ -267,13 +268,13 @@ def create_training_batches(path_in, path_out, file_name='ou_game_states', batch
             # close previous, and initialize new batch file
             if n_states % batch_size == 0:
                 f_out.close()
-                file = file_name + str(int(n_states / batch_size)) + '.jsonl'
+                file = f_out_name + str(int(n_states / batch_size)) + '.jsonl'
                 f_out = open(os.path.join(path_out, file), 'w')
 
                 n_written += 1
 
             # keeping you updated
-            if n_games % 5000 == 0:
+            if n_states % 5000 == 0:
                 print(f'{n_games} games opened')
                 print(f'{n_states} states extracted')
                 print(f'{n_written} batch files created')
