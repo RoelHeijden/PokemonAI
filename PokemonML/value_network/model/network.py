@@ -1,8 +1,60 @@
 import torch
 from torch import nn
-from typing import Dict, List
+from typing import Dict
 
 from model.encoder import Encoder
+
+
+class TestNet(nn.Module):
+    def __init__(self, field_size, side_size, pokemon_size):
+        super().__init__()
+        input_size = (pokemon_size * 6 + side_size) * 2 + field_size
+
+        self.encoding = Encoder()
+
+        self.fc1 = nn.Linear(input_size, 2024)
+        self.fc2 = nn.Linear(2024, 1024)
+        self.fc3 = nn.Linear(1024, 512)
+        self.fc4 = nn.Linear(512, 1)
+
+        self.drop1 = nn.Dropout(p=0.2)
+        self.drop2 = nn.Dropout(p=0.3)
+
+        self.relu = nn.ReLU()
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, fields, sides, pokemon):
+        fields, sides, pokemon = self.encoding(fields, sides, pokemon)
+
+        x = torch.cat(
+            (
+                fields,
+
+                sides[:, 0],
+                sides[:, 1],
+
+                pokemon[0][0],
+                pokemon[0][1],
+                pokemon[0][2],
+                pokemon[0][3],
+                pokemon[0][4],
+                pokemon[0][5],
+
+                pokemon[1][0],
+                pokemon[1][1],
+                pokemon[1][2],
+                pokemon[1][3],
+                pokemon[1][4],
+                pokemon[1][5]
+            ),
+            dim=1
+        )
+
+        x = self.relu(self.drop1(self.fc1(x)))
+        x = self.relu(self.drop2(self.fc2(x)))
+        x = self.relu(self.drop2(self.fc3(x)))
+        x = self.sigmoid(self.fc4(x))
+        return x
 
 
 class ValueNet(nn.Module):
@@ -22,6 +74,12 @@ class ValueNet(nn.Module):
         - 2x fully connected linear
 
     Output: p1 win probability
+
+    -----------------------------------------------
+
+    6 * 256
+    ->
+
     """
     def __init__(self, field_size, side_size, pokemon_size):
         super().__init__()
@@ -30,20 +88,20 @@ class ValueNet(nn.Module):
         self.encoding = Encoder()
 
         # pokemon layer
-        pkmn_layer_out = 512
+        pkmn_layer_out = 128
         self.pokemon_layer = PokemonLayer(pokemon_size, pkmn_layer_out)
 
         # team layer
         stride = 2
         kernel_size = 4
         max_pool_out = int(((pkmn_layer_out * 6 - (kernel_size - 1) - 1) / stride) + 1)
-        team_layer_out = 1024
+        team_layer_out = 512
         self.team_layer = TeamLayer(stride, kernel_size, max_pool_out, team_layer_out)
 
         # state layer
         state_size = (team_layer_out + side_size + pkmn_layer_out) * 2 + field_size
-        state_layer1_out = 2048
-        state_layer2_out = 1024
+        state_layer1_out = 1024
+        state_layer2_out = 512
         self.state_layer = StateLayer(state_size, state_layer1_out, state_layer2_out)
 
         # output later
@@ -114,14 +172,17 @@ class PokemonLayer(nn.Module):
     def __init__(self, input_size, output_size):
         super().__init__()
 
-        self.pokemon_fc = nn.Linear(input_size, output_size)
-        self.pokemon_bn = nn.BatchNorm1d(output_size)
+        self.fc = nn.Linear(input_size, output_size)
+        self.bn = nn.BatchNorm1d(output_size)
 
         self.relu = nn.ReLU()
+        self.drop = nn.Dropout(p=0.2)
 
     def forward(self, x) -> torch.tensor:
-        x = self.relu(self.pokemon_fc(x))
-        x = self.pokemon_bn(x)
+        x = self.fc(x)
+        x = self.drop(x)
+        x = self.bn(x)
+        x = self.relu(x)
         return x
 
 
@@ -129,18 +190,22 @@ class TeamLayer(nn.Module):
     def __init__(self, stride, kernel_size, max_pool_out, output_size):
         super().__init__()
 
-        self.team_mp = nn.MaxPool1d(kernel_size, stride)
-        self.team_fc = nn.Linear(max_pool_out, output_size)
-        self.team_bn = nn.BatchNorm1d(output_size)
+        self.max_pool = nn.MaxPool1d(kernel_size, stride)
+        self.fc = nn.Linear(max_pool_out, output_size)
+        self.bn = nn.BatchNorm1d(output_size)
 
         self.relu = nn.ReLU()
+        self.drop = nn.Dropout(p=0.2)
 
     def forward(self, x: torch.tensor) -> torch.tensor:
-        # for some reason the max pool wants 3 dimensions.
+        # for some reason the max pool wants 3 dimensions instead of [Batch size x Input]
         # Adding a temporary dimension by unsqueezing pre and squeezing post computation
-        x = torch.squeeze(self.team_mp(x.unsqueeze(0)), dim=0)
-        x = self.relu(self.team_fc(x))
-        x = self.team_bn(x)
+        x = torch.squeeze(self.max_pool(x.unsqueeze(0)), dim=0)
+
+        x = self.fc(x)
+        x = self.drop(x)
+        x = self.bn(x)
+        x = self.relu(x)
         return x
 
 
@@ -148,18 +213,24 @@ class StateLayer(nn.Module):
     def __init__(self, input_size, mid_size, output_size):
         super().__init__()
 
-        self.state_fc1 = nn.Linear(input_size, mid_size)
-        self.state_bn1 = nn.BatchNorm1d(mid_size)
-        self.state_fc2 = nn.Linear(mid_size, output_size)
-        self.state_bn2 = nn.BatchNorm1d(output_size)
+        self.fc1 = nn.Linear(input_size, mid_size)
+        self.fc2 = nn.Linear(mid_size, output_size)
+        self.bn1 = nn.BatchNorm1d(mid_size)
+        self.bn2 = nn.BatchNorm1d(output_size)
 
         self.relu = nn.ReLU()
+        self.drop = nn.Dropout(p=0.3)
 
     def forward(self, x: torch.tensor) -> torch.tensor:
-        x = self.relu(self.state_fc1(x))
-        x = self.state_bn1(x)
-        x = self.relu(self.state_fc2(x))
-        x = self.state_bn2(x)
+        x = self.fc1(x)
+        x = self.drop(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+
+        x = self.fc2(x)
+        x = self.drop(x)
+        x = self.bn2(x)
+        x = self.relu(x)
         return x
 
 
@@ -167,10 +238,11 @@ class OutputLayer(nn.Module):
     def __init__(self, input_size):
         super().__init__()
 
-        self.out_layer = nn.Linear(input_size, 1)
+        self.fc = nn.Linear(input_size, 1)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x: torch.tensor):
-        p1_win_chance = self.sigmoid(self.out_layer(x))
-        return p1_win_chance
+        x = self.fc(x)
+        x = self.sigmoid(x)
+        return x
 
