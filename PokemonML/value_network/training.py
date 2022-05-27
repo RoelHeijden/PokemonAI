@@ -8,38 +8,58 @@ from model.loss import Loss
 from data.transformer import StateTransformer
 
 
+"""
+BEST: 
+ValueNet2 1500+, LR=2e-4, gamma=0.9, 128/16/16/16, 192 drop, -, 1024, 512, 256 -- epoch: 20, acc: 0.755
+
+---------------------------------------------------------------------------------------------
+ValueNet2 1500+, LR=3e-4, gamma=0.95, 128/16/16/16, 192, 512, 1024, 512, 256 -- epoch: 15, acc: 0.755
+ValueNet2 1500+, LR=2e-4, gamma=0.97, 128/16/16/16, 192, 512, 1024, 256 -- epoch: 11, acc: 0.749
+ValueNet2 1500+, LR=2e-4, gamma=0.97, AdamW 0.01, 128/16/16/16, 192, 512, 1024, 252, 128, 64 -- epoch: 14, acc: 0.751
+ValueNet2 1500+, LR=2e-4, gamma=0.95, AdamW 0.01, 128/16/16/16, 192, mp2d(2,2)(2,1), 512 drop, 1024, 768 -- epoch 23, acc: 0.754
+
+ValueNet2 1500+, LR=2e-4, gamma=0.98, AdamW 0.01, all move atts, 128/16/16/16, pokemon: 252, active: 64, player: 512, state: 768, 256 -- epoch: 14, acc: 0.750
+ValueNet2 1500+, LR=2e-4, gamma=0.98, AdamW 0.01, reduced atts, 128/16/16/16, pokemon: 128, active: 64, player: 512, state: 768, 256 -- epoch: 
+
+314 --> 128
+128 --> 64
+128 * 6 --> 512
+(512 + 64) * 2 + 21 --> 768 -> 256
+
+"""
+
+
 class Trainer:
     def __init__(self,
                  model,
-                 n_epochs=100,
-                 batch_size=128,
-                 update_every=5,
-                 lr=1e-4,
-                 lr_gamma=0.9,
-                 lr_decay_steps=5,
+                 n_epochs=40,
+                 batch_size=252,
+                 lr=2e-4,
+                 lr_gamma=0.98,
+                 lr_decay_steps=1,
                  num_workers=4,
                  save_model=True
                  ):
 
         self.model = model
 
-        # training settings
+        # train settings
         self.n_epochs = n_epochs
         self.batch_size = batch_size
 
-        self.optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+        self.optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.01)
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, lr_decay_steps, gamma=lr_gamma)
         self.loss_function = Loss()
 
         # data settings
-        train_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_states/1700+/'
-        val_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_states/validating/'
+        train_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_states/1500+/'
+        val_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_states/1500+validating/'
 
         shuffle_transform = StateTransformer(shuffle_players=True, shuffle_pokemon=True, shuffle_moves=True)
         no_shuffle_transform = StateTransformer(shuffle_players=False, shuffle_pokemon=False, shuffle_moves=False)
 
         file_size = 10000
-        last_file_size = 10000  # 7906
+        last_file_size = 10000  # 7906  # 1736
 
         self.train_samples = sum([file_size for f in os.listdir(train_path)]) - (file_size - last_file_size)
         self.validation_samples = sum([file_size for f in os.listdir(val_path)])
@@ -48,10 +68,10 @@ class Trainer:
         self.val_loader = data_loader(val_path, no_shuffle_transform, batch_size=batch_size, num_workers=num_workers)
 
         # misc. settings
-        self.update_every_n_batches = update_every
+        self.update_every_n_batches = 10
 
         if save_model:
-            self.save_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/models/'
+            self.save_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/models/training_dump/'
         else:
             self.save_path = None
 
@@ -67,14 +87,14 @@ class Trainer:
             # training loop
             epoch_train_loss = self.train()
             current_lr = self.optimizer.param_groups[0]['lr']
-            out_str += f"Epoch {epoch} | LR: {current_lr} | Train loss: {epoch_train_loss:.3f} | "
-            # print(out_str, end="")
-            #
-            # # validating loop
-            # epoch_val_loss = self.validate()
-            # out_str += "Val loss: {:.3f} | Epoch time: {:.1f}s".format(
-            #     epoch_val_loss, time.time() - start_epoch_time
-            # )
+            out_str += f"Epoch {epoch} | LR: {current_lr:.7f} | Train loss: {epoch_train_loss:.3f} | "
+            print(out_str, end="")
+
+            # validating loop
+            epoch_val_loss = self.validate()
+            out_str += "Val loss: {:.3f} | Epoch time: {:.1f}s".format(
+                epoch_val_loss, time.time() - start_epoch_time
+            )
             print("\r" + out_str + '\n')
 
             # change learning rate each n epochs
@@ -152,7 +172,8 @@ class Trainer:
                 loss = self.loss_function(out, labels)
                 epoch_val_loss += loss.item()
 
-        epoch_val_loss = epoch_val_loss / i
+        if i:
+            epoch_val_loss = epoch_val_loss / i
 
         return epoch_val_loss
 

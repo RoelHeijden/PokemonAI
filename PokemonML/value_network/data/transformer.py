@@ -470,12 +470,12 @@ class StateTransformer:
         # current move pp
         pp = move['pp'] / self.pp_scaling
 
-        # max move pp
-        max_pp = int(MOVE_LOOKUP[name]['pp'] * 1.6) / self.pp_scaling
-
-        # move priority
-        priority = MOVE_LOOKUP[name]['priority'] / self.priority_scaling
-
+        # # max move pp
+        # max_pp = int(MOVE_LOOKUP[name]['pp'] * 1.6) / self.pp_scaling
+        #
+        # # move priority
+        # priority = MOVE_LOOKUP[name]['priority'] / self.priority_scaling
+        #
         # # move base power
         # base_power = MOVE_LOOKUP[name]['basePower'] / self.bp_scaling
         #
@@ -515,8 +515,8 @@ class StateTransformer:
         out = [
             disabled,
             pp,
-            max_pp,
-            priority,
+            # max_pp,
+            # priority,
             # base_power,
             # accuracy,
             # is_used,
