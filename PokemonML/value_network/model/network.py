@@ -11,7 +11,7 @@ class ValueNet(nn.Module):
         # flexible input sizes
         field_size = 21
         side_size = 18
-        pokemon_attributes = 72 + (2 * 4)
+        pokemon_attributes = 72 + (4 * 4)
 
         # encoding layer
         species_dim = 128
@@ -21,69 +21,33 @@ class ValueNet(nn.Module):
         self.encoding = Encoder(species_dim, move_dim, item_dim, ability_dim)
 
         # pokemon layer
-        pkmn_layer_out = 128
+        pkmn_layer_out = 192
         pokemon_size = (species_dim + move_dim * 4 + item_dim + ability_dim) + pokemon_attributes
         self.pokemon_layer = PokemonLayer(pokemon_size, pkmn_layer_out)
 
-        # active pokemon layer
-        active_layer_out = 64
-        self.active_pkmn_layer = ActivePkmnLayer(pkmn_layer_out, active_layer_out)
-
-        # player layer
-        player_layer_in = pkmn_layer_out * 6 + side_size
-        player_layer_out = 512
-        self.player_layer = PlayerLayer(player_layer_in, player_layer_out)
-
-        # state layer
-        state_layer_in = (player_layer_out + active_layer_out) * 2 + field_size
-        state_layer1_out = 512
-        state_layer2_out = 256
-
-        self.state_layer = StateLayer(state_layer_in, state_layer1_out, state_layer2_out)
+        # full state layer
+        state_layer_in = (pkmn_layer_out * 6 + side_size) * 2 + field_size
+        fc1_out = 1536
+        fc2_out = 1024
+        state_layer_out = 256
+        self.state_layer = StateLayer(state_layer_in, fc1_out, fc2_out, state_layer_out)
 
         # output later
-        self.output = OutputLayer(state_layer2_out)
+        self.output = OutputLayer(state_layer_out)
 
     def forward(self, fields: torch.tensor, sides: torch.tensor, pokemon: Dict[str, torch.Tensor]):
-
         # embed and concatenate pokemon variables
         fields, sides, pokemon = self.encoding(fields, sides, pokemon)
 
         # general pokemon layer
         pokemon = self.pokemon_layer(pokemon)
 
-        # active pokemon layer
-        p1_active = self.active_pkmn_layer(pokemon[:, 0][:, 0])
-        p2_active = self.active_pkmn_layer(pokemon[:, 1][:, 0])
-
-        # player layer
-        player1 = self.player_layer(
-            torch.cat(
-                (
-                    torch.flatten(pokemon[:, 0], start_dim=1),
-                    sides[:, 0]
-                ),
-                dim=1
-            )
-        )
-        player2 = self.player_layer(
-            torch.cat(
-                (
-                    torch.flatten(pokemon[:, 1], start_dim=1),
-                    sides[:, 1]
-                ),
-                dim=1
-            )
-        )
-
         # state layer
         state = self.state_layer(
             torch.cat(
                 (
-                    p1_active,
-                    player1,
-                    p2_active,
-                    player2,
+                    torch.flatten(pokemon, start_dim=1),
+                    torch.flatten(sides, start_dim=1),
                     fields
                  ),
                 dim=1
@@ -97,77 +61,55 @@ class ValueNet(nn.Module):
 
 
 class PokemonLayer(nn.Module):
-    def __init__(self, input_size, output_size):
+    def __init__(self, input_size, fc1_out):
         super().__init__()
+        self.pkmn_size = fc1_out
 
-        self.fc = nn.Linear(input_size, output_size)
-
-        self.relu = nn.ReLU()
-        self.drop = nn.Dropout(p=0.2)
-
-    def forward(self, x) -> torch.tensor:
-        x = self.fc(x)
-        x = self.relu(x)
-        x = self.drop(x)
-
-        return x
-
-
-class ActivePkmnLayer(nn.Module):
-    def __init__(self, input_size, output_size):
-        super().__init__()
-
-        self.fc = nn.Linear(input_size, output_size)
-        self.bn = nn.BatchNorm1d(output_size)
+        self.fc1 = nn.Linear(input_size, fc1_out)
+        self.drop1 = nn.Dropout(p=0.2)
 
         self.relu = nn.ReLU()
 
     def forward(self, x) -> torch.tensor:
-        x = self.fc(x)
+        x = self.fc1(x)
         x = self.relu(x)
-        x = self.bn(x)
-
-        return x
-
-
-class PlayerLayer(nn.Module):
-    def __init__(self, fc_input_size, output_size):
-        super().__init__()
-
-        self.fc = nn.Linear(fc_input_size, output_size)
-        self.bn = nn.BatchNorm1d(output_size)
-
-        self.relu = nn.ReLU()
-
-    def forward(self, x) -> torch.tensor:
-        x = self.fc(x)
-        x = self.relu(x)
-        x = self.bn(x)
+        x = self.drop1(x)
 
         return x
 
 
 class StateLayer(nn.Module):
-    def __init__(self, input_size, fc1_out, fc2_out):
+    def __init__(self, input_size, fc1_out, fc2_out, fc3_out):
         super().__init__()
 
         self.fc1 = nn.Linear(input_size, fc1_out)
         self.fc2 = nn.Linear(fc1_out, fc2_out)
+        self.fc3 = nn.Linear(fc2_out, fc3_out)
 
         self.bn1 = nn.BatchNorm1d(fc1_out)
         self.bn2 = nn.BatchNorm1d(fc2_out)
+        self.bn3 = nn.BatchNorm1d(fc3_out)
+
+        self.drop1 = nn.Dropout(p=0.2)
+        self.drop2 = nn.Dropout(p=0.1)
 
         self.relu = nn.ReLU()
 
     def forward(self, x: torch.tensor) -> torch.tensor:
-
         x = self.fc1(x)
         x = self.relu(x)
         x = self.bn1(x)
+        x = self.drop1(x)
 
         x = self.fc2(x)
         x = self.relu(x)
         x = self.bn2(x)
+        x = self.drop1(x)
+
+        x = self.fc3(x)
+        x = self.relu(x)
+        x = self.bn3(x)
+        x = self.drop2(x)
 
         return x
 
