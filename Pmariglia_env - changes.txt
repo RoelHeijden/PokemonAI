@@ -31,3 +31,4 @@
 30. added skill swap mechanics in battle_modifier activate()
 31. added is_grounded() to battle.Pokemon
 32. added pokemon.original_attributes, to be used for transform and ability swaps
+33. get_pokemon_info_from_condition no longer changes max_hp
