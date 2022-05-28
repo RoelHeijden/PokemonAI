@@ -29,12 +29,13 @@ class State(object):
     __slots__ = ('self', 'opponent', 'weather', 'field', 'trick_room', 'turn')
 
     def __init__(self, user, opponent, weather, field, trick_room, turn):
+        self.turn = turn
         self.self = user
         self.opponent = opponent
+
         self.weather = weather
         self.field = field
         self.trick_room = trick_room
-        self.turn = turn
 
     def get_self_options(self, force_switch):
         forced_move = self.self.active.forced_move()
@@ -132,6 +133,26 @@ class State(object):
             }
         )
 
+    def to_dict(self):
+        return {
+            'p1': self.self.to_dict(),
+            'p2': self.opponent.to_dict(),
+
+            'weather': self.weather if self.weather else "none",
+            'weather_count': 0,
+            'terrain': self.field if self.field else "none",
+            'terrain_count': 0,
+
+            'trick_room': self.trick_room,
+            'trick_room_count': 0,
+            'gravity': False,
+            'gravity_count': 0,
+            'wonder_room': False,
+            'wonder_room_count': 0,
+            'magic_room': False,
+            'magic_room_count': 0,
+        }
+
 
 class Side(object):
     __slots__ = ('active', 'reserve', 'wish', 'side_conditions', 'future_sight')
@@ -183,6 +204,16 @@ class Side(object):
             constants.FUTURE_SIGHT: self.future_sight
         })
 
+    def to_dict(self):
+        return {
+            'active': self.active.to_dict() if self.active else None,
+            'reserve': [self.reserve[key].to_dict() for key in self.reserve if key != ''],
+            'side_conditions': dict(self.side_conditions),
+            'trapped': False,
+            'wish': {'countdown': self.wish[0], 'hp_amount': int(self.wish[1])},
+            'future_sight': {'countdown': self.future_sight[0], 'p1': self.future_sight[1]},
+            'healing_wish': False
+        }
 
 class Pokemon(object):
     __slots__ = (
@@ -457,6 +488,39 @@ class Pokemon(object):
                 constants.VOLATILE_STATUS: list(self.volatile_status),
                 constants.MOVES: self.moves
             })
+
+    def to_dict(self):
+        return {
+            'name': self.id,
+            'level': self.level,
+            'types': self.types,
+            'hp': int(self.hp),
+            'maxhp': self.maxhp,
+            'ability': self.ability,
+            'item': self.item if self.item else "none",
+            'stats': {
+               "hp": self.maxhp,
+               "attack": self.attack,
+               "defense": self.defense,
+               "special-attack": self.special_attack,
+               "special-defense": self.special_defense,
+               "speed": self.speed
+            },
+            'stat_changes': {
+                'attack': self.attack_boost,
+                'defense': self.defense_boost,
+                'special-attack': self.special_attack_boost,
+                'special-defense': self.special_defense_boost,
+                'speed': self.speed_boost,
+                'accuracy': self.accuracy_boost,
+                'evasion': self.evasion_boost
+            },
+            'status': self.status if self.status else "none",
+            'volatile_status': list(self.volatile_status),
+            'moves': self.moves,
+            'fainted': bool(self.hp <= 0),
+            'sleep_countdown': 0
+        }
 
 
 class TransposeInstruction:
