@@ -13,7 +13,7 @@ class Tester:
         self.states_folder = 'C:/Users/RoelH/Documents//Uni/Bachelor thesis/data/processed-ou-incomplete/test_states/'
         self.games_folder = 'C:/Users/RoelH/Documents//Uni/Bachelor thesis/data/processed-ou-incomplete/test_games/'
 
-        self.transform = StateTransformer(shuffle_players=False, shuffle_pokemon=False, shuffle_moves=False)
+        self.transform = StateTransformer(shuffle_players=True, shuffle_pokemon=True, shuffle_moves=True)
 
         self.model = model
         self.model.load_state_dict(torch.load(model_file)['model'])
@@ -56,6 +56,19 @@ class Tester:
     def test_games(self, folder='all'):
         self.model.eval()
 
+        # init arrays tracking the data
+        self.step_size = 5
+        self.n_correct_array = np.zeros(int(100 / self.step_size))
+        self.n_evals_array = np.zeros(int(100 / self.step_size))
+        self.eval_change_array = np.zeros(int(100 / self.step_size))
+
+        self.n_evals = 0
+        self.n_correct = 0
+        self.eval_change = 0
+
+        self.sampled_n_correct = 0
+        self.sampled_n_evals = 0
+
         # init data files
         data_path = os.path.join(self.games_folder, folder)
         files = sorted([os.path.join(data_path, file_name)
@@ -64,15 +77,12 @@ class Tester:
         random.shuffle(files)
         min_game_length = 3
 
-        step_size = 5
-        correct_preds = np.zeros(int(100 / step_size))
-        n_preds = np.zeros(int(100 / step_size))
-        turn_changes = np.zeros(int(100 / step_size))
-
+        # iterate over and open each game in the test games folder
         for n_games, f in enumerate(files, start=1):
             with open(f) as f_in:
                 game_states = json.load(f_in)
 
+                # skip game if too short
                 if len(game_states) < min_game_length:
                     continue
 
@@ -80,61 +90,80 @@ class Tester:
                 evaluations = []
                 percentage_completed = []
 
-                # iterate states starting at 1 to avoid team preview states
+                # iterate all game states, starting at 1 to avoid team preview states
                 for i in range(1, len(game_states)):
                     state = game_states[i]
 
-                    # transform state into dict of tensors
-                    tensor_dict = self.transform(state)
+                    # run state through evaluation network
+                    evaluation, game_result = self._evaluate_state(state)
 
-                    # network is hardcoded for batches, so create batch of size 1
-                    fields = torch.unsqueeze(tensor_dict['fields'], 0)
-                    sides = torch.unsqueeze(tensor_dict['sides'], 0)
-                    pokemon = {key: torch.unsqueeze(value, 0) for key, value in tensor_dict['pokemon'].items()}
-
-                    # forward pass
-                    evaluation = self.model(fields, sides, pokemon).item()
+                    # store evaluation
                     evaluations.append(round(evaluation, 3))
 
-                    # store results each state because the player pov may be shuffled in transformer
-                    game_result = tensor_dict['result'].item()
+                    # store game result each state because the player pov can be shuffled in transformer
                     results.append(game_result)
 
                     # store game % completed
                     percentage_completed.append((i - 1) / (len(game_states) - 1) * 100)
 
-                # evenly data
-                for i in range(2, 100, step_size):
+                    self.n_evals += 1
+                    self.n_correct += int(round(evaluation) == game_result)
 
-                    # map the game%completed to 20 indices, representing a percentage range (2, 7, 12, ..., 97)
-                    nearest_percentage_index = min(
-                        range(len(percentage_completed)),
-                        key=lambda j: abs(percentage_completed[j]-i)
-                    )
+                # evaluate one random state to measure average accuracy
+                # picking one random state per game to avoid longer games skewing the sampling
+                random_state = game_states[random.randint(1, len(game_states) - 1)]
+                evaluation, game_result = self._evaluate_state(random_state)
+                self.sampled_n_evals += 1
+                self.sampled_n_correct += int(round(evaluation) == game_result)
 
-                    # compare evaluation with result
-                    result = results[nearest_percentage_index]
-                    evaluation = evaluations[nearest_percentage_index]
-                    correct_pred = int(round(evaluation) == result)
+                # store data into arrays of size (100 / step_size)
+                self._map_to_array(percentage_completed, results, evaluations)
 
-                    # store results
-                    array_idx = int((i - 2) / step_size)
-                    correct_preds[array_idx] += correct_pred
-                    n_preds[array_idx] += 1
+                # plot data
+                if n_games % 100 == 0:
+                    self._plot_performance()
 
-                if n_games % 20 == 0:
-                    accuracies = np.round(correct_preds / n_preds, decimals=3)
-                    print(f'\rAccuracy per % game played: {" | ".join(str(x) for x in accuracies)}', end='')
+    def _map_to_array(self, percentage_completed, results, evaluations):
+        # iterate over each array slot
+        for i in range(2, 100, self.step_size):
 
-        accuracies = np.round(correct_preds / n_preds, decimals=3)
-        print(f'\rAccuracy per % game played: {" | ".join(str(x) for x in accuracies)}\n')
+            # map the game%completed to 20 indices, representing a percentage range (2, 7, 12, ..., 97)
+            nearest_percentage_index = min(
+                range(len(percentage_completed)),
+                key=lambda j: abs(percentage_completed[j] - i)
+            )
 
+            # compare evaluation with result
+            result = results[nearest_percentage_index]
+            evaluation = evaluations[nearest_percentage_index]
+            correct_pred = int(round(evaluation) == result)
 
+            # store results
+            array_idx = int((i - 2) / self.step_size)
+            self.n_correct_array[array_idx] += correct_pred
+            self.n_evals_array[array_idx] += 1
 
+    def _plot_performance(self):
+        accuracies = np.round(self.n_correct_array / self.n_evals_array, decimals=3)
+        print(f'Sampled accuracy: {self.sampled_n_correct / self.sampled_n_evals:.3f}')
+        print(f'Overall accuracy: {self.n_correct / self.n_evals:.3f}')
+        print(f'Accuracy per %completed: {" | ".join(str(x) for x in accuracies)}\n')
 
+    def _evaluate_state(self, state):
+        # transform state into dict of tensors
+        tensor_dict = self.transform(state)
 
+        # get label
+        game_result = int(tensor_dict['result'].item())
 
+        # network is hardcoded for batches, so create batch of size 1
+        fields = torch.unsqueeze(tensor_dict['fields'], 0)
+        sides = torch.unsqueeze(tensor_dict['sides'], 0)
+        pokemon = {key: torch.unsqueeze(value, 0) for key, value in tensor_dict['pokemon'].items()}
 
+        # forward pass
+        evaluation = self.model(fields, sides, pokemon).item()
 
+        return evaluation, game_result
 
 
