@@ -339,7 +339,7 @@ class Battler:
             pkmn = Pokemon.from_switch_string(pkmn_dict[constants.DETAILS])
             pkmn.ability = pkmn_dict[constants.REQUEST_DICT_ABILITY]
             pkmn.index = index + 1
-            pkmn.hp, pkmn.max_hp, pkmn.status = get_pokemon_info_from_condition(pkmn_dict[constants.CONDITION])
+            pkmn.hp, _, pkmn.status = get_pokemon_info_from_condition(pkmn_dict[constants.CONDITION])
             for stat, number in pkmn_dict[constants.STATS].items():
                 pkmn.stats[constants.STAT_ABBREVIATION_LOOKUPS[stat]] = number
 
