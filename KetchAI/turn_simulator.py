@@ -5,15 +5,16 @@ import time
 from Showdown_Pmariglia.showdown.engine.objects import *
 from Showdown_Pmariglia.showdown.engine.find_state_instructions import *
 from Showdown_Pmariglia.showdown.engine.damage_calculator import _calculate_damage
-from Showdown_Pmariglia.showdown.engine.evaluate import evaluate
 from Showdown_Pmariglia import config
 from Showdown_Pmariglia import constants
+
+from KetchAI.evaluate import Evaluate
 
 
 class TurnSimulator:
     """ Edited version of some of Pmariglia's turn simulation tools """
     def __init__(self):
-        pass
+        self.value_network = Evaluate()
 
     def get_switch_move_options(self, user_options, opponent_options, user_reserve, opponent_reserve):
         """ Pairs a switching move with its possible switches, treating each combination as separate move """
@@ -78,7 +79,7 @@ class TurnSimulator:
                     score = 0
                     for instructions in state_instructions:
                         mutator.apply(instructions.instructions)
-                        t_score = evaluate(mutator.state)
+                        t_score = self.value_network.evaluate(mutator.state)
                         score += (t_score * instructions.percentage)
                         mutator.reverse(instructions.instructions)
                     user_outspeeds_matrix[i][j] = score
@@ -91,7 +92,7 @@ class TurnSimulator:
                     score = 0
                     for instructions in state_instructions:
                         mutator.apply(instructions.instructions)
-                        t_score = evaluate(mutator.state)
+                        t_score = self.value_network.evaluate(mutator.state)
                         score += (t_score * instructions.percentage)
                         mutator.reverse(instructions.instructions)
                     opp_outspeeds_matrix[i][j] = score
