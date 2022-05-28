@@ -11,7 +11,8 @@ from data.transformer import StateTransformer
 """
 BEST: 
 1250+, LR=2e-4, gamma=0.9, 128/16/16/16, pokemon: 192 drop(p=.2) no bn, state: 1024 drop(p=.3), 512 drop(p=.3), 256 drop(p=.1) -- epoch: 23, acc: 0.757
-0.561 | 0.578 | 0.603 | 0.615 | 0.632 | 0.663 | 0.67 | 0.688 | 0.696 | 0.715 | 0.729 | 0.754 | 0.762 | 0.785 | 0.801 | 0.82  | 0.84  | 0.87  | 0.908 | 0.939
+1500+???: 0.561 | 0.578 | 0.603 | 0.615 | 0.632 | 0.663 | 0.67 | 0.688 | 0.696 | 0.715 | 0.729 | 0.754 | 0.762 | 0.785 | 0.801 | 0.82  | 0.84  | 0.87  | 0.908 | 0.939
+1250+: 0.542 | 0.573 | 0.588 | 0.609 | 0.625 | 0.646 | 0.661 | 0.674 | 0.693 | 0.701 | 0.72 | 0.739 | 0.754 | 0.769 | 0.798 | 0.819 | 0.843 | 0.866 | 0.9 | 0.934
 
 ---------------------------------------------------------------------------------------------
 1500+, LR=2e-4, gamma=0.96, 128/16/16/16, pokemon: 192 drop(p=.2) no bn, state: 1024 drop(p=.3), 512 drop(p=.3), 256 drop(p=.1) -- epoch: 24, acc: 0.751
@@ -19,12 +20,9 @@ BEST:
 1500+, LR=1e-3, gamma=0.9, 128/16/16/16, pokemon: 192 drop(p=.2) no bn, state: 1024 drop(p=.3), 512 drop(p=.3), 256 drop(p=.1) -- epoch: 16, acc: 751
 1500+, LR=3e-4, gamma=0.95, 128/16/16/16, pokemon: 192 drop(p=.2) + bn, state: 1024 drop(p=.3), 512 drop(p=.3), 256 drop(p=.1) -- epoch: 18, acc: 748
 1500+, LR=3e-4, gamma=0.95, 128/16/16/16, pokemon: 192 drop(p=.2), state: 1536 drop(p=.2), 1024 drop(p=.2), 256 drop(p=.1) -- epoch: 17, acc: 0.750
+1250+, LR=3e-4, gamma=0.95, 128/16/16/16, pokemon: 192 drop(p=.2), state: 1536 drop(p=.2), 1024 drop(p=.2), 256 drop(p=.1) -- epoch: 17, acc: 0.757
 
-1250+, LR=3e-4, gamma=0.95, 128/16/16/16, pokemon: 192 drop(p=.2), state: 1536 drop(p=.2), 1024 drop(p=.2), 256 drop(p=.1) -- epoch:
 
-To try:
-    all rated data
-    larger layers
 """
 
 
@@ -59,7 +57,7 @@ class Trainer:
 
     def train(self, folder='all'):
 
-        # set data folders (options: all / 1250+ / 1500+ / 1700+)
+        # set data folders
         train_path = os.path.join(self.data_folder, folder, 'train')
         val_path = os.path.join(self.data_folder, folder, 'val')
 
