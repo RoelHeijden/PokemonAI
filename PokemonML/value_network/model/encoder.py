@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from typing import Dict
 
-from data.categories import (
+from PokemonML.value_network.data.categories import (
     SPECIES,
     MOVES,
     ITEMS,
