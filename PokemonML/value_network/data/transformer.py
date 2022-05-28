@@ -2,7 +2,7 @@ import random
 import torch
 from typing import Dict, Any
 
-from data.categories import (
+from PokemonML.value_network.data.categories import (
     SPECIES,
     ITEMS,
     ABILITIES,
@@ -16,7 +16,7 @@ from data.categories import (
     SIDE_CONDITIONS,
 )
 
-from data.lookups import (
+from PokemonML.value_network.data.lookups import (
     MOVE_LOOKUP,
     FORM_LOOKUP,
     VOLATILES_TO_IGNORE,
@@ -268,7 +268,7 @@ class StateTransformer:
 
             # pokemon items
             item_names = [
-                name if ITEMS.get(name) else "USELESS_ITEM"
+                name if ITEMS.get(name) or ITEMS.get(name) == 0 else "USELESS_ITEM"
                 for name in [pokemon['item'] for pokemon in team]
             ]
             items.append(
@@ -301,7 +301,7 @@ class StateTransformer:
             moves.append(
                 [
                     [
-                        MOVES[team[i]["moves"][j]['name']]
+                        MOVES[team[i]["moves"][j]['id']]
                         if j < len(team[i]["moves"])
                         else 0
                         for j in range(4)
@@ -462,13 +462,13 @@ class StateTransformer:
         category
         typing
         """
-        name = move['name']
+        name = move['id']
 
         # move is disabled
         disabled = int(move['disabled'])
 
         # current move pp
-        pp = move['pp'] / self.pp_scaling
+        pp = move['current_pp'] / self.pp_scaling
 
         # max move pp
         max_pp = int(MOVE_LOOKUP[name]['pp'] * 1.6) / self.pp_scaling
