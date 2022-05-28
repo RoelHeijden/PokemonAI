@@ -11,6 +11,7 @@ from model.encoder import Encoder
 
 """
 
+
 class ValueNet(nn.Module):
     def __init__(self):
         super().__init__()

@@ -2,13 +2,14 @@ import torch
 from torch import nn
 from typing import Dict
 
-from model.encoder import Encoder
+from PokemonML.value_network.model.encoder import Encoder
 
 
 class ValueNet(nn.Module):
     def __init__(self):
         super().__init__()
-        # flexible input sizes
+
+        # input sizes dependent on the StateTransformer output
         field_size = 21
         side_size = 18
         pokemon_attributes = 72 + (4 * 4)
@@ -27,8 +28,8 @@ class ValueNet(nn.Module):
 
         # full state layer
         state_layer_in = (pkmn_layer_out * 6 + side_size) * 2 + field_size
-        fc1_out = 1536
-        fc2_out = 1024
+        fc1_out = 1024
+        fc2_out = 512
         state_layer_out = 256
         self.state_layer = StateLayer(state_layer_in, fc1_out, fc2_out, state_layer_out)
 
@@ -67,6 +68,9 @@ class PokemonLayer(nn.Module):
 
         self.fc1 = nn.Linear(input_size, fc1_out)
         self.drop1 = nn.Dropout(p=0.2)
+
+        # dummy batchnorm. delete later
+        self.bn1 = nn.BatchNorm1d(192)
 
         self.relu = nn.ReLU()
 
