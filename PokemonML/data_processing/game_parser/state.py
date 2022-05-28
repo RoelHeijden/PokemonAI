@@ -349,8 +349,8 @@ class Move:
 
     def to_dict(self):
         return {
-            "name": self.name,
-            "pp": self.current_pp,
+            "id": self.name,
+            "current_pp": self.current_pp,
             "disabled": self.disabled,
         }
 
