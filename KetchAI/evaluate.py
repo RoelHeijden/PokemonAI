@@ -1,5 +1,5 @@
 import os
-
+import json
 import torch
 
 from PokemonML.value_network.model.network import ValueNet
@@ -9,30 +9,24 @@ from PokemonML.value_network.data.transformer import StateTransformer
 class Evaluate:
     def __init__(self):
         # model parameters path
-        model_name = 'epoch_6.pt'
+        model_name = 'network_0759_1250+_epoch_23.pt'
         model_folder = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/models/relevant_models/'
         model_path = os.path.join(model_folder, model_name)
 
-        # nn input sizes
-        pokemon_size = (32 + 16 + 16 + 4 * 32) + 88
-        field_size = 21
-        side_size = 18
-
         # evaluation network
-        self.model = ValueNet(
-            field_size=field_size,
-            side_size=side_size,
-            pokemon_size=pokemon_size
-        )
+        self.model = ValueNet()
         self.model.load_state_dict(torch.load(model_path)['model'])
+        self.model.eval()
 
         # state transformer
         self.transform = StateTransformer(shuffle_players=False, shuffle_pokemon=False, shuffle_moves=False)
 
     def evaluate(self, state):
-
         # extract state information
         state_dict = state.to_dict()
+
+        # StateTransformer checks key 'winner'. Simply set winner to empty
+        state_dict['winner'] = ''
 
         # transform state into dict of tensors
         x = self.transform(state_dict)
@@ -43,7 +37,7 @@ class Evaluate:
         pokemon = {key: torch.unsqueeze(value, 0) for key, value in x['pokemon'].items()}
 
         # forward pass
-        evaluation = self.model(fields, sides, pokemon)
+        evaluation = self.model(fields, sides, pokemon).item()
 
         return evaluation
 
