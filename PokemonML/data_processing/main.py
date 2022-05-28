@@ -27,8 +27,8 @@ NOTEWORTHY:
 def main():
     # mode = 'parse all games'
     # mode = 'create test split'
-    # mode = 'create training batches'
-    mode = 'inspect a game'
+    mode = 'create training batches'
+    # mode = 'inspect a game'
 
     inspect_battle_id = 4421651
 
@@ -43,10 +43,10 @@ def main():
         create_test_split(train_path, test_path, test_split=0.10)
 
     if mode == 'create training batches':
-        path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/test_games'
-        path_out = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/test_states/1500+'
+        path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/test_games/all+'
+        path_out = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/test_states/all'
         f_out_name = 'ou_game_states'
-        create_training_batches(path_in, path_out, f_out_name, min_rating=1500, batch_size=10000, min_game_length=3)
+        create_training_batches(path_in, path_out, f_out_name, min_rating=0, file_size=10000)
 
     if mode == 'inspect a game':
         path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/raw-ou-incomplete"
@@ -203,11 +203,10 @@ def create_test_split(train_path, test_path, test_split=0.10):
     print(f'test files: {len(test)}')
 
 
-def create_training_batches(path_in, path_out, f_out_name, min_rating=1200, batch_size=10000, min_game_length=3):
+def create_training_batches(path_in, path_out, f_out_name, min_rating=0, file_size=10000, min_game_length=3):
     """
-    - extracts two game states from each game-states file
-    - switches player's POV for one of the states
-    - writes as batches to .jsonl files
+    - extracts n random game states from each game-states file
+    - write states to .jsonl files
     """
 
     print("collecting file names\n")
@@ -240,8 +239,6 @@ def create_training_batches(path_in, path_out, f_out_name, min_rating=1200, batc
             all_states = json.load(f_in)
             room_id = all_states[0]['roomid']
 
-            n_games += 1
-
             # skip game if in the ignore list
             if ignore_list.get(str(room_id)):
                 continue
@@ -255,8 +252,11 @@ def create_training_batches(path_in, path_out, f_out_name, min_rating=1200, batc
                 games_too_short[room_id] = len(all_states)
                 continue
 
-            # select two random states to write
-            states = pick_random_states(all_states, min_turns_apart=math.floor(min_game_length/3))
+            n_games += 1
+
+            # select n random states, avoiding the team preview state
+            n_samples = min(max(int(math.sqrt(len(all_states) * 0.82)), 1), 5)
+            states = random.sample(all_states[1:], n_samples)
 
             # write each extracted state to batch file
             for s in states:
@@ -265,44 +265,30 @@ def create_training_batches(path_in, path_out, f_out_name, min_rating=1200, batc
 
                 n_states += 1
 
-            # close previous, and initialize new batch file
-            if n_states % batch_size == 0:
-                f_out.close()
-                file = f_out_name + str(int(n_states / batch_size)) + '.jsonl'
-                f_out = open(os.path.join(path_out, file), 'w')
+                # close previous, and initialize new batch file
+                if n_states % file_size == 0:
+                    f_out.close()
+                    file = f_out_name + str(int(n_states / file_size)) + '.jsonl'
+                    f_out = open(os.path.join(path_out, file), 'w')
 
-                n_written += 1
+                    n_written += 1
 
-            # keeping you updated
-            if n_states % 5000 == 0:
-                print(f'{n_games} games opened')
-                print(f'{n_states} states extracted')
-                print(f'{n_written} batch files created')
-                print(f'runtime: {round(time.time() - start_time, 1)}s\n')
+                # keeping you updated
+                if n_states % 5000 == 0:
+                    print(f'{n_games} games sampled')
+                    print(f'{n_states} states extracted')
+                    print(f'{n_written} batch files created')
+                    print(f'runtime: {round(time.time() - start_time, 1)}s\n')
 
     print(ujson.dumps(games_too_short, indent=2), '\n')
     print(f"{len(games_too_short)} games skipped because they lasted shorter than {min_game_length} turns\n")
 
-    print(f'{n_games} games opened')
+    print(f'{n_games} games sampled')
     print(f'{n_states} states extracted')
-    print(f'{n_written} batch files created with {batch_size} states each')
-    print(f'final file contains {n_states % batch_size} states\n')
+    print(f'{n_written} batch files created with {file_size} states each')
+    print(f'final file contains {n_states % file_size} states\n')
 
     print(f'runtime: {round(time.time() - start_time, 1)}s\n')
-
-
-def pick_random_states(all_states, min_turns_apart=1):
-    """ selects two random non-preview states from a game_state list,
-        one for each of the players POV and at least n turns apart """
-
-    # rolling from (1, ..) in order to skip the team_preview state
-    state_idx1 = np.random.randint(1, len(all_states) - min_turns_apart)
-    state_idx2 = np.random.randint(state_idx1 + min_turns_apart, len(all_states))
-
-    state1 = all_states[state_idx1]
-    state2 = all_states[state_idx2]
-
-    return [state1, reverse_pov(state2)]
 
 
 def reverse_pov(state):
