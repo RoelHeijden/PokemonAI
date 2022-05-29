@@ -9,25 +9,20 @@ from data.transformer import StateTransformer
 
 
 """
-BEST: 
-1250+, LR=2e-4, gamma=0.9, 128/16/16/16, pokemon: 192 drop(p=.2) no bn, state: 1024 drop(p=.3), 512 drop(p=.3), 256 drop(p=.1) -- epoch: 23, acc: 0.757
-1500+???: 0.561 | 0.578 | 0.603 | 0.615 | 0.632 | 0.663 | 0.67 | 0.688 | 0.696 | 0.715 | 0.729 | 0.754 | 0.762 | 0.785 | 0.801 | 0.82  | 0.84  | 0.87  | 0.908 | 0.939
-1250+: 0.542 | 0.573 | 0.588 | 0.609 | 0.625 | 0.646 | 0.661 | 0.674 | 0.693 | 0.701 | 0.72 | 0.739 | 0.754 | 0.769 | 0.798 | 0.819 | 0.843 | 0.866 | 0.9 | 0.934
+1100+, LR=2e-4, gamma=0.95, 128/16/16/16, pokemon: 192 drop(p=.2), state: 1024 drop(p=.2), 512 drop(p=.2), 256 drop(p=.1)
+epoch 3:
+    Sampled accuracy: 0.713
+    Overall accuracy: 0.700
+    Accuracy per %completed: 0.562 | 0.582 | 0.599 | 0.613 | 0.629 | 0.642 | 0.667 | 0.678 | 0.689 | 0.701 | 0.716 | 0.729 | 0.741 | 0.764 | 0.781 | 0.809 | 0.832 | 0.858 | 0.888 | 0.918
 
----------------------------------------------------------------------------------------------
-1500+, LR=2e-4, gamma=0.96, 128/16/16/16, pokemon: 192 drop(p=.2) no bn, state: 1024 drop(p=.3), 512 drop(p=.3), 256 drop(p=.1) -- epoch: 24, acc: 0.751
-1500+, LR=1e-4, gamma=0.9, 128/16/16/16, pokemon: 192 drop(p=.2) no bn, state: 1024 drop(p=.3), 512 drop(p=.3), 256 drop(p=.1) -- epoch: 20, acc: 0.748
-1500+, LR=1e-3, gamma=0.9, 128/16/16/16, pokemon: 192 drop(p=.2) no bn, state: 1024 drop(p=.3), 512 drop(p=.3), 256 drop(p=.1) -- epoch: 16, acc: 751
-1500+, LR=3e-4, gamma=0.95, 128/16/16/16, pokemon: 192 drop(p=.2) + bn, state: 1024 drop(p=.3), 512 drop(p=.3), 256 drop(p=.1) -- epoch: 18, acc: 748
-1500+, LR=3e-4, gamma=0.95, 128/16/16/16, pokemon: 192 drop(p=.2), state: 1536 drop(p=.2), 1024 drop(p=.2), 256 drop(p=.1) -- epoch: 17, acc: 0.750
-1250+, LR=3e-4, gamma=0.95, 128/16/16/16, pokemon: 192 drop(p=.2), state: 1536 drop(p=.2), 1024 drop(p=.2), 256 drop(p=.1) -- epoch: 17, acc: 0.757
+1300+, LR=4e-4, gamma=0.90, 128/16/16/16, pokemon: 192 drop(p=.2), state: 4096 drop(p=.2), 1024 drop(p=.2), 256 drop(p=.1) -- epoch:
 
 
 """
 
 
 class Trainer:
-    def __init__(self, model, n_epochs=50, batch_size=252, lr=3e-4, lr_gamma=0.95, lr_decay_steps=1, weight_decay=0.001, save_model=True):
+    def __init__(self, model, n_epochs=50, batch_size=252, lr=4e-4, lr_gamma=0.90, lr_decay_steps=1, weight_decay=0.001, save_model=True):
 
         # model
         self.model = model
@@ -57,7 +52,7 @@ class Trainer:
         self.save_model = save_model
         self.save_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/models/training_dump/'
 
-    def train(self, folder='all'):
+    def train(self, folder):
 
         # set data folders
         train_path = os.path.join(self.data_folder, folder, 'train')
