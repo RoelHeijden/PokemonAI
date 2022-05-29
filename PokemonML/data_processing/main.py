@@ -27,8 +27,8 @@ NOTEWORTHY:
 def main():
     # mode = 'parse all games'
     # mode = 'create test split'
-    mode = 'create training batches'
-    # mode = 'inspect a game'
+    # mode = 'create training batches'
+    mode = 'inspect a game'
 
     inspect_battle_id = 5685788
 
@@ -43,8 +43,8 @@ def main():
         create_test_split(train_path, test_path, test_split=0.10)
 
     if mode == 'create training batches':
-        path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_games'
-        path_out = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_states'
+        path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/test_games/all'
+        path_out = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/test_states'
         f_out_name = 'ou_game_states'
         create_training_batches(path_in, path_out, f_out_name, file_size=10000, min_game_length=3)
 
@@ -349,12 +349,12 @@ def create_training_batches(path_in, path_out, f_out_name, file_size=10000, min_
     print(f"{len(games_too_short)} games skipped because they lasted shorter than {min_game_length} turns\n")
 
     print(f'{n_games} games sampled')
-    print(f'states extracted: '
-          f'all {n_states_all}, '
-          f'1100+ {n_states_1100}, '
-          f'1300+ {n_states_1300}, '
-          f'1500+ {n_states_1500}, '
-          f'1700+ {n_states_1700}')
+    print(f'states extracted: \n'
+          f'all: {n_states_all}, \n'
+          f'1100+: {n_states_1100}, \n'
+          f'1300+: {n_states_1300}, \n'
+          f'1500+: {n_states_1500}, \n'
+          f'1700+: {n_states_1700}')
 
     print(f'runtime: {round(time.time() - start_time, 1)}s\n')
 
