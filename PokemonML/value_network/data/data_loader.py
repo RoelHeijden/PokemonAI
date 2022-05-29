@@ -3,6 +3,7 @@ from typing import List
 import math
 import ujson
 import os
+import random
 
 import torch
 from torch.utils.data import DataLoader
@@ -11,7 +12,7 @@ from torch.utils import data
 from data.transformer import StateTransformer
 
 
-def data_loader(folder_path, transformer: StateTransformer, batch_size=50, num_workers=0):
+def data_loader(folder_path, transformer: StateTransformer, batch_size, shuffle=False, buffer_size=30000, num_workers=0):
     files = sorted(
         [
             os.path.join(folder_path, file_name)
@@ -22,6 +23,9 @@ def data_loader(folder_path, transformer: StateTransformer, batch_size=50, num_w
 
     datasets = [TurnsDataset(file, transformer) for file in files]
     dataset = MultiDataDataset(datasets)
+
+    if shuffle:
+        dataset = BufferedShuffleDataset(dataset, buffer_size)
 
     loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
     return loader
@@ -65,5 +69,60 @@ class MultiDataDataset(data.IterableDataset, ABC):
             for x in d:
                 yield x
 
+
+class BufferedShuffleDataset(data.IterableDataset):
+    """ from Torch 1.8.1
+
+    Dataset shuffled from the original dataset.
+
+        This class is useful to shuffle an existing instance of an IterableDataset.
+        The buffer with `buffer_size` is filled with the items from the dataset first. Then,
+        each item will be yielded from the buffer by reservoir sampling via iterator.
+
+        `buffer_size` is required to be larger than 0. For `buffer_size == 1`, the
+        dataset is not shuffled. In order to fully shuffle the whole dataset, `buffer_size`
+        is required to be greater than or equal to the size of dataset.
+
+        When it is used with :class:`~torch.utils.data.DataLoader`, each item in the
+        dataset will be yielded from the :class:`~torch.utils.data.DataLoader` iterator.
+        And, the method to set up a random seed is different based on :attr:`num_workers`.
+
+        For single-process mode (:attr:`num_workers == 0`), the random seed is required to
+        be set before the :class:`~torch.utils.data.DataLoader` in the main process.
+
+            ds = BufferedShuffleDataset(dataset)
+            random.seed(...)
+            print(list(torch.utils.data.DataLoader(ds, num_workers=0)))
+
+        For multi-process mode (:attr:`num_workers > 0`), the random seed is set by a callable
+        function in each worker.
+
+            ds = BufferedShuffleDataset(dataset)
+            def init_fn(worker_id):
+            ...     random.seed(...)
+            print(list(torch.utils.data.DataLoader(ds, ..., num_workers=n, worker_init_fn=init_fn)))
+
+        Args:
+            dataset (IterableDataset): The original IterableDataset.
+            buffer_size (int): The buffer size for shuffling.
+        """
+    def __init__(self, dataset: data.IterableDataset, buffer_size: int) -> None:
+        super(BufferedShuffleDataset, self).__init__()
+        assert buffer_size > 0, "buffer_size should be larger than 0"
+        self.dataset = dataset
+        self.buffer_size = buffer_size
+
+    def __iter__(self):
+        buf = []
+        for x in self.dataset:
+            if len(buf) == self.buffer_size:
+                idx = random.randint(0, self.buffer_size - 1)
+                yield buf[idx]
+                buf[idx] = x
+            else:
+                buf.append(x)
+        random.shuffle(buf)
+        while buf:
+            yield buf.pop()
 
 
