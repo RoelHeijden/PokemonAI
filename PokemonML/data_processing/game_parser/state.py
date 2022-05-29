@@ -332,6 +332,11 @@ class Move:
         name = normalize_name(name)
         if constants.HIDDEN_POWER in name and not name.endswith(constants.HIDDEN_POWER_ACTIVE_MOVE_BASE_DAMAGE_STRING):
             name = "{}{}".format(name, constants.HIDDEN_POWER_ACTIVE_MOVE_BASE_DAMAGE_STRING)
+
+        # there's a bug in some games where it still uses the old spelling???
+        if name == 'hijumpkick':
+            name = 'highjumpkick'
+
         move_json = all_move_json[name]
 
         self.name = name
