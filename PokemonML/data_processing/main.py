@@ -25,9 +25,9 @@ NOTEWORTHY:
 
 
 def main():
-    # mode = 'parse all games'
+    mode = 'parse all games'
     # mode = 'create test split'
-    mode = 'create training batches'
+    # mode = 'create training batches'
     # mode = 'inspect a game'
 
     inspect_battle_id = 4421651
@@ -119,6 +119,10 @@ def parse_all(folder_path, save_path):
                 # parse game and extract game states
                 game = GameLog(info, battle_id)
                 parsed_game = game.parse_replay()
+
+                # parse_replay() returns False if the game is bugged
+                if not parsed_game:
+                    continue
 
                 # write parsed game_states file
                 path_out = os.path.join(save_path, file_out)
