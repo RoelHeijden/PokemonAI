@@ -1,31 +1,56 @@
-Landorus-Therian (M)
-Ability: Intimidate
-EVs: 252 HP / 76 Spe
-- U-turn
-- Rock Slide
+Dugtrio @ Choice Band
+Ability: Sand Force
+EVs: 252 Atk / 4 SpD / 252 Spe
+Jolly Nature
+- Earthquake
+- Stone Edge
+- Sucker Punch
+- Stealth Rock
 
-Zapdos
-Ability: Static
-EVs: 252 HP / 4 Spe
+Corviknight @ Leftovers
+Ability: Pressure
+EVs: 248 HP / 8 Def / 252 SpD
+Careful Nature
+- Iron Head
+- U-turn
+- Defog
+- Roost
+
+Clefable @ Leftovers
+Ability: Magic Guard
+EVs: 252 HP / 120 Def / 136 Spe
+Bold Nature
 IVs: 0 Atk
+- Calm Mind
+- Moonblast
+- Soft-Boiled
+- Wish
+
+Dragapult @ Leftovers
+Ability: Infiltrator
+EVs: 80 HP / 244 SpA / 104 SpD / 80 Spe
+Timid Nature
+- Draco Meteor
+- Hex
+- Will-O-Wisp
+- U-turn
+
+Lanturn @ Shed Shell
+Ability: Volt Absorb
+EVs: 40 HP / 220 Def / 248 SpD
+Calm Nature
+IVs: 0 Atk
+- Scald
 - Volt Switch
 - Toxic
+- Heal Bell
 
-Tapu Bulu
-Ability: Grassy Surge
-EVs: 252 HP / 204 Spe
-- Horn Leech
-- Leech Seed
-
-Blastoise
-Ability: Torrent
-EVs: 252 HP / 180 Spe
-- Flip Turn
-- Ice Beam
-
-Genesect
-Ability: Download
-EVs: 252 HP / 12 Spe
-- U-turn
-- Iron Head
+FrostFire14 (Weavile) (F) @ Choice Band
+Ability: Pressure
+EVs: 252 Atk / 4 SpD / 252 Spe
+Jolly Nature
+- Knock Off
+- Icicle Crash
+- Ice Shard
+- Focus Punch
 

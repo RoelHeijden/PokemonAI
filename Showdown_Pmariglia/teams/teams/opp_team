@@ -1,31 +1,58 @@
-Landorus-Therian (M)  
-Ability: Intimidate  
-EVs: 252 HP / 76 Spe  
-- U-turn  
-- Rock Slide  
+Sylveon @ Leftovers
+Ability: Pixilate
+EVs: 248 HP / 244 Def / 16 SpD
+Calm Nature
+IVs: 0 Atk
+- Heal Bell
+- Wish
+- Hyper Voice
+- Protect
 
-Zapdos  
-Ability: Static  
-EVs: 252 HP / 4 Spe  
-IVs: 0 Atk  
-- Volt Switch  
-- Toxic  
+Seismitoad (M) @ Leftovers
+Ability: Water Absorb
+Shiny: Yes
+EVs: 248 HP / 252 Def / 8 SpD
+Bold Nature
+IVs: 0 Atk
+- Scald
+- Earth Power
+- Stealth Rock
+- Toxic
 
-Tapu Bulu  
-Ability: Grassy Surge  
-EVs: 252 HP / 204 Spe  
-- Horn Leech  
-- Leech Seed  
+Corviknight (M) @ Leftovers
+Ability: Pressure
+Shiny: Yes
+EVs: 248 HP / 180 SpD / 80 Spe
+Careful Nature
+- U-turn
+- Brave Bird
+- Defog
+- Roost
 
-Blastoise  
-Ability: Torrent  
-EVs: 252 HP / 180 Spe  
-- Flip Turn  
-- Ice Beam  
+Terrakion @ Life Orb
+Ability: Justified
+EVs: 252 Atk / 4 SpD / 252 Spe
+Jolly Nature
+- Close Combat
+- Earthquake
+- Swords Dance
+- Stone Edge
 
-Genesect  
-Ability: Download  
-EVs: 252 HP / 12 Spe  
-- U-turn  
-- Iron Head  
+Dragapult @ Choice Scarf
+Ability: Infiltrator
+EVs: 252 SpA / 4 SpD / 252 Spe
+Modest Nature
+- U-turn
+- Thunderbolt
+- Shadow Ball
+- Draco Meteor
+
+Obstagoon @ Flame Orb
+Ability: Guts
+EVs: 252 Atk / 4 SpD / 252 Spe
+Jolly Nature
+- Knock Off
+- Facade
+- Close Combat
+- Parting Shot
 
