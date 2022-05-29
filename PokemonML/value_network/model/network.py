@@ -28,8 +28,8 @@ class ValueNet(nn.Module):
 
         # full state layer
         state_layer_in = (pkmn_layer_out * 6 + side_size) * 2 + field_size
-        fc1_out = 1024
-        fc2_out = 512
+        fc1_out = 4096
+        fc2_out = 1024
         state_layer_out = 256
         self.state_layer = StateLayer(state_layer_in, fc1_out, fc2_out, state_layer_out)
 
