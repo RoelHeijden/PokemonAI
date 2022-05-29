@@ -18,12 +18,12 @@ class Tester:
         self.model = model
         self.model.load_state_dict(torch.load(model_file)['model'])
 
-    def test_states(self, folder='all'):
+    def test_states(self, folder):
         self.model.eval()
 
         # init data loader
         data_path = os.path.join(self.states_folder, folder)
-        dataloader = data_loader(data_path, self.transform, batch_size=1)
+        dataloader = data_loader(data_path, self.transform, batch_size=1, shuffle=False)
 
         # track amount of evaluations and amount of correct classifications
         n_evaluations = 0
@@ -53,7 +53,7 @@ class Tester:
         print(f'\r{n_evaluations} states evaluated')
         print(f'average accuracy: {correct_classifications / n_evaluations:.3f}\n')
 
-    def test_games(self, folder='all'):
+    def test_games(self, folder):
         self.model.eval()
 
         # init arrays tracking the data
