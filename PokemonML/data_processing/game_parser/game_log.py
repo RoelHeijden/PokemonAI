@@ -102,7 +102,7 @@ class GameLog:
             else:
                 bug_free_game = update_state(state, split_msg)
                 if not bug_free_game:
-                    break
+                    return False
 
             # extract game state at the end of a turn, or when a Pokemon fainted
             if split_msg[1] == "turn" or split_msg[1] == "upkeep" and \
