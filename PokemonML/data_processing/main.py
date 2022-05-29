@@ -46,7 +46,7 @@ def main():
         path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_games'
         path_out = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_states'
         f_out_name = 'ou_game_states'
-        create_training_batches(path_in, path_out, f_out_name, min_rating=0, file_size=10000)
+        create_training_batches(path_in, path_out, f_out_name, file_size=10000, min_game_length=3)
 
     if mode == 'inspect a game':
         path_in = "C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/raw-ou-incomplete"
@@ -239,7 +239,7 @@ def create_test_split(train_path, test_path, test_split=0.10):
     print(f'test files: {len(test)}')
 
 
-def create_training_batches(path_in, path_out, f_out_name, min_rating=0, file_size=10000, min_game_length=3):
+def create_training_batches(path_in, path_out, f_out_name, file_size=10000, min_game_length=3):
     """
     - extracts n random game states from each game-states file
     - write states to .jsonl files
@@ -292,10 +292,6 @@ def create_training_batches(path_in, path_out, f_out_name, min_rating=0, file_si
 
             # skip game if in the ignore list
             if ignore_list.get(str(room_id)):
-                continue
-
-            # skip if rating is too low
-            if all_states[0]['average_rating'] < min_rating:
                 continue
 
             # skip game if game doesn't last long enough
