@@ -9,7 +9,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils import data
 
-from data.transformer import StateTransformer
+from PokemonML.value_network.data.transformer import StateTransformer
 
 
 def data_loader(folder_path, transformer: StateTransformer, batch_size, shuffle=False, buffer_size=30000, num_workers=0):
