@@ -45,6 +45,8 @@ class Trainer:
         self.data_folder = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_states/'
         self.file_size = 10000
 
+        self.buffer_size = 30000
+
         self.shuffle_transform = StateTransformer(shuffle_players=True, shuffle_pokemon=True, shuffle_moves=True)
         self.no_shuffle_transform = StateTransformer(shuffle_players=False, shuffle_pokemon=False, shuffle_moves=False)
 
@@ -64,8 +66,20 @@ class Trainer:
         n_train_samples = sum([self.file_size for f in os.listdir(train_path)])
 
         # init data loaders
-        train_loader = data_loader(train_path, self.shuffle_transform, self.batch_size, self.num_workers)
-        val_loader = data_loader(val_path, self.no_shuffle_transform, self.batch_size, self.num_workers)
+        train_loader = data_loader(
+            train_path,
+            self.shuffle_transform,
+            self.batch_size,
+            shuffle=True,
+            buffer_size=self.buffer_size,
+            num_workers=self.num_workers)
+
+        val_loader = data_loader(
+            val_path,
+            self.no_shuffle_transform,
+            self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers)
 
         # start epoch iteration
         start_time = time.time()
