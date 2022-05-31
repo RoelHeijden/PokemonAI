@@ -123,7 +123,7 @@ class NashCalc:
             # print values
             for x, user_move_str in enumerate(user_options):
                 value = payoff_matrix.get((user_move_str, opponent_move_str))
-                value = round(value, 2)
+                value = round(value, 3)
                 if value < 0:
                     print(Color.BLUE + str(value) + Color.END, end=" ")
                 else:
