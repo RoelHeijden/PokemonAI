@@ -19,7 +19,7 @@ class ValueNet(nn.Module):
         move_dim = 16
         item_dim = 16
         ability_dim = 16
-        self.encoding = Encoder(species_dim, move_dim, item_dim, ability_dim, custom_embeddings=True)
+        self.encoding = Encoder(species_dim, move_dim, item_dim, ability_dim, load_embeddings=True)
 
         # pokemon layer
         pkmn_layer_out = 192
