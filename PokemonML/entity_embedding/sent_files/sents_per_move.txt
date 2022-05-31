@@ -1,0 +1,757 @@
+absorb lowbasepower 100accuracy grass special targetopponent heals
+accelerock lowbasepower 100accuracy rock positivepriority physical targetopponent
+acid lowbasepower 100accuracy poison special targetopponent
+acidarmor noaccuracy poison status targetself targetopponent statboost
+acidspray lowbasepower 100accuracy poison special targetopponent
+acrobatics lowbasepower 100accuracy flying physical targetopponent
+acupressure noaccuracy normal status targetopponent
+aerialace midbasepower noaccuracy flying physical targetopponent
+aeroblast highbasepower flying special targetopponent
+afteryou noaccuracy normal status targetopponent
+agility noaccuracy psychic status targetself targetopponent statboost
+aircutter midbasepower flying special targetopponent
+airslash midbasepower flying special targetopponent
+allyswitch noaccuracy psychic positivepriority status targetself targetopponent
+amnesia noaccuracy psychic status targetself targetopponent statboost
+anchorshot midbasepower 100accuracy steel physical targetopponent
+ancientpower midbasepower 100accuracy rock special targetopponent
+appleacid midbasepower 100accuracy grass special targetopponent
+aquajet lowbasepower 100accuracy water positivepriority physical targetopponent
+aquaring noaccuracy water status targetself targetopponent
+aquatail midbasepower water physical targetopponent
+armthrust lowbasepower 100accuracy fighting physical targetopponent multihit
+aromatherapy noaccuracy grass status targetopponent
+aromaticmist noaccuracy fairy status targetopponent statboost
+assist noaccuracy normal status targetself targetopponent
+assurance midbasepower 100accuracy dark physical targetopponent
+astonish lowbasepower 100accuracy ghost physical targetopponent
+astralbarrage highbasepower 100accuracy ghost special targetopponent
+attackorder midbasepower 100accuracy bug physical targetopponent
+attract 100accuracy normal status targetopponent
+aurasphere midbasepower noaccuracy fighting special targetopponent
+aurawheel highbasepower 100accuracy electric physical targetopponent
+aurorabeam midbasepower 100accuracy ice special targetopponent
+auroraveil noaccuracy ice status targetopponent
+autotomize noaccuracy steel status targetself targetopponent statboost
+avalanche midbasepower 100accuracy ice negativepriority physical targetopponent
+babydolleyes 100accuracy fairy positivepriority status targetopponent statdrop
+banefulbunker noaccuracy poison positivepriority status targetself targetopponent
+barrage lowbasepower normal physical targetopponent multihit
+barrier noaccuracy psychic status targetself targetopponent statboost
+batonpass noaccuracy normal status targetself targetopponent
+beakblast highbasepower 100accuracy flying negativepriority physical targetopponent
+beatup 100accuracy dark physical targetopponent
+behemothbash highbasepower 100accuracy steel physical targetopponent
+behemothblade highbasepower 100accuracy steel physical targetopponent
+belch highbasepower poison special targetopponent
+bellydrum noaccuracy normal status targetself targetopponent
+bestow noaccuracy normal status targetopponent
+bide noaccuracy normal positivepriority physical targetself targetopponent
+bind lowbasepower normal physical targetopponent
+bite midbasepower 100accuracy dark physical targetopponent
+blastburn highbasepower fire special targetopponent mustrecharge
+blazekick midbasepower fire physical targetopponent
+blizzard highbasepower midaccuracy lowaccuracy ice special targetopponent
+block noaccuracy normal status targetopponent
+blueflare highbasepower fire special targetopponent
+bodypress midbasepower 100accuracy fighting physical targetopponent
+bodyslam midbasepower 100accuracy normal physical targetopponent
+boltbeak midbasepower 100accuracy electric physical targetopponent
+boltstrike highbasepower electric physical targetopponent
+boneclub midbasepower ground physical targetopponent
+bonemerang lowbasepower ground physical targetopponent multihit
+bonerush lowbasepower ground physical targetopponent multihit
+boomburst highbasepower 100accuracy normal special targetopponent
+bounce midbasepower flying physical targetopponent
+branchpoke lowbasepower 100accuracy grass physical targetopponent
+bravebird highbasepower 100accuracy flying physical targetopponent
+breakingswipe midbasepower 100accuracy dragon physical targetopponent
+brickbreak midbasepower 100accuracy fighting physical targetopponent
+brine midbasepower 100accuracy water special targetopponent
+brutalswing midbasepower 100accuracy dark physical targetopponent
+bubble lowbasepower 100accuracy water special targetopponent
+bubblebeam midbasepower 100accuracy water special targetopponent
+bugbite midbasepower 100accuracy bug physical targetopponent
+bugbuzz midbasepower 100accuracy bug special targetopponent
+bulkup noaccuracy fighting status targetself targetopponent statboost statboost
+bulldoze midbasepower 100accuracy ground physical targetopponent
+bulletpunch lowbasepower 100accuracy steel positivepriority physical targetopponent
+bulletseed lowbasepower 100accuracy grass physical targetopponent multihit
+burningjealousy midbasepower 100accuracy fire special targetopponent
+burnup highbasepower 100accuracy fire special targetopponent
+calmmind noaccuracy psychic status targetself targetopponent statboost statboost
+camouflage noaccuracy normal status targetself targetopponent
+captivate 100accuracy normal status targetopponent statdrop
+celebrate noaccuracy normal status targetself targetopponent
+charge noaccuracy electric status targetself targetopponent statboost
+chargebeam lowbasepower electric special targetopponent
+charm 100accuracy fairy status targetopponent statdrop
+chatter midbasepower 100accuracy flying special targetopponent
+chipaway midbasepower 100accuracy normal physical targetopponent
+circlethrow midbasepower fighting negativepriority physical targetopponent
+clamp lowbasepower water physical targetopponent
+clangingscales highbasepower 100accuracy dragon special targetopponent
+clangoroussoul 100accuracy dragon status targetself targetopponent statboost statboost statboost statboost statboost
+clearsmog lowbasepower noaccuracy poison special targetopponent
+closecombat highbasepower 100accuracy fighting physical targetopponent
+coaching noaccuracy fighting status targetopponent statboost statboost
+coil noaccuracy poison status targetself targetopponent statboost statboost statboost
+cometpunch lowbasepower normal physical targetopponent multihit
+confide noaccuracy normal status targetopponent statdrop
+confuseray 100accuracy ghost status targetopponent
+confusion lowbasepower 100accuracy psychic special targetopponent
+constrict lowbasepower 100accuracy normal physical targetopponent
+conversion noaccuracy normal status targetself targetopponent
+conversion2 noaccuracy normal status targetopponent
+copycat noaccuracy normal status targetself targetopponent
+coreenforcer highbasepower 100accuracy dragon special targetopponent
+corrosivegas 100accuracy poison status targetopponent
+cosmicpower noaccuracy psychic status targetself targetopponent statboost statboost
+cottonguard noaccuracy grass status targetself targetopponent statboost
+cottonspore 100accuracy grass status targetopponent statdrop
+counter 100accuracy fighting negativepriority physical targetopponent
+courtchange 100accuracy normal status targetall
+covet midbasepower 100accuracy normal physical targetopponent
+crabhammer highbasepower water physical targetopponent
+craftyshield noaccuracy fairy positivepriority status targetopponent
+crosschop highbasepower midaccuracy fighting physical targetopponent
+crosspoison midbasepower 100accuracy poison physical targetopponent
+crunch midbasepower 100accuracy dark physical targetopponent
+crushclaw midbasepower normal physical targetopponent
+crushgrip 100accuracy normal physical targetopponent
+curse noaccuracy ghost status targetopponent
+cut lowbasepower normal physical targetopponent
+darkestlariat midbasepower 100accuracy dark physical targetopponent
+darkpulse midbasepower 100accuracy dark special targetopponent
+darkvoid midaccuracy lowaccuracy dark status targetopponent setsstatus
+dazzlinggleam midbasepower 100accuracy fairy special targetopponent
+decorate noaccuracy fairy status targetopponent statboost statboost
+defendorder noaccuracy bug status targetself targetopponent statboost statboost
+defensecurl noaccuracy normal status targetself targetopponent statboost
+defog noaccuracy flying status targetopponent
+destinybond noaccuracy ghost status targetself targetopponent
+detect noaccuracy fighting positivepriority status targetself targetopponent
+diamondstorm highbasepower rock physical targetopponent
+dig midbasepower 100accuracy ground physical targetopponent
+disable 100accuracy normal status targetopponent
+disarmingvoice lowbasepower noaccuracy fairy special targetopponent
+discharge midbasepower 100accuracy electric special targetopponent
+dive midbasepower 100accuracy water physical targetopponent
+dizzypunch midbasepower 100accuracy normal physical targetopponent
+doomdesire highbasepower 100accuracy steel special targetopponent futuremove
+doubleedge highbasepower 100accuracy normal physical targetopponent
+doublehit lowbasepower normal physical targetopponent multihit
+doubleironbash midbasepower 100accuracy steel physical targetopponent multihit
+doublekick lowbasepower 100accuracy fighting physical targetopponent multihit
+doubleslap lowbasepower normal physical targetopponent multihit
+doubleteam noaccuracy normal status targetself targetopponent statboost
+dracometeor highbasepower dragon special targetopponent
+dragonascent highbasepower 100accuracy flying physical targetopponent
+dragonbreath midbasepower 100accuracy dragon special targetopponent
+dragonclaw midbasepower 100accuracy dragon physical targetopponent
+dragondance noaccuracy dragon status targetself targetopponent statboost statboost
+dragondarts lowbasepower 100accuracy dragon physical targetopponent multihit
+dragonenergy highbasepower 100accuracy dragon special targetopponent
+dragonhammer midbasepower 100accuracy dragon physical targetopponent
+dragonpulse midbasepower 100accuracy dragon special targetopponent
+dragonrage 100accuracy dragon special targetopponent
+dragonrush highbasepower midaccuracy lowaccuracy dragon physical targetopponent
+dragontail midbasepower dragon negativepriority physical targetopponent
+drainingkiss lowbasepower 100accuracy fairy special targetopponent heals
+drainpunch midbasepower 100accuracy fighting physical targetopponent heals
+dreameater highbasepower 100accuracy psychic special targetopponent heals
+drillpeck midbasepower 100accuracy flying physical targetopponent
+drillrun midbasepower ground physical targetopponent
+drumbeating midbasepower 100accuracy grass physical targetopponent
+dualchop lowbasepower dragon physical targetopponent multihit
+dualwingbeat lowbasepower flying physical targetopponent multihit
+dynamaxcannon highbasepower 100accuracy dragon special targetopponent
+dynamicpunch highbasepower midaccuracy lowaccuracy fighting physical targetopponent
+earthpower midbasepower 100accuracy ground special targetopponent
+earthquake highbasepower 100accuracy ground physical targetopponent
+echoedvoice lowbasepower 100accuracy normal special targetopponent
+eerieimpulse 100accuracy electric status targetopponent statdrop
+eeriespell midbasepower 100accuracy psychic special targetopponent
+eggbomb highbasepower midaccuracy lowaccuracy normal physical targetopponent
+electricterrain noaccuracy electric status targetall
+electrify noaccuracy electric status targetopponent
+electroball 100accuracy electric special targetopponent
+electroweb lowbasepower electric special targetopponent
+embargo 100accuracy dark status targetopponent
+ember lowbasepower 100accuracy fire special targetopponent
+encore 100accuracy normal status targetopponent
+endeavor 100accuracy normal physical targetopponent
+endure noaccuracy normal positivepriority status targetself targetopponent
+energyball midbasepower 100accuracy grass special targetopponent
+entrainment 100accuracy normal status targetopponent
+eruption highbasepower 100accuracy fire special targetopponent
+eternabeam highbasepower dragon special targetopponent mustrecharge
+expandingforce midbasepower 100accuracy psychic special targetopponent
+explosion highbasepower 100accuracy normal physical targetopponent
+extrasensory midbasepower 100accuracy psychic special targetopponent
+extremespeed midbasepower 100accuracy normal positivepriority physical targetopponent
+facade midbasepower 100accuracy normal physical targetopponent
+fairylock noaccuracy fairy status targetall
+fairywind lowbasepower 100accuracy fairy special targetopponent
+fakeout lowbasepower 100accuracy normal positivepriority physical targetopponent
+faketears 100accuracy dark status targetopponent statdrop
+falsesurrender midbasepower noaccuracy dark physical targetopponent
+falseswipe lowbasepower 100accuracy normal physical targetopponent
+featherdance 100accuracy flying status targetopponent statdrop
+feint lowbasepower 100accuracy normal positivepriority physical targetopponent
+feintattack midbasepower noaccuracy dark physical targetopponent
+fellstinger lowbasepower 100accuracy bug physical targetopponent
+fierydance midbasepower 100accuracy fire special targetopponent
+fierywrath midbasepower 100accuracy dark special targetopponent
+finalgambit 100accuracy fighting special targetopponent
+fireblast highbasepower fire special targetopponent
+firefang midbasepower fire physical targetopponent
+firelash midbasepower 100accuracy fire physical targetopponent
+firepledge midbasepower 100accuracy fire special targetopponent
+firepunch midbasepower 100accuracy fire physical targetopponent
+firespin lowbasepower fire special targetopponent
+firstimpression midbasepower 100accuracy bug positivepriority physical targetopponent
+fishiousrend midbasepower 100accuracy water physical targetopponent
+fissure midaccuracy lowaccuracy ground physical targetopponent ohko
+flail 100accuracy normal physical targetopponent
+flameburst midbasepower 100accuracy fire special targetopponent
+flamecharge lowbasepower 100accuracy fire physical targetopponent
+flamewheel midbasepower 100accuracy fire physical targetopponent
+flamethrower midbasepower 100accuracy fire special targetopponent
+flareblitz highbasepower 100accuracy fire physical targetopponent
+flash 100accuracy normal status targetopponent statdrop
+flashcannon midbasepower 100accuracy steel special targetopponent
+flatter 100accuracy dark status targetopponent statboost
+fleurcannon highbasepower fairy special targetopponent
+fling 100accuracy dark physical targetopponent
+flipturn midbasepower 100accuracy water physical targetopponent
+floralhealing noaccuracy fairy status targetopponent heals
+flowershield noaccuracy fairy status targetall
+fly midbasepower flying physical targetopponent
+flyingpress highbasepower fighting physical targetopponent
+focusblast highbasepower midaccuracy lowaccuracy fighting special targetopponent
+focusenergy noaccuracy normal status targetself targetopponent
+focuspunch highbasepower 100accuracy fighting negativepriority physical targetopponent
+followme noaccuracy normal positivepriority status targetself targetopponent
+forcepalm midbasepower 100accuracy fighting physical targetopponent
+foresight noaccuracy normal status targetopponent
+forestscurse 100accuracy grass status targetopponent
+foulplay midbasepower 100accuracy dark physical targetopponent
+freezedry midbasepower 100accuracy ice special targetopponent
+freezeshock highbasepower ice physical targetopponent
+freezingglare midbasepower 100accuracy psychic special targetopponent
+frenzyplant highbasepower grass special targetopponent mustrecharge
+frostbreath midbasepower ice special targetopponent
+frustration 100accuracy normal physical targetopponent
+furyattack lowbasepower normal physical targetopponent multihit
+furycutter lowbasepower bug physical targetopponent
+furyswipes lowbasepower midaccuracy normal physical targetopponent multihit
+fusionbolt highbasepower 100accuracy electric physical targetopponent
+fusionflare highbasepower 100accuracy fire special targetopponent
+futuresight highbasepower 100accuracy psychic special targetopponent futuremove
+gastroacid 100accuracy poison status targetopponent
+geargrind lowbasepower steel physical targetopponent multihit
+gearup noaccuracy steel status targetopponent
+geomancy noaccuracy fairy status targetself targetopponent statboost statboost statboost
+gigadrain midbasepower 100accuracy grass special targetopponent heals
+gigaimpact highbasepower normal physical targetopponent mustrecharge
+glaciallance highbasepower 100accuracy ice physical targetopponent
+glaciate midbasepower ice special targetopponent
+glare 100accuracy normal status targetopponent setsstatus
+grassknot 100accuracy grass special targetopponent
+grasspledge midbasepower 100accuracy grass special targetopponent
+grasswhistle midaccuracy lowaccuracy grass status targetopponent setsstatus
+grassyglide midbasepower 100accuracy grass physical targetopponent
+grassyterrain noaccuracy grass status targetall
+gravapple midbasepower 100accuracy grass physical targetopponent
+gravity noaccuracy psychic status targetall
+growl 100accuracy normal status targetopponent statdrop
+growth noaccuracy normal status targetself targetopponent statboost statboost
+grudge noaccuracy ghost status targetself targetopponent
+guardsplit noaccuracy psychic status targetopponent
+guardswap noaccuracy psychic status targetopponent
+guillotine midaccuracy lowaccuracy normal physical targetopponent ohko
+gunkshot highbasepower midaccuracy poison physical targetopponent
+gust lowbasepower 100accuracy flying special targetopponent
+gyroball 100accuracy steel physical targetopponent
+hail noaccuracy ice status targetall
+hammerarm highbasepower fighting physical targetopponent
+happyhour noaccuracy normal status targetopponent
+harden noaccuracy normal status targetself targetopponent statboost
+haze noaccuracy ice status targetall
+headbutt midbasepower 100accuracy normal physical targetopponent
+headcharge highbasepower 100accuracy normal physical targetopponent
+headsmash highbasepower midaccuracy rock physical targetopponent
+healbell noaccuracy normal status targetopponent
+healblock 100accuracy psychic status targetopponent
+healingwish noaccuracy psychic status targetself targetopponent heals
+healorder noaccuracy bug status targetself targetopponent heals
+healpulse noaccuracy psychic status targetopponent heals
+heartstamp midbasepower 100accuracy psychic physical targetopponent
+heartswap noaccuracy psychic status targetopponent
+heatcrash 100accuracy fire physical targetopponent
+heatwave midbasepower fire special targetopponent
+heavyslam 100accuracy steel physical targetopponent
+helpinghand noaccuracy normal positivepriority status targetopponent
+hex midbasepower 100accuracy ghost special targetopponent
+hiddenpower midbasepower 100accuracy normal special targetopponent
+hiddenpowerbug midbasepower 100accuracy bug special targetopponent
+hiddenpowerdark midbasepower 100accuracy dark special targetopponent
+hiddenpowerdragon midbasepower 100accuracy dragon special targetopponent
+hiddenpowerelectric midbasepower 100accuracy electric special targetopponent
+hiddenpowerfighting midbasepower 100accuracy fighting special targetopponent
+hiddenpowerfire midbasepower 100accuracy fire special targetopponent
+hiddenpowerflying midbasepower 100accuracy flying special targetopponent
+hiddenpowerghost midbasepower 100accuracy ghost special targetopponent
+hiddenpowergrass midbasepower 100accuracy grass special targetopponent
+hiddenpowerground midbasepower 100accuracy ground special targetopponent
+hiddenpowerice midbasepower 100accuracy ice special targetopponent
+hiddenpowerpoison midbasepower 100accuracy poison special targetopponent
+hiddenpowerpsychic midbasepower 100accuracy psychic special targetopponent
+hiddenpowerrock midbasepower 100accuracy rock special targetopponent
+hiddenpowersteel midbasepower 100accuracy steel special targetopponent
+hiddenpowerwater midbasepower 100accuracy water special targetopponent
+highhorsepower midbasepower ground physical targetopponent
+highjumpkick highbasepower fighting physical targetopponent
+holdback lowbasepower 100accuracy normal physical targetopponent
+holdhands noaccuracy normal status targetopponent
+honeclaws noaccuracy dark status targetself targetopponent statboost statboost
+hornattack midbasepower 100accuracy normal physical targetopponent
+horndrill midaccuracy lowaccuracy normal physical targetopponent ohko
+hornleech midbasepower 100accuracy grass physical targetopponent heals
+howl noaccuracy normal status targetopponent statboost
+hurricane highbasepower midaccuracy lowaccuracy flying special targetopponent
+hydrocannon highbasepower water special targetopponent mustrecharge
+hydropump highbasepower midaccuracy water special targetopponent
+hyperbeam highbasepower normal special targetopponent mustrecharge
+hyperfang midbasepower normal physical targetopponent
+hyperspacefury highbasepower noaccuracy dark physical targetopponent
+hyperspacehole midbasepower noaccuracy psychic special targetopponent
+hypervoice midbasepower 100accuracy normal special targetopponent
+hypnosis midaccuracy lowaccuracy psychic status targetopponent setsstatus
+iceball lowbasepower ice physical targetopponent
+icebeam midbasepower 100accuracy ice special targetopponent
+iceburn highbasepower ice special targetopponent
+icefang midbasepower ice physical targetopponent
+icehammer highbasepower ice physical targetopponent
+icepunch midbasepower 100accuracy ice physical targetopponent
+iceshard lowbasepower 100accuracy ice positivepriority physical targetopponent
+iciclecrash midbasepower ice physical targetopponent
+iciclespear lowbasepower 100accuracy ice physical targetopponent multihit
+icywind lowbasepower ice special targetopponent
+imprison noaccuracy psychic status targetself targetopponent
+incinerate midbasepower 100accuracy fire special targetopponent
+inferno highbasepower midaccuracy lowaccuracy fire special targetopponent
+infestation lowbasepower 100accuracy bug special targetopponent
+ingrain noaccuracy grass status targetself targetopponent
+instruct noaccuracy psychic status targetopponent
+iondeluge noaccuracy electric positivepriority status targetall
+irondefense noaccuracy steel status targetself targetopponent statboost
+ironhead midbasepower 100accuracy steel physical targetopponent
+irontail highbasepower midaccuracy lowaccuracy steel physical targetopponent
+jawlock midbasepower 100accuracy dark physical targetopponent
+judgment highbasepower 100accuracy normal special targetopponent
+jumpkick highbasepower fighting physical targetopponent
+junglehealing noaccuracy grass status targetopponent heals
+karatechop lowbasepower 100accuracy fighting physical targetopponent
+kinesis midaccuracy psychic status targetopponent statdrop
+kingsshield noaccuracy steel positivepriority status targetself targetopponent
+knockoff midbasepower 100accuracy dark physical targetopponent
+landswrath midbasepower 100accuracy ground physical targetopponent
+laserfocus noaccuracy normal status targetself targetopponent
+lashout midbasepower 100accuracy dark physical targetopponent
+lastresort highbasepower 100accuracy normal physical targetopponent
+lavaplume midbasepower 100accuracy fire special targetopponent
+leafage lowbasepower 100accuracy grass physical targetopponent
+leafblade midbasepower 100accuracy grass physical targetopponent
+leafstorm highbasepower grass special targetopponent
+leaftornado midbasepower grass special targetopponent
+leechlife midbasepower 100accuracy bug physical targetopponent heals
+leechseed grass status targetopponent
+leer 100accuracy normal status targetopponent statdrop
+lick lowbasepower 100accuracy ghost physical targetopponent
+lifedew noaccuracy water status targetopponent heals
+lightofruin highbasepower fairy special targetopponent
+lightscreen noaccuracy psychic status targetopponent
+liquidation midbasepower 100accuracy water physical targetopponent
+lockon noaccuracy normal status targetopponent
+lovelykiss midaccuracy lowaccuracy normal status targetopponent setsstatus
+lowkick 100accuracy fighting physical targetopponent
+lowsweep midbasepower 100accuracy fighting physical targetopponent
+luckychant noaccuracy normal status targetopponent
+lunardance noaccuracy psychic status targetself targetopponent heals
+lunge midbasepower 100accuracy bug physical targetopponent
+lusterpurge midbasepower 100accuracy psychic special targetopponent
+machpunch lowbasepower 100accuracy fighting positivepriority physical targetopponent
+magicalleaf midbasepower noaccuracy grass special targetopponent
+magiccoat noaccuracy psychic positivepriority status targetself targetopponent
+magicpowder 100accuracy psychic status targetopponent
+magicroom noaccuracy psychic status targetall
+magmastorm highbasepower midaccuracy lowaccuracy fire special targetopponent
+magnetbomb midbasepower noaccuracy steel physical targetopponent
+magneticflux noaccuracy electric status targetopponent
+magnetrise noaccuracy electric status targetself targetopponent
+magnitude 100accuracy ground physical targetopponent
+matblock noaccuracy fighting status targetopponent
+meanlook noaccuracy normal status targetopponent
+meditate noaccuracy psychic status targetself targetopponent statboost
+mefirst noaccuracy normal status targetopponent
+megadrain lowbasepower 100accuracy grass special targetopponent heals
+megahorn highbasepower bug physical targetopponent
+megakick highbasepower midaccuracy lowaccuracy normal physical targetopponent
+megapunch midbasepower normal physical targetopponent
+memento 100accuracy dark status targetopponent statdrop statdrop
+metalburst 100accuracy steel physical targetopponent
+metalclaw lowbasepower steel physical targetopponent
+metalsound steel status targetopponent statdrop
+meteorassault highbasepower 100accuracy fighting physical targetopponent mustrecharge
+meteorbeam highbasepower rock special targetopponent
+meteormash midbasepower steel physical targetopponent
+metronome noaccuracy normal status targetself targetopponent
+milkdrink noaccuracy normal status targetself targetopponent heals
+mimic noaccuracy normal status targetopponent
+mindblown highbasepower 100accuracy fire special targetopponent
+mindreader noaccuracy normal status targetopponent
+minimize noaccuracy normal status targetself targetopponent statboost
+miracleeye noaccuracy psychic status targetopponent
+mirrorcoat 100accuracy psychic negativepriority special targetopponent
+mirrormove noaccuracy flying status targetopponent
+mirrorshot midbasepower steel special targetopponent
+mist noaccuracy ice status targetopponent
+mistball midbasepower 100accuracy psychic special targetopponent
+mistyexplosion highbasepower 100accuracy fairy special targetopponent
+mistyterrain noaccuracy fairy status targetall
+moonblast midbasepower 100accuracy fairy special targetopponent
+moongeistbeam highbasepower 100accuracy ghost special targetopponent
+moonlight noaccuracy fairy status targetself targetopponent heals
+morningsun noaccuracy normal status targetself targetopponent heals
+mudbomb midbasepower ground special targetopponent
+mudshot lowbasepower ground special targetopponent
+mudslap lowbasepower 100accuracy ground special targetopponent
+mudsport noaccuracy ground status targetall
+muddywater midbasepower water special targetopponent
+multiattack highbasepower 100accuracy normal physical targetopponent
+mysticalfire midbasepower 100accuracy fire special targetopponent
+nastyplot noaccuracy dark status targetself targetopponent statboost
+naturalgift 100accuracy normal physical targetopponent
+naturepower noaccuracy normal status targetopponent
+naturesmadness fairy special targetopponent
+needlearm midbasepower 100accuracy grass physical targetopponent
+nightdaze midbasepower dark special targetopponent
+nightmare 100accuracy ghost status targetopponent
+nightshade 100accuracy ghost special targetopponent
+nightslash midbasepower 100accuracy dark physical targetopponent
+nobleroar 100accuracy normal status targetopponent statdrop statdrop
+noretreat noaccuracy fighting status targetself targetopponent statboost statboost statboost statboost statboost
+nuzzle lowbasepower 100accuracy electric physical targetopponent
+oblivionwing midbasepower 100accuracy flying special targetopponent heals
+obstruct 100accuracy dark positivepriority status targetself targetopponent
+octazooka midbasepower water special targetopponent
+octolock 100accuracy fighting status targetopponent
+odorsleuth noaccuracy normal status targetopponent
+ominouswind midbasepower 100accuracy ghost special targetopponent
+originpulse highbasepower water special targetopponent
+outrage highbasepower 100accuracy dragon physical targetopponent
+overdrive midbasepower 100accuracy electric special targetopponent
+overheat highbasepower fire special targetopponent
+painsplit noaccuracy normal status targetopponent
+paraboliccharge midbasepower 100accuracy electric special targetopponent heals
+partingshot 100accuracy dark status targetopponent
+payback lowbasepower 100accuracy dark physical targetopponent
+payday lowbasepower 100accuracy normal physical targetopponent
+peck lowbasepower 100accuracy flying physical targetopponent
+perishsong noaccuracy normal status targetall
+petalblizzard midbasepower 100accuracy grass physical targetopponent
+petaldance highbasepower 100accuracy grass special targetopponent
+phantomforce midbasepower 100accuracy ghost physical targetopponent
+photongeyser highbasepower 100accuracy psychic special targetopponent
+pinmissile lowbasepower bug physical targetopponent multihit
+plasmafists highbasepower 100accuracy electric physical targetopponent
+playnice noaccuracy normal status targetopponent statdrop
+playrough midbasepower fairy physical targetopponent
+pluck midbasepower 100accuracy flying physical targetopponent
+poisonfang lowbasepower 100accuracy poison physical targetopponent
+poisongas poison status targetopponent setsstatus
+poisonjab midbasepower 100accuracy poison physical targetopponent
+poisonpowder midaccuracy lowaccuracy poison status targetopponent setsstatus
+poisonsting lowbasepower 100accuracy poison physical targetopponent
+poisontail lowbasepower 100accuracy poison physical targetopponent
+pollenpuff midbasepower 100accuracy bug special targetopponent
+poltergeist highbasepower ghost physical targetopponent
+pound lowbasepower 100accuracy normal physical targetopponent
+powder 100accuracy bug positivepriority status targetopponent
+powdersnow lowbasepower 100accuracy ice special targetopponent
+powergem midbasepower 100accuracy rock special targetopponent
+powersplit noaccuracy psychic status targetopponent
+powerswap noaccuracy psychic status targetopponent
+powertrick noaccuracy psychic status targetself targetopponent
+powertrip lowbasepower 100accuracy dark physical targetopponent
+poweruppunch lowbasepower 100accuracy fighting physical targetopponent
+powerwhip highbasepower grass physical targetopponent
+precipiceblades highbasepower ground physical targetopponent
+present normal physical targetopponent
+prismaticlaser highbasepower 100accuracy psychic special targetopponent mustrecharge
+protect noaccuracy normal positivepriority status targetself targetopponent
+psybeam midbasepower 100accuracy psychic special targetopponent
+psychup noaccuracy normal status targetopponent
+psychic midbasepower 100accuracy psychic special targetopponent
+psychicfangs midbasepower 100accuracy psychic physical targetopponent
+psychicterrain noaccuracy psychic status targetall
+psychoboost highbasepower psychic special targetopponent
+psychocut midbasepower 100accuracy psychic physical targetopponent
+psychoshift 100accuracy psychic status targetopponent
+psyshock midbasepower 100accuracy psychic special targetopponent
+psystrike highbasepower 100accuracy psychic special targetopponent
+psywave 100accuracy psychic special targetopponent
+punishment 100accuracy dark physical targetopponent
+purify noaccuracy poison status targetopponent heals
+pursuit lowbasepower 100accuracy dark physical targetopponent
+pyroball highbasepower fire physical targetopponent
+quash 100accuracy dark status targetopponent
+quickattack lowbasepower 100accuracy normal positivepriority physical targetopponent
+quickguard noaccuracy fighting positivepriority status targetopponent
+quiverdance noaccuracy bug status targetself targetopponent statboost statboost statboost
+rage lowbasepower 100accuracy normal physical targetopponent
+ragepowder noaccuracy bug positivepriority status targetself targetopponent
+raindance noaccuracy water status targetall
+rapidspin lowbasepower 100accuracy normal physical targetopponent
+razorleaf lowbasepower grass physical targetopponent
+razorshell midbasepower water physical targetopponent
+razorwind midbasepower 100accuracy normal special targetopponent
+recover noaccuracy normal status targetself targetopponent heals
+recycle noaccuracy normal status targetself targetopponent
+reflect noaccuracy psychic status targetopponent
+reflecttype noaccuracy normal status targetopponent
+refresh noaccuracy normal status targetself targetopponent
+relicsong midbasepower 100accuracy normal special targetopponent
+rest noaccuracy psychic status targetself targetopponent heals
+retaliate midbasepower 100accuracy normal physical targetopponent
+return 100accuracy normal physical targetopponent
+revelationdance midbasepower 100accuracy normal special targetopponent
+revenge midbasepower 100accuracy fighting negativepriority physical targetopponent
+reversal 100accuracy fighting physical targetopponent
+risingvoltage midbasepower 100accuracy electric special targetopponent
+roar noaccuracy normal negativepriority status targetopponent
+roaroftime highbasepower dragon special targetopponent mustrecharge
+rockblast lowbasepower rock physical targetopponent multihit
+rockclimb midbasepower normal physical targetopponent
+rockpolish noaccuracy rock status targetself targetopponent statboost
+rockslide midbasepower rock physical targetopponent
+rocksmash lowbasepower 100accuracy fighting physical targetopponent
+rockthrow lowbasepower rock physical targetopponent
+rocktomb midbasepower rock physical targetopponent
+rockwrecker highbasepower rock physical targetopponent mustrecharge
+roleplay noaccuracy psychic status targetopponent
+rollingkick midbasepower fighting physical targetopponent
+rollout lowbasepower rock physical targetopponent
+roost noaccuracy flying status targetself targetopponent heals
+rototiller noaccuracy ground status targetall
+round midbasepower 100accuracy normal special targetopponent
+sacredfire highbasepower fire physical targetopponent
+sacredsword midbasepower 100accuracy fighting physical targetopponent
+safeguard noaccuracy normal status targetopponent
+sandattack 100accuracy ground status targetopponent statdrop
+sandstorm noaccuracy rock status targetall
+sandtomb lowbasepower ground physical targetopponent
+scald midbasepower 100accuracy water special targetopponent
+scaleshot lowbasepower dragon physical targetopponent multihit
+scaryface 100accuracy normal status targetopponent statdrop
+scorchingsands midbasepower 100accuracy ground special targetopponent
+scratch lowbasepower 100accuracy normal physical targetopponent
+screech normal status targetopponent statdrop
+searingshot highbasepower 100accuracy fire special targetopponent
+secretpower midbasepower 100accuracy normal physical targetopponent
+secretsword midbasepower 100accuracy fighting special targetopponent
+seedbomb midbasepower 100accuracy grass physical targetopponent
+seedflare highbasepower grass special targetopponent
+seismictoss 100accuracy fighting physical targetopponent
+selfdestruct highbasepower 100accuracy normal physical targetopponent
+shadowball midbasepower 100accuracy ghost special targetopponent
+shadowbone midbasepower 100accuracy ghost physical targetopponent
+shadowclaw midbasepower 100accuracy ghost physical targetopponent
+shadowforce highbasepower 100accuracy ghost physical targetopponent
+shadowpunch midbasepower noaccuracy ghost physical targetopponent
+shadowsneak lowbasepower 100accuracy ghost positivepriority physical targetopponent
+sharpen noaccuracy normal status targetself targetopponent statboost
+sheercold midaccuracy lowaccuracy ice special targetopponent ohko
+shellsidearm midbasepower 100accuracy poison special targetopponent
+shellsmash noaccuracy normal status targetself targetopponent statdrop statdrop statboost statboost statboost
+shelltrap highbasepower 100accuracy fire negativepriority special targetopponent
+shiftgear noaccuracy steel status targetself targetopponent statboost statboost
+shockwave midbasepower noaccuracy electric special targetopponent
+shoreup noaccuracy ground status targetself targetopponent heals
+signalbeam midbasepower 100accuracy bug special targetopponent
+silverwind midbasepower 100accuracy bug special targetopponent
+simplebeam 100accuracy normal status targetopponent
+sing midaccuracy lowaccuracy normal status targetopponent setsstatus
+sketch noaccuracy normal status targetopponent
+skillswap noaccuracy psychic status targetopponent
+skittersmack midbasepower bug physical targetopponent
+skullbash highbasepower 100accuracy normal physical targetopponent
+skyattack highbasepower flying physical targetopponent
+skydrop midbasepower 100accuracy flying physical targetopponent
+skyuppercut midbasepower fighting physical targetopponent
+slackoff noaccuracy normal status targetself targetopponent heals
+slam midbasepower midaccuracy lowaccuracy normal physical targetopponent
+slash midbasepower 100accuracy normal physical targetopponent
+sleeppowder midaccuracy lowaccuracy grass status targetopponent setsstatus
+sleeptalk noaccuracy normal status targetself targetopponent
+sludge midbasepower 100accuracy poison special targetopponent
+sludgebomb midbasepower 100accuracy poison special targetopponent
+sludgewave midbasepower 100accuracy poison special targetopponent
+smackdown lowbasepower 100accuracy rock physical targetopponent
+smartstrike midbasepower noaccuracy steel physical targetopponent
+smellingsalts midbasepower 100accuracy normal physical targetopponent
+smog lowbasepower midaccuracy lowaccuracy poison special targetopponent
+smokescreen 100accuracy normal status targetopponent statdrop
+snaptrap lowbasepower 100accuracy grass physical targetopponent
+snarl lowbasepower dark special targetopponent
+snatch noaccuracy dark positivepriority status targetself targetopponent
+snipeshot midbasepower 100accuracy water special targetopponent
+snore lowbasepower 100accuracy normal special targetopponent
+soak 100accuracy water status targetopponent
+softboiled noaccuracy normal status targetself targetopponent heals
+solarbeam highbasepower 100accuracy grass special targetopponent
+solarblade highbasepower 100accuracy grass physical targetopponent
+sonicboom normal special targetopponent
+spacialrend highbasepower dragon special targetopponent
+spark midbasepower 100accuracy electric physical targetopponent
+sparklingaria midbasepower 100accuracy water special targetopponent
+spectralthief midbasepower 100accuracy ghost physical targetopponent
+speedswap noaccuracy psychic status targetopponent
+spiderweb noaccuracy bug status targetopponent
+spikecannon lowbasepower 100accuracy normal physical targetopponent multihit
+spikes noaccuracy ground status targetopponent
+spikyshield noaccuracy grass positivepriority status targetself targetopponent
+spiritbreak midbasepower 100accuracy fairy physical targetopponent
+spiritshackle midbasepower 100accuracy ghost physical targetopponent
+spitup 100accuracy normal special targetopponent
+spite 100accuracy ghost status targetopponent
+splash noaccuracy normal status targetself targetopponent
+spore 100accuracy grass status targetopponent setsstatus
+spotlight noaccuracy normal positivepriority status targetopponent
+stealthrock noaccuracy rock status targetopponent
+steameruption highbasepower water special targetopponent
+steamroller midbasepower 100accuracy bug physical targetopponent
+steelbeam highbasepower steel special targetopponent
+steelroller highbasepower 100accuracy steel physical targetopponent
+steelwing midbasepower steel physical targetopponent
+stickyweb noaccuracy bug status targetopponent
+stockpile noaccuracy normal status targetself targetopponent
+stomp midbasepower 100accuracy normal physical targetopponent
+stompingtantrum midbasepower 100accuracy ground physical targetopponent
+stoneedge highbasepower midaccuracy rock physical targetopponent
+storedpower lowbasepower 100accuracy psychic special targetopponent
+stormthrow midbasepower 100accuracy fighting physical targetopponent
+strangesteam midbasepower fairy special targetopponent
+strength midbasepower 100accuracy normal physical targetopponent
+strengthsap 100accuracy grass status targetopponent heals
+stringshot bug status targetopponent statdrop
+struggle lowbasepower noaccuracy normal physical targetopponent
+strugglebug lowbasepower 100accuracy bug special targetopponent
+stuffcheeks noaccuracy normal status targetself targetopponent
+stunspore midaccuracy lowaccuracy grass status targetopponent setsstatus
+submission midbasepower midaccuracy fighting physical targetopponent
+substitute noaccuracy normal status targetself targetopponent
+suckerpunch midbasepower 100accuracy dark positivepriority physical targetopponent
+sunnyday noaccuracy fire status targetall
+sunsteelstrike highbasepower 100accuracy steel physical targetopponent
+superfang normal physical targetopponent
+superpower highbasepower 100accuracy fighting physical targetopponent
+supersonic midaccuracy lowaccuracy normal status targetopponent
+surf midbasepower 100accuracy water special targetopponent
+surgingstrikes lowbasepower 100accuracy water physical targetopponent multihit
+swagger normal status targetopponent statboost
+swallow noaccuracy normal status targetself targetopponent heals
+sweetkiss midaccuracy lowaccuracy fairy status targetopponent
+sweetscent 100accuracy normal status targetopponent statdrop
+swift midbasepower noaccuracy normal special targetopponent
+switcheroo 100accuracy dark status targetopponent
+swordsdance noaccuracy normal status targetself targetopponent statboost
+synchronoise highbasepower 100accuracy psychic special targetopponent
+synthesis noaccuracy grass status targetself targetopponent heals
+tackle lowbasepower 100accuracy normal physical targetopponent
+tailglow noaccuracy bug status targetself targetopponent statboost
+tailslap lowbasepower normal physical targetopponent multihit
+tailwhip 100accuracy normal status targetopponent statdrop
+tailwind noaccuracy flying status targetopponent
+takedown midbasepower normal physical targetopponent
+tarshot 100accuracy rock status targetopponent statdrop
+taunt 100accuracy dark status targetopponent
+tearfullook noaccuracy normal status targetopponent statdrop statdrop
+teatime noaccuracy normal status targetall
+technoblast highbasepower 100accuracy normal special targetopponent
+teeterdance 100accuracy normal status targetopponent
+telekinesis noaccuracy psychic status targetopponent
+teleport noaccuracy psychic negativepriority status targetself targetopponent
+terrainpulse lowbasepower 100accuracy normal special targetopponent
+thief midbasepower 100accuracy dark physical targetopponent
+thousandarrows midbasepower 100accuracy ground physical targetopponent
+thousandwaves midbasepower 100accuracy ground physical targetopponent
+thrash highbasepower 100accuracy normal physical targetopponent
+throatchop midbasepower 100accuracy dark physical targetopponent
+thunder highbasepower midaccuracy lowaccuracy electric special targetopponent
+thunderbolt midbasepower 100accuracy electric special targetopponent
+thundercage midbasepower electric special targetopponent
+thunderfang midbasepower electric physical targetopponent
+thunderouskick midbasepower 100accuracy fighting physical targetopponent
+thunderpunch midbasepower 100accuracy electric physical targetopponent
+thundershock lowbasepower 100accuracy electric special targetopponent
+thunderwave electric status targetopponent setsstatus
+tickle 100accuracy normal status targetopponent statdrop statdrop
+topsyturvy noaccuracy dark status targetopponent
+torment 100accuracy dark status targetopponent
+toxic poison status targetopponent setsstatus
+toxicspikes noaccuracy poison status targetopponent
+toxicthread 100accuracy poison status targetopponent statdrop setsstatus
+transform noaccuracy normal status targetopponent
+triattack midbasepower 100accuracy normal special targetopponent
+trick 100accuracy psychic status targetopponent
+trickortreat 100accuracy ghost status targetopponent
+trickroom noaccuracy psychic negativepriority status targetall
+tripleaxel lowbasepower ice physical targetopponent multihit
+triplekick lowbasepower fighting physical targetopponent multihit
+tropkick midbasepower 100accuracy grass physical targetopponent
+trumpcard noaccuracy normal special targetopponent
+twineedle lowbasepower 100accuracy bug physical targetopponent multihit
+twister lowbasepower 100accuracy dragon special targetopponent
+uturn midbasepower 100accuracy bug physical targetopponent
+uproar midbasepower 100accuracy normal special targetopponent
+vacuumwave lowbasepower 100accuracy fighting positivepriority special targetopponent
+vcreate highbasepower fire physical targetopponent
+venomdrench 100accuracy poison status targetopponent
+venoshock midbasepower 100accuracy poison special targetopponent
+vinewhip lowbasepower 100accuracy grass physical targetopponent
+visegrip lowbasepower 100accuracy normal physical targetopponent
+vitalthrow midbasepower noaccuracy fighting negativepriority physical targetopponent
+voltswitch midbasepower 100accuracy electric special targetopponent
+volttackle highbasepower 100accuracy electric physical targetopponent
+wakeupslap midbasepower 100accuracy fighting physical targetopponent
+waterfall midbasepower 100accuracy water physical targetopponent
+watergun lowbasepower 100accuracy water special targetopponent
+waterpledge midbasepower 100accuracy water special targetopponent
+waterpulse midbasepower 100accuracy water special targetopponent
+watershuriken lowbasepower 100accuracy water positivepriority special targetopponent multihit
+watersport noaccuracy water status targetall
+waterspout highbasepower 100accuracy water special targetopponent
+weatherball lowbasepower 100accuracy normal special targetopponent
+whirlpool lowbasepower water special targetopponent
+whirlwind noaccuracy normal negativepriority status targetopponent
+wickedblow midbasepower 100accuracy dark physical targetopponent
+wideguard noaccuracy rock positivepriority status targetopponent
+wildcharge midbasepower 100accuracy electric physical targetopponent
+willowisp fire status targetopponent setsstatus
+wingattack midbasepower 100accuracy flying physical targetopponent
+wish noaccuracy normal status targetself targetopponent heals
+withdraw noaccuracy water status targetself targetopponent statboost
+wonderroom noaccuracy psychic status targetall
+woodhammer highbasepower 100accuracy grass physical targetopponent
+workup noaccuracy normal status targetself targetopponent statboost statboost
+worryseed 100accuracy grass status targetopponent
+wrap lowbasepower normal physical targetopponent
+wringout 100accuracy normal special targetopponent
+xscissor midbasepower 100accuracy bug physical targetopponent
+yawn noaccuracy normal status targetopponent
+zapcannon highbasepower midaccuracy lowaccuracy electric special targetopponent
+zenheadbutt midbasepower psychic physical targetopponent
+zingzap midbasepower 100accuracy electric physical targetopponent
