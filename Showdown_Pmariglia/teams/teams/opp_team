@@ -1,58 +1,56 @@
-Sylveon @ Leftovers
-Ability: Pixilate
-EVs: 248 HP / 244 Def / 16 SpD
+Mew @ Choice Band
+Ability: Synchronize
+EVs: 252 Atk / 4 Def / 252 Spe
+Jolly Nature
+- Psychic Fangs
+- Knock Off
+- Close Combat
+- Triple Axel
+
+Tapu Lele @ Choice Scarf
+Ability: Psychic Surge
+EVs: 252 SpA / 4 SpD / 252 Spe
+Timid Nature
+IVs: 0 Atk
+- Moonblast
+- Psyshock
+- Psychic
+- Aromatherapy
+
+Mandibuzz @ Heavy-Duty Boots
+Ability: Overcoat
+EVs: 248 HP / 92 Def / 152 SpD / 16 Spe
+Impish Nature
+- Foul Play
+- Roost
+- Defog
+- U-turn
+
+Tangrowth @ Rocky Helmet
+Ability: Regenerator
+EVs: 252 HP / 252 Def / 4 SpD
+Relaxed Nature
+- Giga Drain
+- Knock Off
+- Sludge Bomb
+- Sleep Powder
+
+Heatran @ Leftovers
+Ability: Flash Fire
+EVs: 252 HP / 136 SpD / 120 Spe
 Calm Nature
 IVs: 0 Atk
-- Heal Bell
-- Wish
-- Hyper Voice
-- Protect
-
-Seismitoad (M) @ Leftovers
-Ability: Water Absorb
-Shiny: Yes
-EVs: 248 HP / 252 Def / 8 SpD
-Bold Nature
-IVs: 0 Atk
-- Scald
+- Magma Storm
 - Earth Power
+- Taunt
 - Stealth Rock
-- Toxic
 
-Corviknight (M) @ Leftovers
-Ability: Pressure
+Zeraora @ Heavy-Duty Boots
+Ability: Volt Absorb
 Shiny: Yes
-EVs: 248 HP / 180 SpD / 80 Spe
-Careful Nature
-- U-turn
-- Brave Bird
-- Defog
-- Roost
-
-Terrakion @ Life Orb
-Ability: Justified
 EVs: 252 Atk / 4 SpD / 252 Spe
 Jolly Nature
-- Close Combat
-- Earthquake
-- Swords Dance
-- Stone Edge
-
-Dragapult @ Choice Scarf
-Ability: Infiltrator
-EVs: 252 SpA / 4 SpD / 252 Spe
-Modest Nature
-- U-turn
-- Thunderbolt
-- Shadow Ball
-- Draco Meteor
-
-Obstagoon @ Flame Orb
-Ability: Guts
-EVs: 252 Atk / 4 SpD / 252 Spe
-Jolly Nature
+- Bulk Up
+- Plasma Fists
 - Knock Off
-- Facade
 - Close Combat
-- Parting Shot
-
