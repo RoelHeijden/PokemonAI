@@ -11,6 +11,7 @@ def init_lookup(path, file_name):
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 
+POKEMON_LOOKUP = init_lookup(PATH, 'pokemon_lookup.json')
 MOVE_LOOKUP = init_lookup(PATH, 'move_lookup.json')
 FORM_LOOKUP = init_lookup(PATH, 'form_lookup.json')
 
