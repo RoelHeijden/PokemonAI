@@ -23,9 +23,8 @@ class Tester:
 
         self.transform = StateTransformer(shuffle_players=True, shuffle_pokemon=True, shuffle_moves=True)
 
-        self.model_data = torch.load(model_file)
         self.model = model
-        self.model.load_state_dict(self.model_data['model'])
+        self.model.load_state_dict(torch.load(model_file)['model'])
 
     def test_states(self, folder):
         self.model.eval()
@@ -177,10 +176,10 @@ class Tester:
         return evaluation, game_result
 
     def test_embeddings(self):
-        species_weights = self.model_data['model']['encoding.species_embedding.weight']
-        move_weights = self.model_data['model']['encoding.move_embedding.weight']
-        item_weights = self.model_data['model']['encoding.item_embedding.weight']
-        ability_weights = self.model_data['model']['encoding.ability_embedding.weight']
+        species_weights = self.model.species_embedding.weight
+        move_weights = self.model.move_embedding.weight
+        item_weights = self.model.item_embedding.weight
+        ability_weights = self.model.ability_embedding.weight
 
         species_embedding = nn.Embedding.from_pretrained(species_weights)
         move_embedding = nn.Embedding.from_pretrained(move_weights)
