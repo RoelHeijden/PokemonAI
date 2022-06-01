@@ -339,7 +339,7 @@ class Battler:
             pkmn = Pokemon.from_switch_string(pkmn_dict[constants.DETAILS])
             pkmn.ability = pkmn_dict[constants.REQUEST_DICT_ABILITY]
             pkmn.index = index + 1
-            pkmn.hp, _, pkmn.status = get_pokemon_info_from_condition(pkmn_dict[constants.CONDITION])
+            pkmn.hp, pkmn.max_hp, pkmn.status = get_pokemon_info_from_condition(pkmn_dict[constants.CONDITION], pkmn.max_hp)
             for stat, number in pkmn_dict[constants.STATS].items():
                 pkmn.stats[constants.STAT_ABBREVIATION_LOOKUPS[stat]] = number
 
@@ -556,7 +556,6 @@ class Pokemon:
         self.can_not_have_specs = False
         self.can_have_life_orb = True
         self.can_have_heavydutyboots = True
-
 
     def forme_change(self, new_pkmn_name):
         hp_percent = float(self.hp) / self.max_hp

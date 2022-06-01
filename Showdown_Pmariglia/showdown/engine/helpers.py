@@ -88,9 +88,9 @@ natures = {
 }
 
 
-def get_pokemon_info_from_condition(condition_string: str):
+def get_pokemon_info_from_condition(condition_string: str, current_maxhp):
     if constants.FNT in condition_string:
-        return 0, 0, None
+        return 0, current_maxhp, None
 
     split_string = condition_string.split("/")
     hp = int(split_string[0])

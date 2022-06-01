@@ -1046,7 +1046,7 @@ def get_damage_dealt(battle, split_msg, next_messages):
 
         # if '-damage' appears, we want to parse the percentage damage dealt
         elif next_line_split[1] == '-damage' and defending_side.name in next_line_split[2]:
-            final_health, maxhp, _ = get_pokemon_info_from_condition(next_line_split[3])
+            final_health, maxhp, _ = get_pokemon_info_from_condition(next_line_split[3], defending_side.active.max_hp)
             # maxhp can be 0 if the targetted pokemon fainted
             # the message would be: "0 fnt"
             if maxhp == 0:
