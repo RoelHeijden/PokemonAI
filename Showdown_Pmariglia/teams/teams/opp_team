@@ -1,56 +1,56 @@
-Mew @ Choice Band
-Ability: Synchronize
-EVs: 252 Atk / 4 Def / 252 Spe
-Jolly Nature
-- Psychic Fangs
-- Knock Off
-- Close Combat
-- Triple Axel
-
-Tapu Lele @ Choice Scarf
-Ability: Psychic Surge
-EVs: 252 SpA / 4 SpD / 252 Spe
-Timid Nature
-IVs: 0 Atk
-- Moonblast
-- Psyshock
-- Psychic
-- Aromatherapy
-
-Mandibuzz @ Heavy-Duty Boots
+Mandibuzz (F) @ Heavy-Duty Boots
 Ability: Overcoat
-EVs: 248 HP / 92 Def / 152 SpD / 16 Spe
-Impish Nature
+EVs: 248 HP / 8 Def / 252 SpD
+Careful Nature
 - Foul Play
+- U-turn
 - Roost
 - Defog
+
+Jirachi @ Leftovers
+Ability: Serene Grace
+EVs: 48 HP / 208 Atk / 252 Spe
+Jolly Nature
+- Iron Head
+- Zen Headbutt
+- Power-Up Punch
+- Substitute
+
+Sandaconda (M) @ Leftovers
+Ability: Shed Skin
+EVs: 248 HP / 216 Def / 16 SpD / 28 Spe
+Impish Nature
+- Earthquake
+- Body Press
+- Stealth Rock
+- Glare
+
+Zeraora @ Life Orb
+Ability: Volt Absorb
+EVs: 180 Atk / 76 SpA / 252 Spe
+Naive Nature
+- Plasma Fists
+- Close Combat
+- Knock Off
+- Grass Knot
+
+Primarina (F) @ Choice Specs
+Ability: Torrent
+EVs: 88 HP / 252 SpA / 168 Spe
+Modest Nature
+IVs: 0 Atk
+- Sparkling Aria
+- Moonblast
+- Hydro Pump
+- Psychic
+
+Dragapult (F) @ Choice Scarf
+Ability: Infiltrator
+Shiny: Yes
+EVs: 64 HP / 252 SpA / 192 Spe
+Modest Nature
+- Draco Meteor
+- Shadow Ball
+- Flamethrower
 - U-turn
 
-Tangrowth @ Rocky Helmet
-Ability: Regenerator
-EVs: 252 HP / 252 Def / 4 SpD
-Relaxed Nature
-- Giga Drain
-- Knock Off
-- Sludge Bomb
-- Sleep Powder
-
-Heatran @ Leftovers
-Ability: Flash Fire
-EVs: 252 HP / 136 SpD / 120 Spe
-Calm Nature
-IVs: 0 Atk
-- Magma Storm
-- Earth Power
-- Taunt
-- Stealth Rock
-
-Zeraora @ Heavy-Duty Boots
-Ability: Volt Absorb
-Shiny: Yes
-EVs: 252 Atk / 4 SpD / 252 Spe
-Jolly Nature
-- Bulk Up
-- Plasma Fists
-- Knock Off
-- Close Combat
