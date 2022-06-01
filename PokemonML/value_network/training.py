@@ -8,55 +8,44 @@ from model.loss import Loss
 from data.transformer import StateTransformer
 
 
-"""
-1100+, LR=2e-4, gamma=0.95, 128/16/16/16, pokemon: 192 drop(p=.2), state: 1024 drop(p=.2), 512 drop(p=.2), 256 drop(p=.1)
-epoch 3:
-    Sampled accuracy: 0.713
-    Overall accuracy: 0.700
-    Accuracy per %completed: 0.562 | 0.582 | 0.599 | 0.613 | 0.629 | 0.642 | 0.667 | 0.678 | 0.689 | 0.701 | 0.716 | 0.729 | 0.741 | 0.764 | 0.781 | 0.809 | 0.832 | 0.858 | 0.888 | 0.918
-
-1300+, LR=4e-4, gamma=0.90, 128/16/16/16, pokemon: 192 drop(p=.2), state: 4096 drop(p=.2), 1024 drop(p=.2), 256 drop(p=.1) -- epoch:
-
-
-"""
-
-
 class Trainer:
-    def __init__(self, model, n_epochs=50, batch_size=252, lr=4e-4, lr_gamma=0.90, lr_decay_steps=1, weight_decay=0.001, save_model=True):
+    def __init__(self, model, data_folder, save_path, n_epochs=40, batch_size=256, lr=2e-4, lr_decay=0.98, lr_decay_steps=1,
+                 file_size=10000, buffer_size=5000, num_workers=4, update_every_n_batches=10, shuffle=True, save_model=True):
 
-        # model
+        # model settings
         self.model = model
 
         # train settings
         self.n_epochs = n_epochs
         self.batch_size = batch_size
 
-        self.optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
-        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, lr_decay_steps, gamma=lr_gamma)
+        self.optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, lr_decay_steps, gamma=lr_decay)
 
         self.loss_function = Loss()
 
         # data settings
-        self.data_folder = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_states/'
-        self.file_size = 10000
+        self.data_folder = data_folder
+        self.file_size = file_size
 
-        self.buffer_size = 30000
+        self.train_loader_shuffle = shuffle
+        self.buffer_size = buffer_size
 
         self.shuffle_transform = StateTransformer(shuffle_players=True, shuffle_pokemon=True, shuffle_moves=True)
         self.no_shuffle_transform = StateTransformer(shuffle_players=False, shuffle_pokemon=False, shuffle_moves=False)
 
         # misc. settings
-        self.num_workers = 4
-        self.update_every_n_batches = 10
+        self.num_workers = num_workers
+        self.update_every_n_batches = update_every_n_batches
 
         self.save_model = save_model
-        self.save_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/models/training_dump/'
+        self.save_path = save_path
 
-    def train(self, folder):
+    def train(self, run_name='nameless', start_epoch=1):
 
         # set data folders
-        train_path = os.path.join(self.data_folder, folder, 'train')
-        val_path = os.path.join(self.data_folder, folder, 'val')
+        train_path = os.path.join(self.data_folder, 'train')
+        val_path = os.path.join(self.data_folder, 'val')
 
         n_train_samples = sum([self.file_size for f in os.listdir(train_path)])
 
@@ -65,7 +54,7 @@ class Trainer:
             train_path,
             self.shuffle_transform,
             self.batch_size,
-            shuffle=True,
+            shuffle=self.train_loader_shuffle,
             buffer_size=self.buffer_size,
             num_workers=self.num_workers)
 
@@ -78,7 +67,7 @@ class Trainer:
 
         # start epoch iteration
         start_time = time.time()
-        for epoch in range(1, self.n_epochs + 1):
+        for epoch in range(start_epoch, self.n_epochs + 1):
             start_epoch_time = time.time()
             out_str = ''
 
@@ -105,7 +94,7 @@ class Trainer:
                     "optimizer": self.optimizer.state_dict(),
                     "model": self.model.state_dict(),
                 }
-                torch.save(obj, f"{self.save_path}{folder}_epoch_{epoch}.pt")
+                torch.save(obj, f"{self.save_path}{run_name}_epoch_{epoch}.pt")
 
         print('Finished training')
         print("Total time: {:.1f}s".format(time.time() - start_time))
