@@ -1,6 +1,8 @@
 import numpy as np
 import math
 import time
+from quantecon.game_theory.lemke_howson import lemke_howson
+from quantecon.game_theory.normal_form_game import NormalFormGame
 
 from Showdown_Pmariglia.showdown.engine.objects import *
 from Showdown_Pmariglia.showdown.engine.find_state_instructions import *
@@ -12,9 +14,10 @@ from KetchAI.evaluate import Evaluate
 
 
 class TurnSimulator:
-    """ Edited version of some of Pmariglia's turn simulation tools """
+    """ Edited versions of some of Pmariglia's turn simulation tools """
     def __init__(self):
         self.value_network = Evaluate()
+        self.states_evaluated = 0
 
     def get_switch_move_options(self, user_options, opponent_options, user_reserve, opponent_reserve):
         """ Pairs a switching move with its possible switches, treating each combination as separate move """
@@ -22,7 +25,7 @@ class TurnSimulator:
         # create edited user_options
         edited_user_options = []
         for move in user_options:
-            possible_switches = [pkmn.name for pkmn in user_reserve if pkmn.hp > 0]
+            possible_switches = [name for name, pkmn in user_reserve.items() if pkmn.hp > 0]
             if move in constants.SWITCH_OUT_MOVES and len(possible_switches) > 0:
                 edited_user_options += [move + "-" + pkmn for pkmn in possible_switches]
             else:
@@ -31,7 +34,7 @@ class TurnSimulator:
         # create edited opponent_options
         edited_opponent_options = []
         for move in opponent_options:
-            possible_switches = [pkmn.name for pkmn in opponent_reserve if pkmn.hp > 0]
+            possible_switches = [name for name, pkmn in opponent_reserve.items() if pkmn.hp > 0]
             if move in constants.SWITCH_OUT_MOVES and len(possible_switches) > 0:
                 edited_opponent_options += [move + "-" + pkmn for pkmn in possible_switches]
             else:
@@ -39,15 +42,70 @@ class TurnSimulator:
 
         return edited_user_options, edited_opponent_options
 
-    def get_payoff_matrix(self, mutator, user_options, opponent_options):
+    def get_score(self, mutator, depth, max_depth, start_time, time_limit):
+        """ determines how to evaluated a given state """
+
+        # evaluate current state when max depth or time limit has been reached
+        end_search = depth >= max_depth or (time.time() - start_time) >= time_limit
+
+        # check if a player has won the game
+        is_finished, result = mutator.state.battle_is_finished()
+
+        if is_finished:
+            # slight punishment based on depth
+            # creates the incentive to pick moves than win right away, rather than the future turn
+            score = abs(result - 0.001 * (depth - 1))
+            self.states_evaluated += 1
+
+        elif end_search:
+            score = self.value_network.evaluate(mutator.state)
+            self.states_evaluated += 1
+
+        else:
+            # get player's options
+            user_options, opponent_options = mutator.state.get_all_options()
+
+            # map switch-move switches to separate options
+            user_options, opponent_options = self.get_switch_move_options(
+                user_options,
+                opponent_options,
+                mutator.state.self.reserve,
+                mutator.state.opponent.reserve
+            )
+
+            # create payoffmatrix
+            _, bimatrix, _ = self.get_payoff_matrix(
+                mutator,
+                user_options,
+                opponent_options,
+                depth + 1,
+                max_depth,
+                start_time,
+                time_limit
+            )
+
+            # create nash equilibium strategies
+            game = NormalFormGame(bimatrix)
+            user_strategy, opp_strategy = lemke_howson(game, init_pivot=0, max_iter=1000000, capping=None, full_output=False)
+
+            # calculate expected value
+            user = game.players[0]
+            score = sum(user.payoff_vector(opp_strategy) * user_strategy)
+
+        return score
+
+    def get_payoff_matrix(self, mutator, user_options, opponent_options, depth=1, max_depth=2, start_time=None, time_limit=10):
         """ Creates a payoff matrix by simulating the current turn and evaluating all future states """
+
+        # first call of the function
+        if start_time is None:
+            start_time = time.time()
+            self.states_evaluated = 0
+
         # initialize matrices
         user_outspeeds_matrix = np.zeros((len(user_options), len(opponent_options)))
         opp_outspeeds_matrix = np.zeros((len(user_options), len(opponent_options)))
         outspeed_probability_matrix = np.zeros((len(user_options), len(opponent_options)))
-
-        n_simulations = 0
-        start_time = time.time()
 
         # for each move the bot could use
         for i, full_user_move_str in enumerate(user_options):
@@ -74,27 +132,31 @@ class TurnSimulator:
                 # runs scenario where the user outspeeds, given that it can outspeed
                 if user_can_outspeed:
                     state_instructions = self.get_all_state_instructions(mutator, user_move_str, opponent_move_str, user_move, opponent_move, user_switch, opp_switch, user_outspeeds=True)
-                    n_simulations += len(state_instructions)
 
                     score = 0
                     for instructions in state_instructions:
                         mutator.apply(instructions.instructions)
-                        t_score = self.value_network.evaluate(mutator.state)
+
+                        t_score = self.get_score(mutator, depth, max_depth, start_time, time_limit)
                         score += (t_score * instructions.percentage)
+
                         mutator.reverse(instructions.instructions)
+
                     user_outspeeds_matrix[i][j] = score
 
                 # runs scenario where the opponent outspeeds, given that it can outspeed
                 if opp_can_outspeed:
                     state_instructions = self.get_all_state_instructions(mutator, user_move_str, opponent_move_str, user_move, opponent_move, user_switch, opp_switch, user_outspeeds=False)
-                    n_simulations += len(state_instructions)
 
                     score = 0
                     for instructions in state_instructions:
                         mutator.apply(instructions.instructions)
-                        t_score = self.value_network.evaluate(mutator.state)
+
+                        t_score = self.get_score(mutator, depth, max_depth, start_time, time_limit)
                         score += (t_score * instructions.percentage)
+
                         mutator.reverse(instructions.instructions)
+
                     opp_outspeeds_matrix[i][j] = score
 
                 # set the probabilities for the probability matrix. Will eventually be based on a model
@@ -104,9 +166,6 @@ class TurnSimulator:
                     outspeed_probability_matrix[i][j] = 1
                 else:
                     outspeed_probability_matrix[i][j] = 0
-
-        # save search time
-        search_time = time.time() - start_time
 
         # create weighted matrices
         user_outspeeds_matrix = np.multiply(user_outspeeds_matrix, outspeed_probability_matrix)
@@ -156,7 +215,10 @@ class TurnSimulator:
                 payoff_matrix[(full_user_move_str, full_opponent_move_str)] = score
                 bimatrix[i][j][0], bimatrix[i][j][1] = score, -score
 
-        return payoff_matrix, bimatrix, n_simulations, search_time
+        # save search time
+        search_time = time.time() - start_time
+
+        return payoff_matrix, bimatrix, search_time
 
     def get_effective_speed_range(self, state, side, user_is_bot):
         """ Calculates the effective speed range of a pokemon given their speed stat or speed_range.

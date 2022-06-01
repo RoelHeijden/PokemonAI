@@ -10,7 +10,7 @@ class BattleBot(Battle):
     """ Main AI class
 
     Currently uses:
-    - Tree search (depth=1)
+    - Tree search (depth=2)
     - Pmariglia's handcrafted evaluation function
     - Nash equilibria
 
@@ -25,8 +25,8 @@ class BattleBot(Battle):
     """
     def __init__(self, *args, **kwargs):
         super(BattleBot, self).__init__(*args, **kwargs)
-        self.sim = TurnSimulator()
         self.NE = NashCalc()
+        self.sim = TurnSimulator()
 
     def find_best_move(self):
         """ Finds the best move at a given turn """
@@ -40,15 +40,17 @@ class BattleBot(Battle):
         user_options, opponent_options = self.sim.get_switch_move_options(
             user_options,
             opponent_options,
-            self.user.reserve,
-            self.opponent.reserve
+            state.self.reserve,
+            state.opponent.reserve
         )
 
         # get payoff matrix via tree search and evaluation
-        payoff_matrix, bimatrix, n_simulations, search_time = self.sim.get_payoff_matrix(
+        payoff_matrix, bimatrix, search_time = self.sim.get_payoff_matrix(
             mutator,
             user_options,
-            opponent_options
+            opponent_options,
+            max_depth=2,
+            time_limit=20
         )
 
         # select move based on a nash equilibrium strategy
@@ -68,7 +70,7 @@ class BattleBot(Battle):
             opp_strategy
         )
 
-        print(f'\n{n_simulations} possible turn outcomes simulated')
+        print(f'\n{self.sim.states_evaluated} possible turn outcomes simulated')
         print(f'search time: {round(search_time, 3)}s\n')
         print(f'Chosen move: \033[1m{best_move}\033[0m')
 
