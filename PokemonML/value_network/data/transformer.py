@@ -472,65 +472,65 @@ class StateTransformer:
         # current move pp
         pp = move['current_pp'] / self.pp_scaling
 
-        # move priority
-        priority = MOVE_LOOKUP[name]['priority']
-        pos_priority = 0
-        neg_priority = 0
-        if priority > 0:
-            pos_priority = 1
-        if priority < 0:
-            neg_priority = 1
-
-        # move base power
-        base_power = MOVE_LOOKUP[name]['basePower'] / self.bp_scaling
-
-        # move accuracy
-        accuracy = (MOVE_LOOKUP[name]['accuracy'] if MOVE_LOOKUP[name]['accuracy'] != 1 else 100) / self.acc_scaling
-
-        # move target
-        target = MOVE_LOOKUP[name]['target']
-        target_self = int(target == 'self')
-        target_all = int(target == 'all')
-
-        # multihits
-        if MOVE_LOOKUP[name].get('multihit'):
-            multi_hit = 1
-        else:
-            multi_hit = 0
-
-        # move boost effect
-        boosts = MOVE_LOOKUP[name].get('boosts')
-        pos_boost = 0
-        neg_boost = 0
-        if boosts:
-            for _, amount in boosts.items():
-                if amount > 0:
-                    pos_boost = 1
-                if amount < 0:
-                    neg_boost = 1
-
-        # move flags
-        heal = 0
-        recharge = 0
-        for flag in MOVE_LOOKUP[name]['flags']:
-            if flag == 'heal':
-                heal = 1
-            if flag == 'recharge':
-                recharge = 1
-
-        # move sets status
-        set_status = 0
-        if MOVE_LOOKUP[name].get('status'):
-            set_status = 1
-
-        # one-hot encode move category type
-        move_category = []
-        for c in MOVE_CATEGORIES:
-            if c == MOVE_LOOKUP[name]['category']:
-                move_category.append(1)
-            else:
-                move_category.append(0)
-
+        # # move priority
+        # priority = MOVE_LOOKUP[name]['priority']
+        # pos_priority = 0
+        # neg_priority = 0
+        # if priority > 0:
+        #     pos_priority = 1
+        # if priority < 0:
+        #     neg_priority = 1
+        #
+        # # move base power
+        # base_power = MOVE_LOOKUP[name]['basePower'] / self.bp_scaling
+        #
+        # # move accuracy
+        # accuracy = (MOVE_LOOKUP[name]['accuracy'] if MOVE_LOOKUP[name]['accuracy'] != 1 else 100) / self.acc_scaling
+        #
+        # # move target
+        # target = MOVE_LOOKUP[name]['target']
+        # target_self = int(target == 'self')
+        # target_all = int(target == 'all')
+        #
+        # # multihits
+        # if MOVE_LOOKUP[name].get('multihit'):
+        #     multi_hit = 1
+        # else:
+        #     multi_hit = 0
+        #
+        # # move boost effect
+        # boosts = MOVE_LOOKUP[name].get('boosts')
+        # pos_boost = 0
+        # neg_boost = 0
+        # if boosts:
+        #     for _, amount in boosts.items():
+        #         if amount > 0:
+        #             pos_boost = 1
+        #         if amount < 0:
+        #             neg_boost = 1
+        #
+        # # move flags
+        # heal = 0
+        # recharge = 0
+        # for flag in MOVE_LOOKUP[name]['flags']:
+        #     if flag == 'heal':
+        #         heal = 1
+        #     if flag == 'recharge':
+        #         recharge = 1
+        #
+        # # move sets status
+        # set_status = 0
+        # if MOVE_LOOKUP[name].get('status'):
+        #     set_status = 1
+        #
+        # # one-hot encode move category type
+        # move_category = []
+        # for c in MOVE_CATEGORIES:
+        #     if c == MOVE_LOOKUP[name]['category']:
+        #         move_category.append(1)
+        #     else:
+        #         move_category.append(0)
+        #
         # # one-hot encode move typing
         # typing = []
         # for t in TYPES:
@@ -542,20 +542,20 @@ class StateTransformer:
         out = [
             disabled,
             pp,
-            pos_priority,
-            neg_priority,
-            base_power,
-            accuracy,
-            target_self,
-            target_all,
-            multi_hit,
-            pos_boost,
-            neg_boost,
-            heal,
-            recharge,
-            set_status
+            # pos_priority,
+            # neg_priority,
+            # base_power,
+            # accuracy,
+            # target_self,
+            # target_all,
+            # multi_hit,
+            # pos_boost,
+            # neg_boost,
+            # heal,
+            # recharge,
+            # set_status
         ]
-        out.extend(move_category)
+        # out.extend(move_category)
         # out.extend(typing)
 
         if return_zeros:
