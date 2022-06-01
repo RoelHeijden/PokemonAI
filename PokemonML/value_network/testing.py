@@ -1,9 +1,17 @@
 import torch
+import torch.nn as nn
 import json
 import random
 import os
 import numpy as np
+import scipy.spatial.distance as distance
 
+from PokemonML.value_network.data.categories import (
+    SPECIES,
+    MOVES,
+    ITEMS,
+    ABILITIES
+)
 from data.transformer import StateTransformer
 from data.data_loader import data_loader
 
@@ -15,8 +23,9 @@ class Tester:
 
         self.transform = StateTransformer(shuffle_players=True, shuffle_pokemon=True, shuffle_moves=True)
 
+        self.model_data = torch.load(model_file)
         self.model = model
-        self.model.load_state_dict(torch.load(model_file)['model'])
+        self.model.load_state_dict(self.model_data['model'])
 
     def test_states(self, folder):
         self.model.eval()
@@ -121,7 +130,7 @@ class Tester:
 
                 # plot data
                 if n_games % 100 == 0:
-                    self._plot_performance()
+                    self._plot_performance(n_games)
 
     def _map_to_array(self, percentage_completed, results, evaluations):
         # iterate over each array slot
@@ -143,8 +152,9 @@ class Tester:
             self.n_correct_array[array_idx] += correct_pred
             self.n_evals_array[array_idx] += 1
 
-    def _plot_performance(self):
+    def _plot_performance(self, n_games):
         accuracies = np.round(self.n_correct_array / self.n_evals_array, decimals=3)
+        print(f'{n_games} games evaluated')
         print(f'Sampled accuracy: {self.sampled_n_correct / self.sampled_n_evals:.3f}')
         print(f'Overall accuracy: {self.n_correct / self.n_evals:.3f}')
         print(f'Accuracy per %completed: {" | ".join(str(x) for x in accuracies)}\n')
@@ -165,5 +175,52 @@ class Tester:
         evaluation = self.model(fields, sides, pokemon).item()
 
         return evaluation, game_result
+
+    def test_embeddings(self):
+        species_weights = self.model_data['model']['encoding.species_embedding.weight']
+        move_weights = self.model_data['model']['encoding.move_embedding.weight']
+        item_weights = self.model_data['model']['encoding.item_embedding.weight']
+        ability_weights = self.model_data['model']['encoding.ability_embedding.weight']
+
+        species_embedding = nn.Embedding.from_pretrained(species_weights)
+        move_embedding = nn.Embedding.from_pretrained(move_weights)
+        item_embedding = nn.Embedding.from_pretrained(item_weights)
+        ability_embedding = nn.Embedding.from_pretrained(ability_weights)
+
+        def find_most_similar(target, embedding, category, n=10):
+            target_tensor = torch.LongTensor([category.get(target)])
+            target_vec = embedding(target_tensor).squeeze()
+
+            comparisons = []
+
+            for cat in category:
+
+                if cat == target:
+                    continue
+
+                to_compare = torch.LongTensor([category.get(cat)])
+                compare_vec = embedding(to_compare).squeeze()
+
+                score = distance.cosine(target_vec, compare_vec)
+                comparisons.append((score, cat))
+
+            comparisons.sort(key=lambda tup: tup[0], reverse=False)
+
+            print(target)
+            for i in range(n):
+                print(comparisons[i][0], comparisons[i][1])
+            print()
+
+        # categories to inspect
+        species = 'charizard'
+        move = 'flamethrower'
+        item = 'choicescarf'
+        ability = 'flashfire'
+
+        find_most_similar(species, species_embedding, SPECIES)
+        find_most_similar(move, move_embedding, MOVES)
+        find_most_similar(item, item_embedding, ITEMS)
+        find_most_similar(ability, ability_embedding, ABILITIES)
+
 
 
