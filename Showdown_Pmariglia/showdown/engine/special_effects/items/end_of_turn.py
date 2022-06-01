@@ -6,7 +6,7 @@ def leftovers(state, attacking_side, attacking_pokemon, defending_side, defendin
         return (
             constants.MUTATOR_HEAL,
             attacking_side,
-            min(attacking_pokemon.maxhp - attacking_pokemon.hp, round(0.0625 * attacking_pokemon.maxhp))
+            min(attacking_pokemon.maxhp - attacking_pokemon.hp, int(0.0625 * attacking_pokemon.maxhp))
         )
     return None
 
@@ -18,7 +18,7 @@ def blacksludge(state, attacking_side, attacking_pokemon, defending_side, defend
         return (
             constants.MUTATOR_DAMAGE,
             attacking_side,
-            min(attacking_pokemon.hp, round(0.0625 * attacking_pokemon.maxhp))
+            min(attacking_pokemon.hp, int(0.0625 * attacking_pokemon.maxhp))
         )
 
 
