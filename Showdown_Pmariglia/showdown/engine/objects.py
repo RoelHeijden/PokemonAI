@@ -102,15 +102,15 @@ class State(object):
     def battle_is_finished(self):
         # Returns:
         #    1 if the bot (self) has won
-        #   -1 if the opponent has won
+        #   0 if the opponent has won
         #    False if the battle is not over
 
         if self.self.active.hp <= 0 and not any(pkmn.hp for pkmn in self.self.reserve.values()):
-            return -1
+            return True, 0
         elif self.opponent.active.hp <= 0 and not any(pkmn.hp for pkmn in self.opponent.reserve.values()) and len(self.opponent.reserve) == 5:
-            return 1
+            return True, 1
 
-        return False
+        return False, None
 
     @classmethod
     def from_dict(cls, state_dict):
