@@ -379,6 +379,7 @@ def get_states_from_damage(mutator, defender, damage, accuracy, attacking_move, 
     instructions = []
     instruction_additions = []
     move_missed_instruction = copy(instruction)
+
     hit_sub = False
     if percent_hit > 0:
         if constants.SUBSTITUTE in damage_side.active.volatile_status and constants.SOUND not in move_flags and attacker_side.active.ability != 'infiltrator':
@@ -902,16 +903,16 @@ def get_end_of_turn_instructions(mutator, instruction, bot_move, opponent_move, 
     for attacker in sides:
         side = get_side_from_state(mutator.state, attacker)
         pkmn = side.active
-
-        if mutator.state.field == constants.GRASSY_TERRAIN and not ('flying' in pkmn.types or pkmn.ability == 'levitate'):
-            if pkmn.hp < pkmn.maxhp:
-                grassy_healing_instruction = (
-                    constants.MUTATOR_HEAL,
-                    attacker,
-                    min(pkmn.maxhp - pkmn.hp, round(0.0625 * pkmn.maxhp))
-                )
-                mutator.apply_one(grassy_healing_instruction)
-                instruction.add_instruction(grassy_healing_instruction)
+        if pkmn.hp:
+            if mutator.state.field == constants.GRASSY_TERRAIN and not ('flying' in pkmn.types or pkmn.ability == 'levitate'):
+                if pkmn.hp < pkmn.maxhp:
+                    grassy_healing_instruction = (
+                        constants.MUTATOR_HEAL,
+                        attacker,
+                        min(pkmn.maxhp - pkmn.hp, int(0.0625 * pkmn.maxhp))
+                    )
+                    mutator.apply_one(grassy_healing_instruction)
+                    instruction.add_instruction(grassy_healing_instruction)
 
     # futuresight
     for attacker in sides:
