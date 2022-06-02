@@ -31,13 +31,13 @@ def main():
     # embedder.create_model('sents_per_poke_1200+.txt', dims=128)
 
     # embedder.test_random_embeddings(SPECIES, 10, dims=128)
-    embedder.test_random_embeddings(ITEMS, 10, dims=24)
+    # embedder.test_random_embeddings(ITEMS, 10, dims=24)
     # embedder.test_random_embeddings(MOVES, 10, dims=32)
     # embedder.test_random_embeddings(ABILITIES, 10, dims=32)
 
-    # embedder.test_embedding_dims('corviknight', SPECIES)
-    # embedder.test_embedding_dims('scopelens', ITEMS)
-    # embedder.test_embedding_dims('surf', MOVES)
+    embedder.test_embedding_dims('incineroar', SPECIES)
+    # embedder.test_embedding_dims('aguavberry', ITEMS)
+    # embedder.test_embedding_dims('hex', MOVES)
     # embedder.test_embedding_dims('drought', ABILITIES)
 
 
