@@ -1,7 +1,5 @@
 ----------------------------------------------------------------------------------------------------------------
 
-explore 2-deep tree search using NE to get scores for each depth
-
 update speed range after instruction (e.g. when checking the case where the bot outspeeds, update speed range in that branch)?
 
 Keep track of potential choice scarf speed_range -- you might know a mon is not max speed scarf before choice scarf is revealed
@@ -34,9 +32,12 @@ fix move pp updating for unknown moves (e.g. Struggle. I the move is now permane
 
 fix/implement Illusion in game_parser
 
+fix form change stat-resetting (to 84 evs) bug
+
+add form changes to state simulation
+
 
 ----------------------------------------------------------------------------------------------------------------
-
 
 
 INFO MANAGEMENT
@@ -62,10 +63,7 @@ INFO MANAGEMENT
 NASH EQUILIBRIUM
     1. when NE is uniform (doesn't matter which of the N options you pick), pick one with highest average in the case the opp deviates from calculated NE
     2. find the 'best' NE (check if this is being done in Quantecon)
-    3. Figure out if Bayesian NE is possible via Quantecon
 
-
-----------------------------------------------------------------------------------------------------------------
 
 NN ATTRIBUTES TO ADD (in simulator and state mutator!):
 	- terrain, magic room, wonder room and gravity split
@@ -76,12 +74,37 @@ NN ATTRIBUTES TO ADD (in simulator and state mutator!):
 	- trapped check
 
 STATE SIMULATOR:
-    1. return max/min value when game state is win/loss
-    2. if one pokemon fainted: evaluate possible switches and pick highest/lowest value?
+    - fix pokemon stats being reset (transforming?)
+    - prune on probabilities (pass probability to get_score(), check threshold)
+        - scale threshold based on n_pokemon alive
+        - add crits to threshold (dont branch from crits)
+        - add damage rolls to threshold (consider min/max rolls as 12% chance, avg as 75%?)
+    - search torch nn pruning
+    - breadth first search till time is up
+    - Aegislash eval bug??
+    - if one pokemon fainted: evaluate possible switches and pick highest/lowest value?
 
 ENVIRONMENT
     1. check role of hidden_power_type in battler.from_team_json()
 
+
+-----------------------------------------------------------------------------------------------------------------------
+
+
+MODEL EXPERIMENT
+    - train 1000+, 1100+, 1300+ and 1500+ models
+    - test each model on each rating
+
+    - average accuracy per %completed (per rating)
+    - average accuracy per %completed (per game length)
+
+    - average eval per %complete (per label)
+    - eval distribution per %completed (per label)
+
+    - average eval change per %completed
+    - eval change distribution per %completed
+
+    - eval per %completed of a single sampled game (with notable game moments noted, like critical hits, reads)
 
 
 
