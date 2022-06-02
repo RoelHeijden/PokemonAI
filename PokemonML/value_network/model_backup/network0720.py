@@ -12,44 +12,43 @@ class ValueNet(nn.Module):
         # input sizes dependent on the StateTransformer output
         field_size = 21
         side_size = 18
-        pokemon_attributes = 72 + (4 * 4)
+        pokemon_attributes = 73 + (4 * 2)
 
         # encoding layer
-        species_dim = 96
-        move_dim = 32
+        species_dim = 64
         item_dim = 16
         ability_dim = 16
-        self.encoding = Encoder(species_dim, move_dim, item_dim, ability_dim)
+        move_dim = 16
+        self.encoding = Encoder(species_dim, item_dim, ability_dim, move_dim, load_embeddings=True)
 
         # pokemon layer
-        pkmn_layer_out = 192
-        pokemon_size = (species_dim + move_dim * 4 + item_dim + ability_dim) + pokemon_attributes
-        self.pokemon_layer = PokemonLayer(pokemon_size, pkmn_layer_out)
+        pokemon_in = (species_dim + item_dim + ability_dim + move_dim * 4) + pokemon_attributes
+        pokemon_out = 192
+        self.pokemon_layer = PokemonLayer(pokemon_in, pokemon_out, drop_rate=0.4)
 
         # full state layer
-        state_layer_in = (pkmn_layer_out * 6 + side_size) * 2 + field_size
-        fc1_out = 2048
-        state_layer_out = 1024
-        self.state_layer = StateLayer(state_layer_in, fc1_out, state_layer_out)
+        state_layer_in = pokemon_out * 12 + side_size * 2 + field_size
+        fc1_out = 1024
+        state_out = 512
+        self.state_layer = FullStateLayer(state_layer_in, fc1_out, state_out, drop_rate=0.4)
 
         # output later
-        self.output = OutputLayer(state_layer_out)
+        self.output = OutputLayer(state_out)
 
     def forward(self, fields: torch.tensor, sides: torch.tensor, pokemon: Dict[str, torch.Tensor]):
         # embed and concatenate pokemon variables
         fields, sides, pokemon = self.encoding(fields, sides, pokemon)
 
-        # general pokemon layer
+        # pass all pokemon individually through the pokemon layer
         pokemon = self.pokemon_layer(pokemon)
 
-        # state layer
-        state = self.state_layer(
-            torch.cat(
+        # pass everything together through the full state layer
+        state = self.state_layer(torch.cat(
                 (
                     torch.flatten(pokemon, start_dim=1),
                     torch.flatten(sides, start_dim=1),
                     fields
-                 ),
+                ),
                 dim=1
             )
         )
@@ -61,47 +60,48 @@ class ValueNet(nn.Module):
 
 
 class PokemonLayer(nn.Module):
-    def __init__(self, input_size, fc1_out):
+    def __init__(self, input_size, fc1_out, drop_rate):
         super().__init__()
 
         self.fc1 = nn.Linear(input_size, fc1_out)
-        self.drop1 = nn.Dropout(p=0.1)
 
+        self.drop = nn.Dropout(p=drop_rate)
         self.relu = nn.ReLU()
 
     def forward(self, x) -> torch.tensor:
         x = self.fc1(x)
         x = self.relu(x)
-        x = self.drop1(x)
+        x = self.drop(x)
 
         return x
 
 
-class StateLayer(nn.Module):
-    def __init__(self, input_size, fc1_out, fc2_out):
+class FullStateLayer(nn.Module):
+    def __init__(self, input_size, fc1_out, output_size, drop_rate):
         super().__init__()
 
         self.fc1 = nn.Linear(input_size, fc1_out)
-        self.fc2 = nn.Linear(fc1_out, fc2_out)
+        self.fc2 = nn.Linear(fc1_out, output_size)
 
+        self.bn0 = nn.BatchNorm1d(input_size)
         self.bn1 = nn.BatchNorm1d(fc1_out)
-        self.bn2 = nn.BatchNorm1d(fc2_out)
+        self.bn2 = nn.BatchNorm1d(output_size)
 
-        self.drop1 = nn.Dropout(p=0.4)
-        self.drop2 = nn.Dropout(p=0.2)
-
+        self.drop = nn.Dropout(p=drop_rate)
         self.relu = nn.ReLU()
 
     def forward(self, x: torch.tensor) -> torch.tensor:
+        x = self.bn0(x)
+
         x = self.fc1(x)
         x = self.relu(x)
-        x = self.drop1(x)
         x = self.bn1(x)
+        x = self.drop(x)
 
         x = self.fc2(x)
         x = self.relu(x)
-        x = self.drop2(x)
         x = self.bn2(x)
+        x = self.drop(x)
 
         return x
 
