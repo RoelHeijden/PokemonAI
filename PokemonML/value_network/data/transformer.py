@@ -288,9 +288,9 @@ class StateTransformer:
             # pokemon attributes
             pokemon_attributes.append(
                 [
-                    self._pokemon_attributes(team[i])
+                    self._pokemon_attributes(team[i], is_active=(i == 0))
                     if i < team_size
-                    else self._pokemon_attributes(team[0], return_zeros=True)
+                    else self._pokemon_attributes(team[0], is_active=False, return_zeros=True)
                     for i in range(6)
                 ]
             )
@@ -335,8 +335,9 @@ class StateTransformer:
 
         return out
 
-    def _pokemon_attributes(self, pokemon, return_zeros=False) -> list:
+    def _pokemon_attributes(self, pokemon, is_active, return_zeros=False) -> list:
         """
+        Is_active
         Level
         N_moves
         Health
@@ -348,6 +349,7 @@ class StateTransformer:
         Status
         Volatile_status
         """
+        is_active = int(is_active)
 
         # pokemon level
         level = pokemon['level'] / self.level_scaling
@@ -428,6 +430,7 @@ class StateTransformer:
 
         # concat output
         out = [
+            is_active,
             level,
             n_moves,
             health,
