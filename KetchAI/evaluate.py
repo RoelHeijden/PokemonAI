@@ -1,5 +1,4 @@
 import os
-import json
 import torch
 
 from PokemonML.value_network.model.network import ValueNet
@@ -9,7 +8,7 @@ from PokemonML.value_network.data.transformer import StateTransformer
 class Evaluate:
     def __init__(self):
         # model parameters path
-        model_name = 'network_0759_1250+_epoch_23.pt'
+        model_name = 'network0709_1300+_epoch_13.pt'
         model_folder = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/models/relevant_models/'
         model_path = os.path.join(model_folder, model_name)
 
