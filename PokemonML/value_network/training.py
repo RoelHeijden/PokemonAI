@@ -10,7 +10,7 @@ from data.transformer import StateTransformer
 
 class Trainer:
     def __init__(self, model, data_folder, save_path, n_epochs=40, batch_size=256, lr=2e-4, lr_decay=0.98, lr_decay_steps=1,
-                 file_size=10000, buffer_size=5000, num_workers=4, update_every_n_batches=10, shuffle=True, save_model=True):
+                 update_every_n_batches=10, file_size=10000, buffer_size=5000, num_workers=4, shuffle=True, save_model=True):
 
         # model settings
         self.model = model
