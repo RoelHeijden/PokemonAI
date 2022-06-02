@@ -1,56 +1,56 @@
-Mandibuzz (F) @ Heavy-Duty Boots
-Ability: Overcoat
-EVs: 248 HP / 8 Def / 252 SpD
-Careful Nature
-- Foul Play
-- U-turn
-- Roost
-- Defog
-
-Jirachi @ Leftovers
+Togekiss @ Leftovers
 Ability: Serene Grace
-EVs: 48 HP / 208 Atk / 252 Spe
-Jolly Nature
-- Iron Head
-- Zen Headbutt
-- Power-Up Punch
-- Substitute
-
-Sandaconda (M) @ Leftovers
-Ability: Shed Skin
-EVs: 248 HP / 216 Def / 16 SpD / 28 Spe
-Impish Nature
-- Earthquake
-- Body Press
-- Stealth Rock
-- Glare
-
-Zeraora @ Life Orb
-Ability: Volt Absorb
-EVs: 180 Atk / 76 SpA / 252 Spe
-Naive Nature
-- Plasma Fists
-- Close Combat
-- Knock Off
-- Grass Knot
-
-Primarina (F) @ Choice Specs
-Ability: Torrent
-EVs: 88 HP / 252 SpA / 168 Spe
-Modest Nature
+EVs: 252 HP / 4 SpD / 252 Spe
+Timid Nature
 IVs: 0 Atk
-- Sparkling Aria
-- Moonblast
-- Hydro Pump
+- Nasty Plot
+- Air Slash
+- Flamethrower
 - Psychic
 
-Dragapult (F) @ Choice Scarf
+Aegislash @ Weakness Policy
+Ability: Stance Change
+EVs: 252 HP / 252 SpA / 4 SpD
+Quiet Nature
+- Shadow Ball
+- King's Shield
+- Close Combat
+- Flash Cannon
+
+Toxapex @ Black Sludge
+Ability: Regenerator
+EVs: 252 HP / 252 Def / 4 SpD
+Bold Nature
+IVs: 0 Atk
+- Scald
+- Toxic
+- Recover
+- Haze
+
+Mamoswine @ Life Orb
+Ability: Thick Fat
+EVs: 252 Atk / 4 SpD / 252 Spe
+Jolly Nature
+- Stealth Rock
+- Earthquake
+- Icicle Crash
+- Ice Shard
+
+Dragapult @ Choice Specs
 Ability: Infiltrator
-Shiny: Yes
-EVs: 64 HP / 252 SpA / 192 Spe
+EVs: 252 SpA / 4 SpD / 252 Spe
 Modest Nature
 - Draco Meteor
-- Shadow Ball
-- Flamethrower
+- Fire Blast
 - U-turn
+- Thunderbolt
+
+Mandibuzz @ Rocky Helmet
+Ability: Overcoat
+EVs: 248 HP / 128 Def / 108 SpD / 24 Spe
+Bold Nature
+- Foul Play
+- Roost
+- Taunt
+- Defog
 
