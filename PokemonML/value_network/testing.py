@@ -31,32 +31,31 @@ class Tester:
 
         # init data loader
         data_path = os.path.join(self.states_folder, folder)
-        dataloader = data_loader(data_path, self.transform, batch_size=1, shuffle=False)
+        dataloader = data_loader(data_path, self.transform, batch_size=256, shuffle=False)
 
         # track amount of evaluations and amount of correct classifications
         n_evaluations = 0
         correct_classifications = 0
 
         # iterate over all games
-        for state in dataloader:
+        for i, state in enumerate(dataloader, start=1):
 
-            label = torch.squeeze(state['result'])
+            labels = torch.squeeze(state['result'])
             fields = state['fields']
             sides = state['sides']
             pokemon = state['pokemon']
 
             # forward pass
-            evaluation = self.model(fields, sides, pokemon)
-            n_evaluations += 1
+            evaluations = self.model(fields, sides, pokemon).squeeze()
+            n_evaluations += len(evaluations)
 
             # get classification
-            pred_result = int(round(evaluation.item()))
-            actual_result = int(label.item())
-            if pred_result == actual_result:
-                correct_classifications += 1
+            predictions = torch.round(evaluations)
+            correct_classifications += torch.sum(labels == predictions).item()
 
-            if n_evaluations % 1000 == 0:
-                print(f'\raverage accuracy: {correct_classifications / n_evaluations:.3f}', end='')
+            # print accuracy every n batches
+            if i % 10 == 0:
+                print(f'\r{n_evaluations} states evaluated -- average accuracy: {correct_classifications / n_evaluations:.3f}', end='')
 
         print(f'\r{n_evaluations} states evaluated')
         print(f'average accuracy: {correct_classifications / n_evaluations:.3f}\n')
