@@ -10,7 +10,8 @@ from data.transformer import StateTransformer
 
 class Trainer:
     def __init__(self, model, data_folder, save_path, n_epochs=40, batch_size=256, lr=2e-4, lr_decay=0.98, lr_decay_steps=1,
-                 update_every_n_batches=10, file_size=10000, buffer_size=5000, num_workers=4, shuffle=True, save_model=True):
+                 update_every_n_batches=10, file_size=10000, buffer_size=5000, num_workers=4, shuffle_data=True,
+                 shuffle_players=True, shuffle_pokemon=True, shuffle_moves=True, save_model=True):
 
         # model settings
         self.model = model
@@ -28,11 +29,19 @@ class Trainer:
         self.data_folder = data_folder
         self.file_size = file_size
 
-        self.train_loader_shuffle = shuffle
+        self.train_loader_shuffle = shuffle_data
         self.buffer_size = buffer_size
 
-        self.shuffle_transform = StateTransformer(shuffle_players=True, shuffle_pokemon=True, shuffle_moves=True)
-        self.no_shuffle_transform = StateTransformer(shuffle_players=False, shuffle_pokemon=False, shuffle_moves=False)
+        self.shuffle_transform = StateTransformer(
+            shuffle_players=shuffle_players,
+            shuffle_pokemon=shuffle_pokemon,
+            shuffle_moves=shuffle_moves
+        )
+        self.no_shuffle_transform = StateTransformer(
+            shuffle_players=False,
+            shuffle_pokemon=False,
+            shuffle_moves=False
+        )
 
         # misc. settings
         self.num_workers = num_workers
