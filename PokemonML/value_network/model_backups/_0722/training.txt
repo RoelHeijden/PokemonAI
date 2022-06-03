@@ -1,0 +1,117 @@
+ValueNet 1100+, 256, LR=2e-4, gamma=0.95, 64/16/16/16, pokemon/side: 192 drop(0.1), hidden: 1024 drop(0.3), 512 drop(0.3), 128
+is_active attributed added
+shuffle active pokemon
+
+Epoch 30:
+
+Test states:
+    1100+:
+        293975 states evaluated
+        average accuracy: 0.720
+    1300+:
+        129170 states evaluated
+        average accuracy: 0.716
+    1500+:
+        37842 states evaluated
+        average accuracy: 0.712
+    1700+:
+        8151 states evaluated
+        average accuracy: 0.721
+
+Test games:
+    1100+:
+        21200 games evaluated
+        Sampled accuracy: 0.722
+        Overall accuracy: 0.713
+        Accuracy per %completed: 0.583 | 0.597 | 0.615 | 0.626 | 0.641 | 0.663 | 0.676 | 0.689 | 0.702 | 0.715 | 0.731 | 0.743 | 0.759 | 0.777 | 0.798 | 0.818 | 0.844 | 0.867 | 0.897 | 0.925
+
+
+Train loss: 0.555: 100%|██████████| 2400000/2400000 [19:34<00:00, 2042.62it/s]
+Epoch 1 | LR: 0.0002000 | Train loss: 0.578 | Val loss: 0.561 | Epoch time: 1231.1s
+
+Train loss: 0.548: 100%|██████████| 2400000/2400000 [19:17<00:00, 2074.01it/s]
+Epoch 2 | LR: 0.0001900 | Train loss: 0.555 | Val loss: 0.556 | Epoch time: 1206.8s
+
+Train loss: 0.551: 100%|██████████| 2400000/2400000 [18:53<00:00, 2117.08it/s]
+Epoch 3 | LR: 0.0001805 | Train loss: 0.551 | Val loss: 0.552 | Epoch time: 1184.7s
+
+Train loss: 0.548: 100%|██████████| 2400000/2400000 [18:55<00:00, 2113.92it/s]
+Epoch 4 | LR: 0.0001715 | Train loss: 0.548 | Val loss: 0.550 | Epoch time: 1185.7s
+
+Train loss: 0.545: 100%|██████████| 2400000/2400000 [18:58<00:00, 2108.45it/s]
+Epoch 5 | LR: 0.0001629 | Train loss: 0.545 | Val loss: 0.548 | Epoch time: 1188.7s
+
+Train loss: 0.544: 100%|██████████| 2400000/2400000 [19:08<00:00, 2089.80it/s]
+Epoch 6 | LR: 0.0001548 | Train loss: 0.543 | Val loss: 0.546 | Epoch time: 1200.7s
+
+Train loss: 0.537: 100%|██████████| 2400000/2400000 [18:44<00:00, 2133.40it/s]
+Epoch 7 | LR: 0.0001470 | Train loss: 0.541 | Val loss: 0.545 | Epoch time: 1174.5s
+
+Train loss: 0.543: 100%|██████████| 2400000/2400000 [18:20<00:00, 2181.01it/s]
+Epoch 8 | LR: 0.0001397 | Train loss: 0.540 | Val loss: 0.544 | Epoch time: 1152.2s
+
+Train loss: 0.536: 100%|██████████| 2400000/2400000 [18:52<00:00, 2118.87it/s]
+Epoch 9 | LR: 0.0001327 | Train loss: 0.538 | Val loss: 0.543 | Epoch time: 1180.0s
+
+Train loss: 0.532: 100%|██████████| 2400000/2400000 [19:34<00:00, 2043.69it/s]
+Epoch 10 | LR: 0.0001260 | Train loss: 0.537 | Val loss: 0.542 | Epoch time: 1222.7s
+
+Train loss: 0.538: 100%|██████████| 2400000/2400000 [17:20<00:00, 2306.07it/s]
+Epoch 11 | LR: 0.0001197 | Train loss: 0.536 | Val loss: 0.541 | Epoch time: 1091.3s
+
+Train loss: 0.533: 100%|██████████| 2400000/2400000 [18:19<00:00, 2182.25it/s]
+Epoch 12 | LR: 0.0001138 | Train loss: 0.534 | Val loss: 0.540 | Epoch time: 1150.9s
+
+Train loss: 0.533: 100%|██████████| 2400000/2400000 [18:27<00:00, 2167.62it/s]
+Epoch 13 | LR: 0.0001081 | Train loss: 0.533 | Val loss: 0.539 | Epoch time: 1157.1s
+
+Train loss: 0.527: 100%|██████████| 2400000/2400000 [18:47<00:00, 2129.06it/s]
+Epoch 14 | LR: 0.0001027 | Train loss: 0.532 | Val loss: 0.538 | Epoch time: 1177.7s
+
+Train loss: 0.525: 100%|██████████| 2400000/2400000 [19:17<00:00, 2073.29it/s]
+Epoch 15 | LR: 0.0000975 | Train loss: 0.531 | Val loss: 0.538 | Epoch time: 1208.2s
+
+Train loss: 0.526: 100%|██████████| 2400000/2400000 [19:01<00:00, 2102.47it/s]
+Epoch 16 | LR: 0.0000927 | Train loss: 0.530 | Val loss: 0.537 | Epoch time: 1192.6s
+
+Train loss: 0.527: 100%|██████████| 2400000/2400000 [18:32<00:00, 2157.40it/s]
+Epoch 17 | LR: 0.0000880 | Train loss: 0.529 | Val loss: 0.537 | Epoch time: 1162.7s
+
+Train loss: 0.528: 100%|██████████| 2400000/2400000 [18:30<00:00, 2160.84it/s]
+Epoch 18 | LR: 0.0000836 | Train loss: 0.529 | Val loss: 0.536 | Epoch time: 1159.3s
+
+Train loss: 0.530: 100%|██████████| 2400000/2400000 [17:52<00:00, 2238.66it/s]
+Epoch 19 | LR: 0.0000794 | Train loss: 0.528 | Val loss: 0.536 | Epoch time: 1125.6s
+
+Train loss: 0.531: 100%|██████████| 2400000/2400000 [17:53<00:00, 2235.59it/s]
+Epoch 20 | LR: 0.0000755 | Train loss: 0.527 | Val loss: 0.536 | Epoch time: 1124.4s
+
+Train loss: 0.521: 100%|██████████| 2400000/2400000 [18:15<00:00, 2190.65it/s]
+Epoch 21 | LR: 0.0000717 | Train loss: 0.526 | Val loss: 0.535 | Epoch time: 1145.1s
+
+Train loss: 0.523: 100%|██████████| 2400000/2400000 [17:25<00:00, 2295.71it/s]
+Epoch 22 | LR: 0.0000681 | Train loss: 0.526 | Val loss: 0.534 | Epoch time: 1100.0s
+
+Train loss: 0.522: 100%|██████████| 2400000/2400000 [17:55<00:00, 2231.99it/s]
+Epoch 23 | LR: 0.0000647 | Train loss: 0.525 | Val loss: 0.534 | Epoch time: 1125.7s
+
+Train loss: 0.525: 100%|██████████| 2400000/2400000 [18:22<00:00, 2176.84it/s]
+Epoch 24 | LR: 0.0000615 | Train loss: 0.525 | Val loss: 0.534 | Epoch time: 1153.9s
+
+Train loss: 0.514: 100%|██████████| 2400000/2400000 [17:38<00:00, 2267.64it/s]
+Epoch 25 | LR: 0.0000584 | Train loss: 0.524 | Val loss: 0.534 | Epoch time: 1108.1s
+
+Train loss: 0.519: 100%|██████████| 2400000/2400000 [18:37<00:00, 2146.69it/s]
+Epoch 26 | LR: 0.0000555 | Train loss: 0.523 | Val loss: 0.534 | Epoch time: 1170.8s
+
+Train loss: 0.519: 100%|██████████| 2400000/2400000 [17:41<00:00, 2260.79it/s]
+Epoch 27 | LR: 0.0000527 | Train loss: 0.523 | Val loss: 0.533 | Epoch time: 1109.5s
+
+Train loss: 0.521: 100%|██████████| 2400000/2400000 [17:20<00:00, 2306.08it/s]
+Epoch 28 | LR: 0.0000501 | Train loss: 0.523 | Val loss: 0.534 | Epoch time: 1091.6s
+
+Train loss: 0.519: 100%|██████████| 2400000/2400000 [18:34<00:00, 2152.60it/s]
+Epoch 29 | LR: 0.0000476 | Train loss: 0.522 | Val loss: 0.533 | Epoch time: 1165.9s
+
+Train loss: 0.525: 100%|██████████| 2400000/2400000 [17:37<00:00, 2268.90it/s]
+Epoch 30 | LR: 0.0000452 | Train loss: 0.522 | Val loss: 0.532 | Epoch time: 1109.0s
