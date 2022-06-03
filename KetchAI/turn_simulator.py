@@ -58,6 +58,7 @@ class TurnSimulator:
             self.states_evaluated += 1
 
         elif end_search:
+            # evaluate state
             score = self.value_network.evaluate(mutator.state)
             self.states_evaluated += 1
 
