@@ -38,7 +38,7 @@ class StateTransformer:
         self.p2 = "p2"
 
         # field scaling
-        self.turn_count_scaling = 5
+        self.turn_count_scaling = 8
 
         # side scaling
         self.n_pokemon_scaling = 6
@@ -48,12 +48,12 @@ class StateTransformer:
         self.level_scaling = 100
         self.n_moves_scaling = 4
         self.sleep_count_scaling = 3
-        self.stat_scaling = 250
-        self.stat_change_scaling = 3
+        self.stat_scaling = 400
+        self.stat_change_scaling = 12
 
         # move scaling
-        self.pp_scaling = 32
-        self.bp_scaling = 100
+        self.pp_scaling = 64
+        self.bp_scaling = 150
         self.acc_scaling = 100
 
     def __call__(self, state: Dict[str, Any]) -> Dict[str, torch.tensor]:
@@ -227,11 +227,16 @@ class StateTransformer:
         """
         out = {}
 
+        # set active pokemon
+        state[self.p1]['active']['is_active'] = True
+        state[self.p2]['active']['is_active'] = True
+
         # shuffle reserve pokemon positions
         if self.shuffle_pokemon:
             random.shuffle(state[self.p1]['reserve'])
             random.shuffle(state[self.p2]['reserve'])
 
+        # concat teams
         p1_team = [state[self.p1]['active']] + state[self.p1]['reserve']
         p2_team = [state[self.p2]['active']] + state[self.p2]['reserve']
 
@@ -288,9 +293,9 @@ class StateTransformer:
             # pokemon attributes
             pokemon_attributes.append(
                 [
-                    self._pokemon_attributes(team[i], is_active=(i == 0))
+                    self._pokemon_attributes(team[i])
                     if i < team_size
-                    else self._pokemon_attributes(team[0], is_active=False, return_zeros=True)
+                    else self._pokemon_attributes(team[0], return_zeros=True)
                     for i in range(6)
                 ]
             )
@@ -335,7 +340,7 @@ class StateTransformer:
 
         return out
 
-    def _pokemon_attributes(self, pokemon, is_active, return_zeros=False) -> list:
+    def _pokemon_attributes(self, pokemon, return_zeros=False) -> list:
         """
         Is_active
         Level
@@ -349,7 +354,10 @@ class StateTransformer:
         Status
         Volatile_status
         """
-        is_active = int(is_active)
+
+        is_active = 0
+        if pokemon['hp'] > 0 and pokemon.get('is_active'):
+            is_active = 1
 
         # pokemon level
         level = pokemon['level'] / self.level_scaling
@@ -389,7 +397,7 @@ class StateTransformer:
 
         # pokemon stat boosts/drops
         stat_changes = [
-            change / self.stat_change_scaling for change in
+            (change + 6) / self.stat_change_scaling for change in
             [
                 pokemon['stat_changes']['attack'],
                 pokemon['stat_changes']['defense'],
@@ -452,6 +460,7 @@ class StateTransformer:
         """
         disabled
         pp
+        max_pp
         pos_priority
         neg_priority
         base_power
@@ -472,8 +481,12 @@ class StateTransformer:
         # move is disabled
         disabled = int(move['disabled'])
 
-        # current move pp
-        pp = move['current_pp'] / self.pp_scaling
+        # current move pp percentage
+        max_pp = int(MOVE_LOOKUP[name]['pp'] * 1.6)
+        pp = move['current_pp'] / max_pp
+
+        # max move pp
+        max_pp = max_pp / self.pp_scaling
 
         # # move priority
         # priority = MOVE_LOOKUP[name]['priority']
@@ -545,6 +558,7 @@ class StateTransformer:
         out = [
             disabled,
             pp,
+            max_pp,
             # pos_priority,
             # neg_priority,
             # base_power,
