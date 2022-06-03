@@ -49,8 +49,8 @@ class BattleBot(Battle):
             mutator,
             user_options,
             opponent_options,
-            max_depth=2,
-            time_limit=20
+            max_depth=1,
+            time_limit=5
         )
 
         # select move based on a nash equilibrium strategy
