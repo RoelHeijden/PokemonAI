@@ -15,29 +15,29 @@ class ValueNet(nn.Module):
         pokemon_attributes = 73 + (4 * 3)
 
         # encoding layer
-        species_dim = 64
+        species_dim = 16
         item_dim = 16
         ability_dim = 16
         move_dim = 16
         self.encoding = Encoder(species_dim, item_dim, ability_dim, move_dim, load_embeddings=True)
 
-        # pokemon layer
-        pokemon_in = species_dim + item_dim + ability_dim + move_dim * 4 + pokemon_attributes
-        pokemon_out = 128
-        self.pokemon_layer = PokemonLayer(pokemon_in, pokemon_out, drop_rate=0.2)
+        # input size of a single pokemon
+        pokemon_size = species_dim + item_dim + ability_dim + move_dim * 4 + pokemon_attributes
 
-        # team matchup layer
-        channels_out = 10
-        matchup_in = pokemon_in * 2
-        matchup_out = channels_out * 6 * 6
-        self.matchup_layer = MatchupLayer(matchup_in, channels_out)
+        # pokemon layer
+        pokemon_out = 128
+        self.pokemon_layer = PokemonLayer(pokemon_size, pokemon_out, drop_rate=0.2)
+
+        # conv matchup layer
+        out_channels = 8
+        matchup_out = out_channels * 6 * 6
+        self.matchup_layer = ConvMatchupLayer(pokemon_out * 2, out_channels)
 
         # full state layer
         state_layer_in = pokemon_out * 12 + side_size * 2 + field_size + matchup_out
         fc1_out = 1024
-        fc2_out = 512
-        state_out = 128
-        self.state_layer = FullStateLayer(state_layer_in, fc1_out, fc2_out, state_out, drop_rate=0.5)
+        state_out = 512
+        self.state_layer = FullStateLayer(state_layer_in, fc1_out, state_out, drop_rate=0.4)
 
         # output later
         self.output = OutputLayer(state_out)
@@ -46,17 +46,17 @@ class ValueNet(nn.Module):
         # embed and concatenate pokemon variables
         fields, sides, pokemon = self.encoding(fields, sides, pokemon)
 
-        # matchup layer
-        matchup = self.matchup_layer(pokemon)
-
-        # pass each concat of (pokemon, side) through the pokemon layer
+        # pass each pokemon through the pokemon layer
         pokemon = self.pokemon_layer(pokemon)
+
+        # compare each player1's pokemon's matchup vs each of the opposing pokemon
+        matchups = self.matchup_layer(pokemon)
 
         # pass everything together through the full state layer
         state = self.state_layer(
             torch.cat(
                 (
-                    torch.flatten(matchup, start_dim=1),
+                    torch.flatten(matchups, start_dim=1),
                     torch.flatten(pokemon, start_dim=1),
                     torch.flatten(sides, start_dim=1),
                     fields
@@ -76,8 +76,8 @@ class PokemonLayer(nn.Module):
         super().__init__()
 
         self.fc = nn.Linear(input_size, output_size)
-        # self.bn = nn.BatchNorm1d(output_size * 12)
         self.bn2d = nn.BatchNorm2d(2 * 6)
+
         self.drop = nn.Dropout(p=drop_rate)
         self.relu = nn.ReLU()
 
@@ -92,21 +92,15 @@ class PokemonLayer(nn.Module):
 
         x = self.drop(x)
 
-        # # 1d batchnorm solution
-        # bs, d, h, w = pokemon.shape
-        # pokemon = pokemon.view(bs, d * h * w)
-        # pokemon = self.bn(pokemon)
-        # pokemon = pokemon.view(bs, d, h, w)
-
         return x
 
 
-class MatchupLayer(nn.Module):
-    def __init__(self, input_size, channels_out):
+class ConvMatchupLayer(nn.Module):
+    def __init__(self, input_size, out_channels):
         super().__init__()
 
-        self.conv2d = nn.Conv2d(in_channels=1, out_channels=channels_out, kernel_size=(1, input_size), stride=1)
-        self.bn2d = nn.BatchNorm2d(channels_out)
+        self.conv2d = nn.Conv2d(in_channels=1, out_channels=out_channels, kernel_size=(1, input_size), stride=1)
+        self.bn2d = nn.BatchNorm2d(out_channels)
         self.relu = nn.ReLU()
 
     def forward(self, x) -> torch.tensor:
@@ -131,16 +125,14 @@ class MatchupLayer(nn.Module):
 
 
 class FullStateLayer(nn.Module):
-    def __init__(self, input_size, fc1_out, fc2_out, output_size, drop_rate):
+    def __init__(self, input_size, fc1_out, output_size, drop_rate):
         super().__init__()
 
         self.fc1 = nn.Linear(input_size, fc1_out)
-        self.fc2 = nn.Linear(fc1_out, fc2_out)
-        self.fc3 = nn.Linear(fc2_out, output_size)
+        self.fc2 = nn.Linear(fc1_out, output_size)
 
         self.bn1 = nn.BatchNorm1d(fc1_out)
-        self.bn2 = nn.BatchNorm1d(fc2_out)
-        self.bn3 = nn.BatchNorm1d(output_size)
+        self.bn2 = nn.BatchNorm1d(output_size)
 
         self.drop = nn.Dropout(p=drop_rate)
         self.relu = nn.ReLU()
@@ -157,10 +149,6 @@ class FullStateLayer(nn.Module):
         x = self.bn2(x)
 
         x = self.drop(x)
-
-        x = self.fc3(x)
-        x = self.relu(x)
-        x = self.bn3(x)
 
         return x
 
