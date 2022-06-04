@@ -1,0 +1,27 @@
+ValueNet 1500+, 256, LR=2e-2, gamma=0.96, 16/16/16train/16train
+    dense-matchup 64 drop(0.2), 32 drop(0.2)
+    pokemon 96 drop(0.2),
+    hidden: 1024 drop(0.4), 512 drop(0.4)
+
+test states:
+    1100+: 0.696
+    1500+: 0.693
+
+Epoch 1 | LR: 0.0002000 | Train loss: 0.695 | Val loss: 0.628
+Epoch 2 | LR: 0.0001920 | Train loss: 0.601 | Val loss: 0.584
+Epoch 3 | LR: 0.0001843 | Train loss: 0.581 | Val loss: 0.577
+Epoch 4 | LR: 0.0001769 | Train loss: 0.574 | Val loss: 0.576
+Epoch 5 | LR: 0.0001699 | Train loss: 0.571 | Val loss: 0.572
+Epoch 6 | LR: 0.0001631 | Train loss: 0.567 | Val loss: 0.570
+Epoch 7 | LR: 0.0001566 | Train loss: 0.565 | Val loss: 0.568
+Epoch 8 | LR: 0.0001503 | Train loss: 0.562 | Val loss: 0.567
+Epoch 9 | LR: 0.0001443 | Train loss: 0.560 | Val loss: 0.568
+Epoch 10 | LR: 0.0001385 | Train loss: 0.558 | Val loss: 0.566
+Epoch 11 | LR: 0.0001330 | Train loss: 0.556 | Val loss: 0.566
+Epoch 12 | LR: 0.0001276 | Train loss: 0.554 | Val loss: 0.565
+Epoch 13 | LR: 0.0001225 | Train loss: 0.553 | Val loss: 0.564
+Epoch 14 | LR: 0.0001176 | Train loss: 0.551 | Val loss: 0.563
+Epoch 15 | LR: 0.0001129 | Train loss: 0.550 | Val loss: 0.563
+Epoch 16 | LR: 0.0001084 | Train loss: 0.548 | Val loss: 0.561 X
+Epoch 17 | LR: 0.0001041 | Train loss: 0.546 | Val loss: 0.562
+Epoch 18 | LR: 0.0000999 | Train loss: 0.545 | Val loss: 0.563
