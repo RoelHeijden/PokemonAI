@@ -54,16 +54,35 @@ from quantecon.game_theory.normal_form_game import NormalFormGame
 #
 
 
+############################## CONVOLUTION TEST ###############################
 
 
-score = 1
+pokemon1 = torch.tensor([0.1, 0.2, 0.3, 0.4], dtype=torch.float)
+pokemon2 = torch.tensor([1, 2, 3, 4], dtype=torch.float)
+pokemon3 = torch.tensor([10, 20, 30, 40], dtype=torch.float)
 
-depth = 2
+pokemon4 = torch.tensor([100, 200, 300, 400], dtype=torch.float)
+pokemon5 = torch.tensor([1000, 2000, 3000, 5000], dtype=torch.float)
+pokemon6 = torch.tensor([10000, 20000, 30000, 50000], dtype=torch.float)
+
+player1 = torch.stack((pokemon1, pokemon2, pokemon3))
+player2 = torch.stack((pokemon4, pokemon5, pokemon6))
+
+pokemon = torch.stack((player1, player2)).unsqueeze(0)
+
+# x = []
+# for i in range(pokemon.shape[2]):
+#     matchup = torch.cat((p1_side, torch.roll(p2_side, i, dims=1)), dim=2).unsqueeze(1)
+#     x.append(torch.flatten(self.conv(matchup), start_dim=1))
+#
+# x = torch.cat(x, dim=1)
 
 
-score = abs(score - 0.001 * (depth - 1))
 
-print(score)
+
+
+
+
 
 
 
