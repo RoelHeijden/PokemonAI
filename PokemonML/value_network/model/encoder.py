@@ -33,8 +33,8 @@ class Encoder(nn.Module):
 
             self.species_embedding = nn.Embedding.from_pretrained(species_weights, freeze=True, padding_idx=0)
             self.item_embedding = nn.Embedding.from_pretrained(item_weights, freeze=True, padding_idx=0)
-            self.ability_embedding = nn.Embedding.from_pretrained(ability_weights, freeze=True, padding_idx=0)
-            self.move_embedding = nn.Embedding.from_pretrained(move_weights, freeze=True, padding_idx=0)
+            self.ability_embedding = nn.Embedding.from_pretrained(ability_weights, freeze=False, padding_idx=0)
+            self.move_embedding = nn.Embedding.from_pretrained(move_weights, freeze=False, padding_idx=0)
 
     def _init_custom_embedding(self, n_dims, category):
         model_folder = 'C:/Users/RoelH/Documents//Uni/Bachelor thesis/Python/PokemonML/entity_embedding/model_files/'

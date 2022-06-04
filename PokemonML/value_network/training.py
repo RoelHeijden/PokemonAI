@@ -10,8 +10,8 @@ from data.transformer import StateTransformer
 
 class Trainer:
     def __init__(self, model, data_folder, save_path, n_epochs=40, batch_size=256, lr=2e-4, lr_decay=0.98, lr_decay_steps=1,
-                 update_every_n_batches=10, file_size=10000, buffer_size=5000, num_workers=4, shuffle_data=True,
-                 shuffle_players=True, shuffle_pokemon=True, shuffle_moves=True, save_model=True):
+                 weight_decay=0.01, update_every_n_batches=10, file_size=10000, buffer_size=5000, num_workers=4,
+                 shuffle_data=True, shuffle_players=True, shuffle_pokemon=True, shuffle_moves=True, save_model=True):
 
         # model settings
         self.model = model
@@ -20,7 +20,7 @@ class Trainer:
         self.n_epochs = n_epochs
         self.batch_size = batch_size
 
-        self.optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+        self.optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, lr_decay_steps, gamma=lr_decay)
 
         self.loss_function = Loss()
