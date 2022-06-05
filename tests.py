@@ -70,20 +70,81 @@ player2 = torch.stack((pokemon4, pokemon5, pokemon6))
 
 pokemon = torch.stack((player1, player2)).unsqueeze(0)
 
-# x = []
-# for i in range(pokemon.shape[2]):
-#     matchup = torch.cat((p1_side, torch.roll(p2_side, i, dims=1)), dim=2).unsqueeze(1)
-#     x.append(torch.flatten(self.conv(matchup), start_dim=1))
-#
-# x = torch.cat(x, dim=1)
+
+
+def matchup_layer(x):
+
+    conv2d = nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(1, 8), stride=1)
+
+    p1_side = x[:, 0]
+    p2_side = x[:, 1]
+
+    matchups = []
+    for i in range(x.shape[2]):
+        matchups.append(
+            torch.cat((p1_side, torch.roll(p2_side, i, dims=1)), dim=2)
+        )
+
+    # apply kernel over each of the 36 matchups
+    x = torch.cat(matchups, dim=1).unsqueeze(1)
+    x = conv2d(x)
+
+    return x
+
+
+x = matchup_layer(pokemon)
+x = x.squeeze(3)
+x = torch.transpose(x, dim0=1, dim1=2)
+# [bs, 9, 16]
+
+bs, w, h = x.shape
+x = torch.reshape(x, (bs, 3, 3, h))
+# [bs, 3, 3, 16]
+
+
+p1_side = torch.reshape(x, (bs, 3, 3 * h))
+# [bs, 3, 48]
+
+p2_side = torch.reshape(
+    torch.stack(
+        [x[:, :, i] for i in range(3)],
+        dim=1
+    ),
+    (bs, 3, 3 * h)
+)
+
+
+print(p1_side[0, 1, 16:32])
+print()
+print(p2_side[0, 1, 16:32])
+
+
+""" 
+[bs, 16, 9, 1]
+->
+[bs, 2, 3, 48]
+
+-------------------------
+
+[bs, 16, 9, 1]
+-> squeeze
+[bs, 16, 9]
+-> transpose
+[bs, 9, 16]
+1, 1
+1, 2
+1, 3
+2, 1
+2, 2
+2, 3
+3, 1
+3, 2
+3, 3
+-> reshape
+[bs, 3, 3, 16]
+[bs, p1mons, p2mons, 16]
 
 
 
-
-
-
-
-
-
-
+"""
 
