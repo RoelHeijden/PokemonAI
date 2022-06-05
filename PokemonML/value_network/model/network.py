@@ -24,20 +24,22 @@ class ValueNet(nn.Module):
         # input size of a single pokemon
         pokemon_size = species_dim + item_dim + ability_dim + move_dim * 4 + pokemon_attributes
 
-        # pokemon layer
-        pokemon_out = 128
-        self.pokemon_layer = PokemonLayer(pokemon_size, pokemon_out, drop_rate=0.2)
-
         # conv matchup layer
-        out_channels = 8
-        matchup_out = out_channels * 6 * 6
-        self.matchup_layer = ConvMatchupLayer(pokemon_out * 2, out_channels)
+        out_channels = 16
+        matchup_out = out_channels * 6
+        self.matchup_layer = MatchupLayer(pokemon_size * 2, out_channels)
+
+        # pokemon layer
+        pokemon_in = pokemon_size + matchup_out
+        pokemon_out = 192
+        self.pokemon_layer = PokemonLayer(pokemon_in, pokemon_out, drop_rate=0.4)
 
         # full state layer
-        state_layer_in = pokemon_out * 12 + side_size * 2 + field_size + matchup_out
+        state_layer_in = pokemon_out * 12 + side_size * 2 + field_size
         fc1_out = 1024
-        state_out = 512
-        self.state_layer = FullStateLayer(state_layer_in, fc1_out, state_out, drop_rate=0.4)
+        fc2_out = 512
+        state_out = 64
+        self.state_layer = FullStateLayer(state_layer_in, fc1_out, fc2_out, state_out, drop_rate=0.4)
 
         # output later
         self.output = OutputLayer(state_out)
@@ -46,17 +48,16 @@ class ValueNet(nn.Module):
         # embed and concatenate pokemon variables
         fields, sides, pokemon = self.encoding(fields, sides, pokemon)
 
-        # pass each pokemon through the pokemon layer
-        pokemon = self.pokemon_layer(pokemon)
-
-        # compare each player1's pokemon's matchup vs each of the opposing pokemon
+        # matchup layer
         matchups = self.matchup_layer(pokemon)
 
-        # pass everything together through the full state layer
+        # pokemon layer
+        pokemon = self.pokemon_layer(torch.cat((pokemon, matchups), dim=3))
+
+        # state layer
         state = self.state_layer(
             torch.cat(
                 (
-                    torch.flatten(matchups, start_dim=1),
                     torch.flatten(pokemon, start_dim=1),
                     torch.flatten(sides, start_dim=1),
                     fields
@@ -95,13 +96,13 @@ class PokemonLayer(nn.Module):
         return x
 
 
-class ConvMatchupLayer(nn.Module):
+class MatchupLayer(nn.Module):
     def __init__(self, input_size, out_channels):
         super().__init__()
 
         self.conv2d = nn.Conv2d(in_channels=1, out_channels=out_channels, kernel_size=(1, input_size), stride=1)
         self.bn2d = nn.BatchNorm2d(out_channels)
-        self.relu = nn.ReLU()
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x) -> torch.tensor:
         p1_side = x[:, 0]
@@ -118,21 +119,45 @@ class ConvMatchupLayer(nn.Module):
         x = torch.cat(matchups, dim=1).unsqueeze(1)
         x = self.conv2d(x)
 
-        x = self.relu(x)
         x = self.bn2d(x)
+        x = self.sigmoid(x)
+
+        # [bs, out, 36, 1] -> [bs, 36, out]
+        x = torch.transpose(x, dim0=1, dim1=2).squeeze(3)
+
+        # [bs, 36, out] -> [bs, 6, 6, out]
+        bs, _, out = x.shape
+        x = torch.reshape(x, (bs, 6, 6, out))
+
+        # [bs, 6, 6, out] -> [bs, 6, 6*out] for p1
+        p1_side = torch.reshape(x, (bs, 6, 6 * out))
+
+        # [bs, 6, 6, out] -> [bs, 6, 6*out] for p2
+        p2_side = torch.reshape(
+            torch.stack(
+                [x[:, :, i] for i in range(6)],
+                dim=1
+            ),
+            (bs, 6, 6 * out)
+        )
+
+        # [bs, 2, 6, 6*out]
+        x = torch.stack((p1_side, p2_side), dim=1)
 
         return x
 
 
 class FullStateLayer(nn.Module):
-    def __init__(self, input_size, fc1_out, output_size, drop_rate):
+    def __init__(self, input_size, fc1_out, fc2_out, output_size, drop_rate):
         super().__init__()
 
         self.fc1 = nn.Linear(input_size, fc1_out)
-        self.fc2 = nn.Linear(fc1_out, output_size)
+        self.fc2 = nn.Linear(fc1_out, fc2_out)
+        self.fc3 = nn.Linear(fc2_out, output_size)
 
         self.bn1 = nn.BatchNorm1d(fc1_out)
-        self.bn2 = nn.BatchNorm1d(output_size)
+        self.bn2 = nn.BatchNorm1d(fc2_out)
+        self.bn3 = nn.BatchNorm1d(output_size)
 
         self.drop = nn.Dropout(p=drop_rate)
         self.relu = nn.ReLU()
@@ -150,6 +175,10 @@ class FullStateLayer(nn.Module):
 
         x = self.drop(x)
 
+        x = self.fc3(x)
+        x = self.relu(x)
+        x = self.bn3(x)
+
         return x
 
 
@@ -163,5 +192,6 @@ class OutputLayer(nn.Module):
     def forward(self, x: torch.tensor):
         x = self.fc(x)
         x = self.sigmoid(x)
+
         return x
 
