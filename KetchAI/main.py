@@ -3,7 +3,7 @@ from Showdown_Pmariglia.showdown.battle_bots.helpers import format_decision
 from Showdown_Pmariglia.showdown.engine.objects import StateMutator
 
 from KetchAI.nash_calc import NashCalc
-from KetchAI.turn_simulator import TurnSimulator
+from KetchAI.search import Search
 
 
 class BattleBot(Battle):
@@ -23,7 +23,7 @@ class BattleBot(Battle):
     def __init__(self, *args, **kwargs):
         super(BattleBot, self).__init__(*args, **kwargs)
         self.NE = NashCalc()
-        self.sim = TurnSimulator()
+        self.sim = Search()
 
     def find_best_move(self):
         """ Finds the best move at a given turn """

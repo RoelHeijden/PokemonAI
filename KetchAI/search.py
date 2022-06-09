@@ -13,7 +13,7 @@ from Showdown_Pmariglia import constants
 from KetchAI.evaluate import Evaluate
 
 
-class TurnSimulator:
+class Search:
     """ Edited versions of some of Pmariglia's turn simulation tools """
     def __init__(self):
         self.value_network = Evaluate()
