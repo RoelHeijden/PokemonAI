@@ -43,6 +43,8 @@ class StateTransformer:
         # side scaling
         self.n_pokemon_scaling = 6
         self.wish_scaling = 200
+        self.toxic_count_scaling = 5
+        self.spikes_scaling = 3
 
         # pokemon scaling
         self.level_scaling = 100
@@ -196,8 +198,19 @@ class StateTransformer:
             # one-hot encode side conditions
             side_conditions = []
             for s_con in SIDE_CONDITIONS:
+
+                # toxic count and protect are passed as Pokemon attributes instead
+                if s_con == 'toxic_count' or s_con == 'protect':
+                    continue
+
                 if s_con in side['side_conditions']:
                     count = side['side_conditions'].get(s_con)
+
+                    if s_con == 'toxic_count':
+                        count = count / self.toxic_count_scaling
+                    if s_con == 'spikes' or s_con == 'toxicspikes':
+                        count = count / self.spikes_scaling
+
                     side_conditions.append(count)
                 else:
                     side_conditions.append(0)
@@ -227,18 +240,38 @@ class StateTransformer:
         """
         out = {}
 
+        # set each pokemon's side conditions that should actually be volatile status oops
+        p1_toxic_count = state[self.p1]['side_conditions'].get('toxic_count')
+        p1_protect_count = state[self.p1]['side_conditions'].get('protect')
+        state[self.p1]['active']['toxic_count'] = p1_toxic_count if p1_toxic_count else 0
+        state[self.p1]['active']['protect_count'] = p1_protect_count if p1_protect_count else 0
+
+        p2_toxic_count = state[self.p2]['side_conditions'].get('toxic_count')
+        p2_protect_count = state[self.p2]['side_conditions'].get('protect')
+        state[self.p2]['active']['toxic_count'] = p2_toxic_count if p2_toxic_count else 0
+        state[self.p2]['active']['protect_count'] = p2_protect_count if p2_protect_count else 0
+
+        for pkmn in state[self.p1]['reserve'] + state[self.p2]['reserve']:
+            pkmn['toxic_count'] = 0
+            pkmn['protect_count'] = 0
+
         # set active pokemon
         state[self.p1]['active']['is_active'] = True
         state[self.p2]['active']['is_active'] = True
 
-        # shuffle reserve pokemon positions
-        if self.shuffle_pokemon:
-            random.shuffle(state[self.p1]['reserve'])
-            random.shuffle(state[self.p2]['reserve'])
+        # # shuffle reserve pokemon positions
+        # if self.shuffle_pokemon:
+        #     random.shuffle(state[self.p1]['reserve'])
+        #     random.shuffle(state[self.p2]['reserve'])
 
         # concat teams
         p1_team = [state[self.p1]['active']] + state[self.p1]['reserve']
         p2_team = [state[self.p2]['active']] + state[self.p2]['reserve']
+
+        # shuffle pokemon position
+        if self.shuffle_pokemon:
+            random.shuffle(p1_team)
+            random.shuffle(p2_team)
 
         # shuffle move positions
         if self.shuffle_moves:
@@ -348,6 +381,8 @@ class StateTransformer:
         Health
         Is_alive
         Sleep_countdown
+        Toxic_count
+        Protect_count
         Types
         Stats
         Stat_changes
@@ -373,6 +408,12 @@ class StateTransformer:
 
         # n turns pokemon may stay asleep
         sleep_countdown = pokemon['sleep_countdown'] / self.sleep_count_scaling
+
+        # toxic turn counter
+        toxic_count = pokemon['toxic_count'] / self.toxic_count_scaling
+
+        # protect counter
+        protect_count = pokemon['protect_count']
 
         # one-hot encode pokemon types
         types = []
@@ -444,6 +485,8 @@ class StateTransformer:
             health,
             is_alive,
             sleep_countdown,
+            toxic_count,
+            protect_count
         ]
         out.extend(types)
         out.extend(stats)
