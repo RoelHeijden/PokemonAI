@@ -30,7 +30,7 @@ def main():
     # embedder.create_model('sents_per_poke_1200+.txt', dims=96)
     # embedder.create_model('sents_per_poke_1200+.txt', dims=128)
 
-    embedder.test_random_embeddings(SPECIES, 50, dims=16)
+    embedder.test_random_embeddings(SPECIES, 50, dims=64)
     # embedder.test_random_embeddings(ITEMS, 10, dims=16)
     # embedder.test_random_embeddings(MOVES, 10, dims=16)
     # embedder.test_random_embeddings(ABILITIES, 10, dims=16)
