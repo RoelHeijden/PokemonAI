@@ -207,7 +207,8 @@ class TurnSimulator:
                 user_outspeeds_matrix[:, idx] = new_values
 
         # create full payoff dict, and a bimatrix to be used for NE calculation
-        full_weighted_matrix = opp_outspeeds_matrix + user_outspeeds_matrix
+        full_weighted_matrix = ((opp_outspeeds_matrix + user_outspeeds_matrix) - 0.5) * 2
+
         payoff_matrix = {}
         bimatrix = np.zeros((len(user_options), len(opponent_options), 2))
         for i, full_user_move_str in enumerate(user_options):
