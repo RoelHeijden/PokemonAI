@@ -34,3 +34,4 @@
 33. get_pokemon_info_from_condition no longer changes max_hp - current_maxhp now passed as argument
 34. added to_dict() for state class
 35. state.battle_is_finished now returns 0 if the opp wins instead of -1
+36. switch_or_drag now un-disables moves
