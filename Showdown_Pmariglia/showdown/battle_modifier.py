@@ -182,6 +182,10 @@ def switch_or_drag(battle, split_msg):
             side.active.moves = side.active.original_attributes['moves']
             side.active.types = pokedex[side.active.name][constants.TYPES]
 
+        # set moves to not disabled
+        for m in side.active.moves:
+            m.disabled = False
+
         # reset the Pokemon's ability
         side.active.ability = side.active.original_attributes['ability']
 
