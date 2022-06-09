@@ -10,17 +10,14 @@ class BattleBot(Battle):
     """ Main AI class
 
     Currently uses:
-    - Tree search (depth=2)
-    - Pmariglia's handcrafted evaluation function
-    - Nash equilibria
-
-    Current plans:
-    - Replace evaluation function with neural network
+    - Tree search (depth=1)
+    - Evaluation neural network
+    - Lemke Howson Nash equilibrium
 
     Future work:
     - Implement data driven move/item-set model
     - Implement Bayesian Nash equilibrium
-    - Explore possibilities for depth=2 search
+    - Increase efficiency for depth=2 search
 
     """
     def __init__(self, *args, **kwargs):
