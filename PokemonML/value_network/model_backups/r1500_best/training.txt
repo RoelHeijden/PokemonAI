@@ -1,0 +1,44 @@
+ValueNet 1500+, 256, LR=2e-2, gamma=0.96, 64/16/16/16
+    matchup conv 32,
+    pokemon 192 drop(0.4),
+    hidden: 1024 drop(0.4), 512 drop(0.4), 64,
+
+average accuracy: 0.698
+
+Epoch 1 | LR: 0.0002000 | Train loss: 0.692 | Val loss: 0.653
+Epoch 2 | LR: 0.0001920 | Train loss: 0.616 | Val loss: 0.584
+Epoch 3 | LR: 0.0001843 | Train loss: 0.587 | Val loss: 0.576
+Epoch 4 | LR: 0.0001769 | Train loss: 0.580 | Val loss: 0.570
+Epoch 5 | LR: 0.0001699 | Train loss: 0.575 | Val loss: 0.571
+Epoch 6 | LR: 0.0001631 | Train loss: 0.572 | Val loss: 0.568
+Epoch 7 | LR: 0.0001566 | Train loss: 0.569 | Val loss: 0.567
+Epoch 8 | LR: 0.0001503 | Train loss: 0.567 | Val loss: 0.566
+Epoch 9 | LR: 0.0001443 | Train loss: 0.565 | Val loss: 0.564
+Epoch 10 | LR: 0.0001385 | Train loss: 0.562 | Val loss: 0.564
+Epoch 11 | LR: 0.0001330 | Train loss: 0.561 | Val loss: 0.560
+Epoch 12 | LR: 0.0001276 | Train loss: 0.559 | Val loss: 0.560
+Epoch 13 | LR: 0.0001225 | Train loss: 0.557 | Val loss: 0.562
+Epoch 14 | LR: 0.0001176 | Train loss: 0.556 | Val loss: 0.561
+Epoch 15 | LR: 0.0001129 | Train loss: 0.555 | Val loss: 0.559
+Epoch 16 | LR: 0.0001084 | Train loss: 0.554 | Val loss: 0.558
+Epoch 17 | LR: 0.0001041 | Train loss: 0.552 | Val loss: 0.559
+Epoch 18 | LR: 0.0000999 | Train loss: 0.552 | Val loss: 0.559
+Epoch 19 | LR: 0.0000959 | Train loss: 0.551 | Val loss: 0.557
+Epoch 20 | LR: 0.0000921 | Train loss: 0.550 | Val loss: 0.557
+Epoch 21 | LR: 0.0000884 | Train loss: 0.549 | Val loss: 0.558
+Epoch 22 | LR: 0.0000849 | Train loss: 0.548 | Val loss: 0.558
+Epoch 23 | LR: 0.0000815 | Train loss: 0.547 | Val loss: 0.558
+Epoch 24 | LR: 0.0000782 | Train loss: 0.546 | Val loss: 0.559
+Epoch 25 | LR: 0.0000751 | Train loss: 0.545 | Val loss: 0.556
+Epoch 26 | LR: 0.0000721 | Train loss: 0.545 | Val loss: 0.558
+Epoch 27 | LR: 0.0000692 | Train loss: 0.545 | Val loss: 0.557
+Epoch 28 | LR: 0.0000664 | Train loss: 0.544 | Val loss: 0.556
+Epoch 29 | LR: 0.0000638 | Train loss: 0.543 | Val loss: 0.555
+Epoch 30 | LR: 0.0000612 | Train loss: 0.542 | Val loss: 0.557
+Epoch 31 | LR: 0.0000588 | Train loss: 0.542 | Val loss: 0.557
+Epoch 32 | LR: 0.0000564 | Train loss: 0.541 | Val loss: 0.556
+Epoch 33 | LR: 0.0000542 | Train loss: 0.540 | Val loss: 0.557
+Epoch 34 | LR: 0.0000520 | Train loss: 0.540 | Val loss: 0.557
+Epoch 35 | LR: 0.0000499 | Train loss: 0.539 | Val loss: 0.556
+Epoch 36 | LR: 0.0000479 | Train loss: 0.539 | Val loss: 0.554 X
+Epoch 37 | LR: 0.0000460 | Train loss: 0.539 | Val loss: 0.555
