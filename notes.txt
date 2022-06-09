@@ -88,23 +88,6 @@ ENVIRONMENT
     1. check role of hidden_power_type in battler.from_team_json()
 
 
------------------------------------------------------------------------------------------------------------------------
-
-
-MODEL EXPERIMENT
-    - train 1000+, 1100+, 1300+ and 1500+ models
-    - test each model on each rating
-
-    - average accuracy per %completed (per rating)
-    - average accuracy per %completed (per game length)
-
-    - average eval per %complete (per label)
-    - eval distribution per %completed (per label)
-
-    - average eval change per %completed
-    - eval change distribution per %completed
-
-    - eval per %completed of a single sampled game (with notable game moments noted, like critical hits, reads)
 
 
 
