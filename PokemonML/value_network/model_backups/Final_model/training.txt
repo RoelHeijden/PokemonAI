@@ -44,9 +44,10 @@ Epoch 36 | LR: 0.0000332 | Train loss: 0.500 | Val loss: 0.509
 Epoch 37 | LR: 0.0000316 | Train loss: 0.500 | Val loss: 0.509
 
 
-Training states:
-    1000+_all_states:
-
+Test states:
+    1000+ entire game:
+        2649523 states evaluated
+        average accuracy: 0.727
     1000+:
         104765 states evaluated
         average accuracy: 0.741
@@ -62,3 +63,10 @@ Training states:
     1700+:
         1867 states evaluated
         average accuracy: 0.723
+
+
+Test games:
+    1000+:
+        17000 games evaluated
+        Accuracy per %completed: 0.611 | 0.625 | 0.642 | 0.654 | 0.667 | 0.684 | 0.694 | 0.711 | 0.721 | 0.731 | 0.745 | 0.763 | 0.775 | 0.789 | 0.81 | 0.83 | 0.848 | 0.876 | 0.901 | 0.927
+
