@@ -259,19 +259,14 @@ class StateTransformer:
         state[self.p1]['active']['is_active'] = True
         state[self.p2]['active']['is_active'] = True
 
-        # # shuffle reserve pokemon positions
-        # if self.shuffle_pokemon:
-        #     random.shuffle(state[self.p1]['reserve'])
-        #     random.shuffle(state[self.p2]['reserve'])
+        # shuffle reserve pokemon positions
+        if self.shuffle_pokemon:
+            random.shuffle(state[self.p1]['reserve'])
+            random.shuffle(state[self.p2]['reserve'])
 
         # concat teams
         p1_team = [state[self.p1]['active']] + state[self.p1]['reserve']
         p2_team = [state[self.p2]['active']] + state[self.p2]['reserve']
-
-        # shuffle pokemon position
-        if self.shuffle_pokemon:
-            random.shuffle(p1_team)
-            random.shuffle(p2_team)
 
         # shuffle move positions
         if self.shuffle_moves:
