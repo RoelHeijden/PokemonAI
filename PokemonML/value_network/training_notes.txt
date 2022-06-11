@@ -621,7 +621,7 @@ Epoch 27 | LR: 0.0000527 | Train loss: 0.523 | Val loss: 0.534
 Epoch 28 | LR: 0.0000501 | Train loss: 0.523 | Val loss: 0.534
 Epoch 29 | LR: 0.0000476 | Train loss: 0.522 | Val loss: 0.534
 Epoch 30 | LR: 0.0000452 | Train loss: 0.522 | Val loss: 0.534
-Epoch 31 | LR: 0.0000429 | Train loss: 0.521 | Val loss: 0.533
+Epoch 31 | LR: 0.0000429 | Train loss: 0.521 | Val loss: 0.533 X
 
 
 
@@ -679,22 +679,157 @@ ValueNet 1100+, 256, LR=2e-2, gamma=0.95, 64/16/16/16
     hidden: 1024 drop(0.3), 512 drop(0.3), 128
 
 
+Epoch 1 | LR: 0.0002000 | Train loss: 0.581 | Val loss: 0.562
+Epoch 2 | LR: 0.0001900 | Train loss: 0.557 | Val loss: 0.556
+Epoch 3 | LR: 0.0001805 | Train loss: 0.553 | Val loss: 0.553
+Epoch 4 | LR: 0.0001715 | Train loss: 0.549 | Val loss: 0.551
+Epoch 5 | LR: 0.0001629 | Train loss: 0.548 | Val loss: 0.550
+Epoch 6 | LR: 0.0001548 | Train loss: 0.546 | Val loss: 0.549
+Epoch 7 | LR: 0.0001470 | Train loss: 0.544 | Val loss: 0.549
+Epoch 8 | LR: 0.0001397 | Train loss: 0.543 | Val loss: 0.548
+Epoch 9 | LR: 0.0001327 | Train loss: 0.542 | Val loss: 0.547
+Epoch 10 | LR: 0.0001260 | Train loss: 0.541 | Val loss: 0.546
+Epoch 11 | LR: 0.0001197 | Train loss: 0.540 | Val loss: 0.545
+Epoch 12 | LR: 0.0001138 | Train loss: 0.539 | Val loss: 0.544
+Epoch 13 | LR: 0.0001081 | Train loss: 0.538 | Val loss: 0.544
+Epoch 14 | LR: 0.0001027 | Train loss: 0.537 | Val loss: 0.544
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+
+ValueNet 1000+ 1 state, 256, LR=2e-2, gamma=0.95, 64/16/16/16
+    pokemon 192
+    hidden: 1024, 512 drop, 128
+
+Epoch 1 | LR: 0.0002000 | Train loss: 0.583 | Val loss: 0.552
+Epoch 2 | LR: 0.0001900 | Train loss: 0.547 | Val loss: 0.544
+Epoch 3 | LR: 0.0001805 | Train loss: 0.541 | Val loss: 0.540
+Epoch 4 | LR: 0.0001715 | Train loss: 0.537 | Val loss: 0.538
+Epoch 5 | LR: 0.0001629 | Train loss: 0.534 | Val loss: 0.534
+Epoch 6 | LR: 0.0001548 | Train loss: 0.531 | Val loss: 0.533
+Epoch 7 | LR: 0.0001470 | Train loss: 0.529 | Val loss: 0.531
+Epoch 8 | LR: 0.0001397 | Train loss: 0.527 | Val loss: 0.530
+Epoch 9 | LR: 0.0001327 | Train loss: 0.525 | Val loss: 0.528
+Epoch 10 | LR: 0.0001260 | Train loss: 0.523 | Val loss: 0.531
+Epoch 11 | LR: 0.0001197 | Train loss: 0.522 | Val loss: 0.529
+
+training states:
+    - 1000+: 0.726
+    - 1100+: 0.714
 
 
 
+ValueNet 1000+ 1 state, 256, LR=2e-2, gamma=0.95, 64/16/16/16
+    drop before bn
+    pokemon 192 drop(0.2)
+    hidden: 1024 drop(0.3), 512 drop(0.3), 128 drop(0.3)
 
-decide architecture:
-- side/field/pokemon concat
-- active shufle vs no active shuffle
+Epoch 1 | LR: 0.0002000 | Train loss: 0.612 | Val loss: 0.554
+Epoch 2 | LR: 0.0001900 | Train loss: 0.558 | Val loss: 0.546
+Epoch 3 | LR: 0.0001805 | Train loss: 0.551 | Val loss: 0.542
+Epoch 4 | LR: 0.0001715 | Train loss: 0.546 | Val loss: 0.540
+Epoch 5 | LR: 0.0001629 | Train loss: 0.543 | Val loss: 0.538
+Epoch 6 | LR: 0.0001548 | Train loss: 0.541 | Val loss: 0.536
+Epoch 7 | LR: 0.0001470 | Train loss: 0.539 | Val loss: 0.535
+Epoch 8 | LR: 0.0001397 | Train loss: 0.538 | Val loss: 0.533
+Epoch 9 | LR: 0.0001327 | Train loss: 0.536 | Val loss: 0.532
+Epoch 10 | LR: 0.0001260 | Train loss: 0.535 | Val loss: 0.531
+Epoch 11 | LR: 0.0001197 | Train loss: 0.534 | Val loss: 0.531
+Epoch 12 | LR: 0.0001138 | Train loss: 0.533 | Val loss: 0.530
+Epoch 13 | LR: 0.0001081 | Train loss: 0.532 | Val loss: 0.530
+Epoch 14 | LR: 0.0001027 | Train loss: 0.531 | Val loss: 0.530
+Epoch 15 | LR: 0.0000975 | Train loss: 0.530 | Val loss: 0.529
+Epoch 16 | LR: 0.0000927 | Train loss: 0.529 | Val loss: 0.528
+Epoch 17 | LR: 0.0000880 | Train loss: 0.528 | Val loss: 0.529
+Epoch 18 | LR: 0.0000836 | Train loss: 0.527 | Val loss: 0.528
+Epoch 19 | LR: 0.0000794 | Train loss: 0.527 | Val loss: 0.527
+Epoch 20 | LR: 0.0000755 | Train loss: 0.526 | Val loss: 0.526
+Epoch 21 | LR: 0.0000717 | Train loss: 0.525 | Val loss: 0.526
+Epoch 22 | LR: 0.0000681 | Train loss: 0.525 | Val loss: 0.526
+Epoch 23 | LR: 0.0000647 | Train loss: 0.524 | Val loss: 0.526
+Epoch 24 | LR: 0.0000615 | Train loss: 0.523 | Val loss: 0.525
+Epoch 25 | LR: 0.0000584 | Train loss: 0.523 | Val loss: 0.526
+Epoch 26 | LR: 0.0000555 | Train loss: 0.522 | Val loss: 0.525
+Epoch 27 | LR: 0.0000527 | Train loss: 0.521 | Val loss: 0.525
+Epoch 28 | LR: 0.0000501 | Train loss: 0.521 | Val loss: 0.525
+Epoch 29 | LR: 0.0000476 | Train loss: 0.521 | Val loss: 0.524
+Epoch 30 | LR: 0.0000452 | Train loss: 0.520 | Val loss: 0.524
+Epoch 31 | LR: 0.0000429 | Train loss: 0.520 | Val loss: 0.524
+Epoch 32 | LR: 0.0000408 | Train loss: 0.519 | Val loss: 0.524
+Epoch 33 | LR: 0.0000387 | Train loss: 0.519 | Val loss: 0.523
+Epoch 34 | LR: 0.0000368 | Train loss: 0.519 | Val loss: 0.523
+Epoch 35 | LR: 0.0000350 | Train loss: 0.518 | Val loss: 0.523
+Epoch 36 | LR: 0.0000332 | Train loss: 0.518 | Val loss: 0.523
+Epoch 37 | LR: 0.0000316 | Train loss: 0.517 | Val loss: 0.523
+Epoch 38 | LR: 0.0000300 | Train loss: 0.517 | Val loss: 0.523
 
-create new train batches:
-- 10 states per game
-- no min rating
-
-train final model:
-- set dropout rates
+training states:
+    1000+: average accuracy: 0.732
+    1100+: average accuracy: 0.719
 
 
+------------------------------------------------------------------------------------------------------------------------
+
+FINAL MODEL
+
+ValueNet 1000+ 10 states, 256, LR=2e-2, gamma=0.95, 64/16/16/16
+    drop before bn
+    pokemon 192 drop(0.2)
+    hidden: 1024 drop(0.3), 512 drop(0.3), 128 drop(0.3)
+
+Epoch 1 | LR: 0.0002000 | Train loss: 0.546 | Val loss: 0.539
+Epoch 2 | LR: 0.0001900 | Train loss: 0.529 | Val loss: 0.534
+Epoch 3 | LR: 0.0001805 | Train loss: 0.524 | Val loss: 0.531
+Epoch 4 | LR: 0.0001715 | Train loss: 0.521 | Val loss: 0.527
+Epoch 5 | LR: 0.0001629 | Train loss: 0.518 | Val loss: 0.524
+Epoch 6 | LR: 0.0001548 | Train loss: 0.516 | Val loss: 0.522
+Epoch 7 | LR: 0.0001470 | Train loss: 0.515 | Val loss: 0.521
+Epoch 8 | LR: 0.0001397 | Train loss: 0.513 | Val loss: 0.520
+Epoch 9 | LR: 0.0001327 | Train loss: 0.512 | Val loss: 0.518
+Epoch 10 | LR: 0.0001260 | Train loss: 0.511 | Val loss: 0.517
+Epoch 11 | LR: 0.0001197 | Train loss: 0.510 | Val loss: 0.518
+Epoch 12 | LR: 0.0001138 | Train loss: 0.509 | Val loss: 0.516
+Epoch 13 | LR: 0.0001081 | Train loss: 0.508 | Val loss: 0.516
+Epoch 14 | LR: 0.0001027 | Train loss: 0.508 | Val loss: 0.515
+Epoch 15 | LR: 0.0000975 | Train loss: 0.507 | Val loss: 0.515
+Epoch 16 | LR: 0.0000927 | Train loss: 0.506 | Val loss: 0.514
+Epoch 17 | LR: 0.0000880 | Train loss: 0.506 | Val loss: 0.513
+Epoch 18 | LR: 0.0000836 | Train loss: 0.505 | Val loss: 0.513
+Epoch 19 | LR: 0.0000794 | Train loss: 0.505 | Val loss: 0.513
+Epoch 20 | LR: 0.0000755 | Train loss: 0.504 | Val loss: 0.512
+Epoch 21 | LR: 0.0000717 | Train loss: 0.504 | Val loss: 0.512
+Epoch 22 | LR: 0.0000681 | Train loss: 0.504 | Val loss: 0.512
+Epoch 23 | LR: 0.0000647 | Train loss: 0.503 | Val loss: 0.511
+Epoch 24 | LR: 0.0000615 | Train loss: 0.503 | Val loss: 0.511
+Epoch 25 | LR: 0.0000584 | Train loss: 0.503 | Val loss: 0.510
+Epoch 26 | LR: 0.0000555 | Train loss: 0.502 | Val loss: 0.511
+Epoch 27 | LR: 0.0000527 | Train loss: 0.502 | Val loss: 0.510
+Epoch 28 | LR: 0.0000501 | Train loss: 0.502 | Val loss: 0.510
+Epoch 29 | LR: 0.0000476 | Train loss: 0.502 | Val loss: 0.510
+Epoch 30 | LR: 0.0000452 | Train loss: 0.501 | Val loss: 0.510
+Epoch 31 | LR: 0.0000429 | Train loss: 0.501 | Val loss: 0.509
+Epoch 32 | LR: 0.0000408 | Train loss: 0.501 | Val loss: 0.509
+Epoch 33 | LR: 0.0000387 | Train loss: 0.501 | Val loss: 0.510
+Epoch 34 | LR: 0.0000368 | Train loss: 0.501 | Val loss: 0.509
+Epoch 35 | LR: 0.0000350 | Train loss: 0.500 | Val loss: 0.509
+Epoch 36 | LR: 0.0000332 | Train loss: 0.500 | Val loss: 0.509
+Epoch 37 | LR: 0.0000316 | Train loss: 0.500 | Val loss: 0.509
 
 
-
+Training states:
+    1000+:
+        104765 states evaluated
+        average accuracy: 0.741
+    1100+:
+        74151 states evaluated
+        average accuracy: 0.731
+    1300+:
+        31242 states evaluated
+        average accuracy: 0.728
+    1500+:
+        8913 states evaluated
+        average accuracy: 0.722
+    1700+:
+        1867 states evaluated
+        average accuracy: 0.723
