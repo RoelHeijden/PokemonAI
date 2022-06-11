@@ -24,7 +24,7 @@ class ValueNet(nn.Module):
         # pokemon layer
         pokemon_in = species_dim + item_dim + ability_dim + move_dim * 4 + pokemon_attributes
         pokemon_out = 192
-        self.pokemon_layer = PokemonLayer(pokemon_in, pokemon_out, drop_rate=0.1)
+        self.pokemon_layer = PokemonLayer(pokemon_in, pokemon_out, drop_rate=0.2)
 
         # full state layer
         state_layer_in = pokemon_out * 12 + side_size * 2 + field_size
@@ -74,13 +74,12 @@ class PokemonLayer(nn.Module):
     def forward(self, x) -> torch.tensor:
         x = self.fc(x)
         x = self.relu(x)
+        x = self.drop(x)
 
         # apply batch normalization to each individual pokemon output
         bs, d, h, w = x.shape
         x = x.view(bs, d * h, w).unsqueeze(2)
         x = self.bn2d(x).view(bs, d, h, w)
-
-        x = self.drop(x)
 
         return x
 
@@ -104,18 +103,17 @@ class FullStateLayer(nn.Module):
     def forward(self, x: torch.tensor) -> torch.tensor:
         x = self.fc1(x)
         x = self.relu(x)
-        x = self.bn1(x)
-
         x = self.drop(x)
+        x = self.bn1(x)
 
         x = self.fc2(x)
         x = self.relu(x)
-        x = self.bn2(x)
-
         x = self.drop(x)
+        x = self.bn2(x)
 
         x = self.fc3(x)
         x = self.relu(x)
+        x = self.drop(x)
         x = self.bn3(x)
 
         return x
