@@ -55,6 +55,7 @@ class Trainer:
         # set data folders
         train_path = os.path.join(self.data_folder, 'train')
         val_path = os.path.join(self.data_folder, 'val')
+        # val_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/test_states/1100+'
 
         n_train_samples = sum([self.file_size for f in os.listdir(train_path)])
 
