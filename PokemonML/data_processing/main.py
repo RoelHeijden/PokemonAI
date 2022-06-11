@@ -43,8 +43,8 @@ def main():
         create_test_split(train_path, test_path, test_split=0.10)
 
     if mode == 'create training batches':
-        path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/test_games/all'
-        path_out = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/test_states'
+        path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_games'
+        path_out = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_states'
         f_out_name = 'ou_game_states'
         create_training_batches(path_in, path_out, f_out_name, file_size=10000, min_game_length=3)
 
@@ -260,26 +260,28 @@ def create_training_batches(path_in, path_out, f_out_name, file_size=10000, min_
     ignore_list = json.load(open('games_to_ignore.json', 'r'))
 
     # output folders
-    folder_all = 'all'
+    folder_1000 = '1000+'
     folder_1100 = '1100+'
     folder_1300 = '1300+'
     folder_1500 = '1500+'
     folder_1700 = '1700+'
 
     # initialize and open first out files
-    f_out_all = open(os.path.join(path_out, folder_all,  'all_' + f_out_name + '0.jsonl'), 'w')
+    f_out_1000 = open(os.path.join(path_out, folder_1000, '1000+_' + f_out_name + '0.jsonl'), 'w')
     f_out_1100 = open(os.path.join(path_out, folder_1100, '1100+_' + f_out_name + '0.jsonl'), 'w')
     f_out_1300 = open(os.path.join(path_out, folder_1300, '1300+_' + f_out_name + '0.jsonl'), 'w')
     f_out_1500 = open(os.path.join(path_out, folder_1500, '1500+_' + f_out_name + '0.jsonl'), 'w')
     f_out_1700 = open(os.path.join(path_out, folder_1700, '1700+_' + f_out_name + '0.jsonl'), 'w')
 
-    n_states_all = 0
+    n_states_1000 = 0
     n_states_1100 = 0
     n_states_1300 = 0
     n_states_1500 = 0
     n_states_1700 = 0
 
     n_games = 0
+    total_game_length = 0
+    total_n_states = 0
 
     start_time = time.time()
 
@@ -300,15 +302,17 @@ def create_training_batches(path_in, path_out, f_out_name, file_size=10000, min_
                 continue
 
             n_games += 1
+            total_game_length += all_states[-1]['turn']
+            total_n_states += len(all_states) - 1
 
             rating = all_states[0]['average_rating']
-            n_samples = min(max(int(math.sqrt(len(all_states) * 0.82)), 1), 5)
+            n_samples = 1
 
-            # sample states (avoiding team preview) and write to batches
-            # all
-            states = random.sample(all_states[1:], n_samples)
-            f_out_all= write_to_batch(states, f_out_all, n_states_all, file_size, f_out_name, path_out, folder_all)
-            n_states_all += len(states)
+            # 1000+
+            if rating >= 1000:
+                states = random.sample(all_states[1:], n_samples)
+                f_out_1000 = write_to_batch(states, f_out_1000, n_states_1000, file_size, f_out_name, path_out, folder_1000)
+                n_states_1000 += len(states)
 
             # 1100+
             if rating >= 1100:
@@ -335,10 +339,10 @@ def create_training_batches(path_in, path_out, f_out_name, file_size=10000, min_
                 n_states_1700 += len(states)
 
             # updates
-            if n_games % 5000 == 0:
+            if n_games % 2000 == 0:
                 print(f'{n_games} games sampled')
                 print(f'states extracted: \n'
-                      f'all: {n_states_all}, \n'
+                      f'1000+: {n_states_1000}, \n'
                       f'1100+: {n_states_1100}, \n'
                       f'1300+: {n_states_1300}, \n'
                       f'1500+: {n_states_1500}, \n'
@@ -350,11 +354,14 @@ def create_training_batches(path_in, path_out, f_out_name, file_size=10000, min_
 
     print(f'{n_games} games sampled')
     print(f'states extracted: \n'
-          f'all: {n_states_all}, \n'
+          f'1000+: {n_states_1000}, \n'
           f'1100+: {n_states_1100}, \n'
           f'1300+: {n_states_1300}, \n'
           f'1500+: {n_states_1500}, \n'
-          f'1700+: {n_states_1700}')
+          f'1700+: {n_states_1700}\n')
+
+    print(f'average n states: {total_n_states / n_games:.3f}')
+    print(f'average game length: {total_game_length / n_games:.3f}\n')
 
     print(f'runtime: {round(time.time() - start_time, 1)}s\n')
 
