@@ -11,6 +11,7 @@ from Showdown_Pmariglia import config
 from Showdown_Pmariglia import constants
 
 from KetchAI.evaluate import Evaluate
+from Showdown_Pmariglia.showdown.engine.evaluate import evaluate
 
 
 class Search:
@@ -206,9 +207,13 @@ class Search:
             for idx in columns_to_replace:
                 user_outspeeds_matrix[:, idx] = new_values
 
-        # create full payoff dict, and a bimatrix to be used for NE calculation
-        full_weighted_matrix = ((opp_outspeeds_matrix + user_outspeeds_matrix) - 0.5) * 2
+        # concat value matrices. Scale from -1 to 1 if it's the final payoff matrix
+        if depth == 1:
+            full_weighted_matrix = ((opp_outspeeds_matrix + user_outspeeds_matrix) - 0.5) * 2
+        else:
+            full_weighted_matrix = opp_outspeeds_matrix + user_outspeeds_matrix
 
+        # create full payoff dict, and a bimatrix to be used for NE calculation
         payoff_matrix = {}
         bimatrix = np.zeros((len(user_options), len(opponent_options), 2))
         for i, full_user_move_str in enumerate(user_options):
