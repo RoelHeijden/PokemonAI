@@ -1,56 +1,57 @@
-Mandibuzz (F) @ Heavy-Duty Boots
-Ability: Overcoat
-EVs: 248 HP / 8 Def / 252 SpD
+Mamoswine @ Life Orb
+Ability: Thick Fat
+EVs: 252 Atk / 4 SpD / 252 Spe
+Adamant Nature
+- Earthquake
+- Ice Shard
+- Icicle Crash
+- Stone Edge
+
+Ninetales-Alola @ Choice Specs
+Ability: Snow Warning
+EVs: 4 Def / 252 SpA / 252 Spe
+Timid Nature
+IVs: 0 Atk
+- Blizzard
+- Freeze-Dry
+- Aurora Veil
+- Moonblast
+
+Rotom-Heat @ Heavy-Duty Boots
+Ability: Levitate
+EVs: 244 HP / 16 SpA / 248 Spe
+Timid Nature
+IVs: 0 Atk
+- Nasty Plot
+- Overheat
+- Volt Switch
+- Pain Split
+
+Togekiss @ Choice Scarf
+Ability: Serene Grace
+EVs: 4 Def / 252 SpA / 252 Spe
+Timid Nature
+IVs: 0 Atk
+- Air Slash
+- Flamethrower
+- Dazzling Gleam
+- Trick
+
+Kommo-o @ Leftovers
+Ability: Bulletproof
+EVs: 248 HP / 200 Def / 60 Spe
+Impish Nature
+- Stealth Rock
+- Body Press
+- Earthquake
+- Taunt
+
+Corviknight @ Leftovers
+Ability: Pressure
+EVs: 248 HP / 48 Def / 212 SpD
 Careful Nature
-- Foul Play
+- Brave Bird
 - U-turn
 - Roost
 - Defog
-
-Jirachi @ Leftovers
-Ability: Serene Grace
-EVs: 48 HP / 208 Atk / 252 Spe
-Jolly Nature
-- Iron Head
-- Zen Headbutt
-- Power-Up Punch
-- Substitute
-
-Sandaconda (M) @ Leftovers
-Ability: Shed Skin
-EVs: 248 HP / 216 Def / 16 SpD / 28 Spe
-Impish Nature
-- Earthquake
-- Body Press
-- Stealth Rock
-- Glare
-
-Zeraora @ Life Orb
-Ability: Volt Absorb
-EVs: 180 Atk / 76 SpA / 252 Spe
-Naive Nature
-- Plasma Fists
-- Close Combat
-- Knock Off
-- Grass Knot
-
-Primarina (F) @ Choice Specs
-Ability: Torrent
-EVs: 88 HP / 252 SpA / 168 Spe
-Modest Nature
-IVs: 0 Atk
-- Sparkling Aria
-- Moonblast
-- Hydro Pump
-- Psychic
-
-Dragapult (F) @ Choice Scarf
-Ability: Infiltrator
-Shiny: Yes
-EVs: 64 HP / 252 SpA / 192 Spe
-Modest Nature
-- Draco Meteor
-- Shadow Ball
-- Flamethrower
-- U-turn
 
