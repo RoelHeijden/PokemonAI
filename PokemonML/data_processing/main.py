@@ -19,7 +19,7 @@ TO DO:
 
 NOTEWORTHY:
     - states includes moments in a turn where one of the sides has a fainted Pokemon
-    - team preview is not extracted as a states
+    - team preview is not extracted as a state
     
 """
 
@@ -43,8 +43,8 @@ def main():
         create_test_split(train_path, test_path, test_split=0.10)
 
     if mode == 'create training batches':
-        path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_games'
-        path_out = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_states'
+        path_in = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/test_games/1000+'
+        path_out = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/experiment_data/game_length'
         f_out_name = 'ou_game_states'
         create_training_batches(path_in, path_out, f_out_name, file_size=10000, min_game_length=3)
 
@@ -259,25 +259,48 @@ def create_training_batches(path_in, path_out, f_out_name, file_size=10000, min_
     games_too_short = {}
     ignore_list = json.load(open('games_to_ignore.json', 'r'))
 
+    # # output folders
+    # folder_all = 'all'
+    # folder_1000_1199 = '1000-1199'
+    # folder_1200_1399 = '1200-1399'
+    # folder_1400_1599 = '1400-1599'
+    # folder_1600 = '1600+'
+    #
+    # # initialize and open first out files
+    # f_out_all = open(os.path.join(path_out, folder_all, f_out_name + '0.jsonl'), 'w')
+    # f_out_1000_1199 = open(os.path.join(path_out, folder_1000_1199, f_out_name + '0.jsonl'), 'w')
+    # f_out_1200_1399 = open(os.path.join(path_out, folder_1200_1399, f_out_name + '0.jsonl'), 'w')
+    # f_out_1400_1599 = open(os.path.join(path_out, folder_1400_1599, f_out_name + '0.jsonl'), 'w')
+    # f_out_1600 = open(os.path.join(path_out, folder_1600, f_out_name + '0.jsonl'), 'w')
+    #
+    # n_states_all = 0
+    # n_states_1000_1199 = 0
+    # n_states_1200_1399 = 0
+    # n_states_1400_1599 = 0
+    # n_states_1600 = 0
+
     # output folders
-    folder_1000 = '1000+'
-    folder_1100 = '1100+'
-    folder_1300 = '1300+'
-    folder_1500 = '1500+'
-    folder_1700 = '1700+'
+    folder_2_9 = '2-9'
+    folder_10_19 = '10-19'
+    folder_20_29 = '20-29'
+    folder_30_39 = '30-39'
+    folder_40_49 = '40-49'
+    folder_50 = '50+'
 
     # initialize and open first out files
-    f_out_1000 = open(os.path.join(path_out, folder_1000, '1000+_' + f_out_name + '0.jsonl'), 'w')
-    f_out_1100 = open(os.path.join(path_out, folder_1100, '1100+_' + f_out_name + '0.jsonl'), 'w')
-    f_out_1300 = open(os.path.join(path_out, folder_1300, '1300+_' + f_out_name + '0.jsonl'), 'w')
-    f_out_1500 = open(os.path.join(path_out, folder_1500, '1500+_' + f_out_name + '0.jsonl'), 'w')
-    f_out_1700 = open(os.path.join(path_out, folder_1700, '1700+_' + f_out_name + '0.jsonl'), 'w')
+    f_out_2_9 = open(os.path.join(path_out, folder_2_9, f_out_name + '0.jsonl'), 'w')
+    f_out_10_19 = open(os.path.join(path_out, folder_10_19, f_out_name + '0.jsonl'), 'w')
+    f_out_20_29 = open(os.path.join(path_out, folder_20_29, f_out_name + '0.jsonl'), 'w')
+    f_out_30_39 = open(os.path.join(path_out, folder_30_39, f_out_name + '0.jsonl'), 'w')
+    f_out_40_49 = open(os.path.join(path_out, folder_40_49, f_out_name + '0.jsonl'), 'w')
+    f_out_50 = open(os.path.join(path_out, folder_50, f_out_name + '0.jsonl'), 'w')
 
-    n_states_1000 = 0
-    n_states_1100 = 0
-    n_states_1300 = 0
-    n_states_1500 = 0
-    n_states_1700 = 0
+    n_states_2_9 = 0
+    n_states_10_19 = 0
+    n_states_20_29 = 0
+    n_states_30_39 = 0
+    n_states_40_49 = 0
+    n_states_50 = 0
 
     n_games = 0
     total_game_length = 0
@@ -301,64 +324,112 @@ def create_training_batches(path_in, path_out, f_out_name, file_size=10000, min_
                 games_too_short[room_id] = len(all_states)
                 continue
 
+            rating = min(all_states[0]['p1rating'], all_states[0]['p2rating'])
+            game_length = all_states[-1]['turn']
+
             n_games += 1
-            total_game_length += all_states[-1]['turn']
+            total_game_length += game_length
             total_n_states += len(all_states) - 1
 
-            rating = all_states[0]['average_rating']
-            n_samples = 1
+            n_samples = min(10, len(all_states) - 1)
+            states = random.sample(all_states[1:], n_samples)
 
-            # 1000+
-            if rating >= 1000:
-                states = random.sample(all_states[1:], n_samples)
-                f_out_1000 = write_to_batch(states, f_out_1000, n_states_1000, file_size, f_out_name, path_out, folder_1000)
-                n_states_1000 += len(states)
+            # 2-9
+            if 2 <= game_length <= 9:
+                f_out_2_9 = write_to_batch(states, f_out_2_9, n_states_2_9, file_size, f_out_name, path_out, folder_2_9)
+                n_states_2_9 += len(states)
 
-            # 1100+
-            if rating >= 1100:
-                states = random.sample(all_states[1:], n_samples)
-                f_out_1100 = write_to_batch(states, f_out_1100, n_states_1100, file_size, f_out_name, path_out, folder_1100)
-                n_states_1100 += len(states)
+            # 10-19
+            if 10 <= game_length <= 19:
+                f_out_10_19 = write_to_batch(states, f_out_10_19, n_states_10_19, file_size, f_out_name, path_out, folder_10_19)
+                n_states_10_19 += len(states)
 
-            # 1300+
-            if rating >= 1300:
-                states = random.sample(all_states[1:], n_samples)
-                f_out_1300 = write_to_batch(states, f_out_1300, n_states_1300, file_size, f_out_name, path_out, folder_1300)
-                n_states_1300 += len(states)
+            # 20-29
+            if 20 <= game_length <= 29:
+                f_out_20_29 = write_to_batch(states, f_out_20_29, n_states_20_29, file_size, f_out_name, path_out, folder_20_29)
+                n_states_20_29 += len(states)
 
-            # 1500+
-            if rating >= 1500:
-                states = random.sample(all_states[1:], n_samples)
-                f_out_1500 = write_to_batch(states, f_out_1500, n_states_1500, file_size, f_out_name, path_out, folder_1500)
-                n_states_1500 += len(states)
+            # 30-39
+            if 30 <= game_length <= 39:
+                f_out_30_39 = write_to_batch(states, f_out_30_39, n_states_30_39, file_size, f_out_name, path_out, folder_30_39)
+                n_states_30_39 += len(states)
 
-            # 1700+
-            if rating >= 1700:
-                states = random.sample(all_states[1:], n_samples)
-                f_out_1700 = write_to_batch(states, f_out_1700, n_states_1700, file_size, f_out_name, path_out, folder_1700)
-                n_states_1700 += len(states)
+            # 40-49
+            if 40 <= game_length <= 49:
+                f_out_40_49 = write_to_batch(states, f_out_40_49, n_states_40_49, file_size, f_out_name, path_out, folder_40_49)
+                n_states_40_49 += len(states)
+
+            # 50+
+            if 50 <= game_length:
+                f_out_50 = write_to_batch(states, f_out_50, n_states_50, file_size, f_out_name, path_out, folder_50)
+                n_states_50 += len(states)
 
             # updates
             if n_games % 2000 == 0:
                 print(f'{n_games} games sampled')
                 print(f'states extracted: \n'
-                      f'1000+: {n_states_1000}, \n'
-                      f'1100+: {n_states_1100}, \n'
-                      f'1300+: {n_states_1300}, \n'
-                      f'1500+: {n_states_1500}, \n'
-                      f'1700+: {n_states_1700}')
+                      f'  2-9: {n_states_2_9}, \n'
+                      f'  10-19: {n_states_10_19}, \n'
+                      f'  20-29: {n_states_20_29}, \n'
+                      f'  30-39: {n_states_30_39}, \n'
+                      f'  40-49: {n_states_40_49}, \n'
+                      f'  50+: {n_states_50}')
                 print(f'runtime: {round(time.time() - start_time, 1)}s\n')
+
+            # # all
+            # f_out_all = write_to_batch(states, f_out_all, n_states_all, file_size, f_out_name, path_out, folder_all)
+            # n_states_all += len(states)
+            #
+            # 1000-1199
+            # if 1000 <= rating <= 1199:
+            #     f_out_1000_1199 = write_to_batch(states, f_out_1000_1199, n_states_1000_1199, file_size, f_out_name, path_out, folder_1000_1199)
+            #     n_states_1000_1199 += len(states)
+            #
+            # # 1200-1399
+            # if 1200 <= rating <= 1399:
+            #     f_out_1200_1399 = write_to_batch(states, f_out_1200_1399, n_states_1200_1399, file_size, f_out_name, path_out, folder_1200_1399)
+            #     n_states_1200_1399 += len(states)
+            #
+            # # 1400-1599
+            # if 1400 <= rating <= 1599:
+            #     f_out_1400_1599 = write_to_batch(states, f_out_1400_1599, n_states_1400_1599, file_size, f_out_name, path_out, folder_1400_1599)
+            #     n_states_1400_1599 += len(states)
+            #
+            # # 1600+
+            # if 1600 <= rating:
+            #     f_out_1600 = write_to_batch(states, f_out_1600, n_states_1600, file_size, f_out_name, path_out, folder_1600)
+            #     n_states_1600 += len(states)
+            #
+            # # updates
+            # if n_games % 2000 == 0:
+            #     print(f'{n_games} games sampled')
+            #     print(f'states extracted: \n'
+            #           f'  all: {n_states_all}, \n'
+            #           f'  1000-1199: {n_states_1000_1199}, \n'
+            #           f'  1200-1399: {n_states_1200_1399}, \n'
+            #           f'  1400-1599: {n_states_1400_1599}, \n'
+            #           f'  1600+: {n_states_1600}')
+            #     print(f'runtime: {round(time.time() - start_time, 1)}s\n')
 
     print(ujson.dumps(games_too_short, indent=2), '\n')
     print(f"{len(games_too_short)} games skipped because they lasted shorter than {min_game_length} turns\n")
 
+    # print(f'{n_games} games sampled')
+    # print(f'states extracted: \n'
+    #       f'  all: {n_states_all}, \n'
+    #       f'  1000-1199: {n_states_1000_1199}, \n'
+    #       f'  1200-1399: {n_states_1200_1399}, \n'
+    #       f'  1400-1599: {n_states_1400_1599}, \n'
+    #       f'  1600+: {n_states_1600}')
+
     print(f'{n_games} games sampled')
     print(f'states extracted: \n'
-          f'1000+: {n_states_1000}, \n'
-          f'1100+: {n_states_1100}, \n'
-          f'1300+: {n_states_1300}, \n'
-          f'1500+: {n_states_1500}, \n'
-          f'1700+: {n_states_1700}\n')
+          f'  2-9: {n_states_2_9}, \n'
+          f'  10-19: {n_states_10_19}, \n'
+          f'  20-29: {n_states_20_29}, \n'
+          f'  30-39: {n_states_30_39}, \n'
+          f'  40-49: {n_states_40_49}, \n'
+          f'  50+: {n_states_50}')
 
     print(f'average n states: {total_n_states / n_games:.3f}')
     print(f'average game length: {total_game_length / n_games:.3f}\n')
@@ -366,7 +437,7 @@ def create_training_batches(path_in, path_out, f_out_name, file_size=10000, min_
     print(f'runtime: {round(time.time() - start_time, 1)}s\n')
 
 
-def write_to_batch(states, f_out, n_states, file_size, next_out_name, path_out, folder):
+def write_to_batch(states, f_out, n_states, file_size, f_out_name, path_out, folder):
 
     # write each extracted state to batch file
     for s in states:
@@ -380,8 +451,8 @@ def write_to_batch(states, f_out, n_states, file_size, next_out_name, path_out, 
             f_out.close()
 
             # open new file
-            file_name = folder + '_' + next_out_name + str(int(n_states / file_size)) + '.jsonl'
-            f_out = open(os.path.join(path_out, folder, file_name), 'w')
+            f_out_name = f_out_name + str(int(n_states / file_size)) + '.jsonl'
+            f_out = open(os.path.join(path_out, folder, f_out_name), 'w')
 
     return f_out
 
