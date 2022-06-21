@@ -1,10 +1,11 @@
 import torch
-import torch.nn as nn
+import math
 import json
 import random
 import os
 import numpy as np
 import scipy.spatial.distance as distance
+
 
 from PokemonML.value_network.data.categories import (
     SPECIES,
@@ -21,7 +22,7 @@ class Tester:
         self.states_folder = 'C:/Users/RoelH/Documents//Uni/Bachelor thesis/data/processed-ou-incomplete/test_states/'
         self.games_folder = 'C:/Users/RoelH/Documents//Uni/Bachelor thesis/data/processed-ou-incomplete/test_games/'
 
-        self.transform = StateTransformer(shuffle_players=True, shuffle_pokemon=True, shuffle_moves=True)
+        self.transform = StateTransformer(shuffle_players=False, shuffle_pokemon=True, shuffle_moves=True)
 
         self.model = model
         self.model.load_state_dict(torch.load(model_file)['model'])
@@ -65,16 +66,24 @@ class Tester:
 
         # init arrays tracking the data
         self.step_size = 5
-        self.n_correct_array = np.zeros(int(100 / self.step_size))
-        self.n_evals_array = np.zeros(int(100 / self.step_size))
-        self.eval_change_array = np.zeros(int(100 / self.step_size))
 
-        self.n_evals = 0
-        self.n_correct = 0
-        self.eval_change = 0
+        # average evaluation
+        self.win_evaluations = np.zeros(int(100 / self.step_size))
+        self.loss_evaluations = np.zeros(int(100 / self.step_size))
+        self.n_wins = np.zeros(int(100 / self.step_size))
+        self.n_losses = np.zeros(int(100 / self.step_size))
 
-        self.sampled_n_correct = 0
-        self.sampled_n_evals = 0
+        # overall accuracy
+        self.n_correct = np.zeros(int(100 / self.step_size))
+        self.n_evals = np.zeros(int(100 / self.step_size))
+
+        # accuracy per length range
+        self.n_correct_per_length_range = [np.zeros(int(100 / self.step_size)) for i in range(6)]
+        self.n_evals_per_length_range = [np.zeros(int(100 / self.step_size)) for i in range(6)]
+
+        # accuracy per rating range
+        self.n_correct_per_rating_range = [np.zeros(int(100 / self.step_size)) for i in range(4)]
+        self.n_evals_per_rating_range = [np.zeros(int(100 / self.step_size)) for i in range(4)]
 
         # init data files
         data_path = os.path.join(self.games_folder, folder)
@@ -113,28 +122,27 @@ class Tester:
                     # store game % completed
                     percentage_completed.append((i - 1) / (len(game_states) - 1) * 100)
 
-                    self.n_evals += 1
-                    self.n_correct += int(round(evaluation) == game_result)
-
-                # evaluate one random state to measure average accuracy
-                # picking one random state per game to avoid longer games skewing the sampling
-                random_state = game_states[random.randint(1, len(game_states) - 1)]
-                evaluation, game_result = self._evaluate_state(random_state)
-                self.sampled_n_evals += 1
-                self.sampled_n_correct += int(round(evaluation) == game_result)
-
                 # store data into arrays of size (100 / step_size)
-                self._map_to_array(percentage_completed, results, evaluations)
+                self._map_to_array(game_states, percentage_completed, results, evaluations)
 
                 # plot data
-                if n_games % 100 == 0:
+                if n_games % 1000 == 0:
                     self._plot_performance(n_games)
 
-    def _map_to_array(self, percentage_completed, results, evaluations):
+    def _map_to_array(self, game_states, percentage_completed, results, evaluations):
+        game_length = game_states[-1]['turn']
+        length_index = min(math.floor(game_length / 10), 5)
+
+        rating = min(game_states[0]['p1rating'], game_states[0]['p2rating'])
+        rating_index = min(math.floor((rating - 1000) / 200), 3)
+
         # iterate over each array slot
         for i in range(2, 100, self.step_size):
+            i += 0.5
 
-            # map the game%completed to 20 indices, representing a percentage range (2, 7, 12, ..., 97)
+            array_idx = int((i - 2) / self.step_size)
+
+            # map the game%completed to 20 indices, representing a percentage range {2.5, 5, 7.5, ..., 97.5}
             nearest_percentage_index = min(
                 range(len(percentage_completed)),
                 key=lambda j: abs(percentage_completed[j] - i)
@@ -145,17 +153,52 @@ class Tester:
             evaluation = evaluations[nearest_percentage_index]
             correct_pred = int(round(evaluation) == result)
 
-            # store results
-            array_idx = int((i - 2) / self.step_size)
-            self.n_correct_array[array_idx] += correct_pred
-            self.n_evals_array[array_idx] += 1
+            # store evaluations
+            if result == 1:
+                self.win_evaluations[array_idx] += evaluation
+                self.n_wins[array_idx] += 1
+            else:
+                self.loss_evaluations[array_idx] += evaluation
+                self.n_losses[array_idx] += 1
+
+            # store predictions
+            self.n_correct += correct_pred
+            self.n_evals += 1
+
+            # store predictions per length range
+            self.n_correct_per_length_range[length_index][array_idx] += correct_pred
+            self.n_evals_per_length_range[length_index][array_idx] += 1
+
+            # store predictions per rating range
+            self.n_correct_per_rating_range[rating_index][array_idx] += correct_pred
+            self.n_evals_per_rating_range[rating_index][array_idx] += 1
 
     def _plot_performance(self, n_games):
-        accuracies = np.round(self.n_correct_array / self.n_evals_array, decimals=3)
-        print(f'{n_games} games evaluated')
-        print(f'Sampled accuracy: {self.sampled_n_correct / self.sampled_n_evals:.3f}')
-        print(f'Overall accuracy: {self.n_correct / self.n_evals:.3f}')
-        print(f'Accuracy per %completed: {" | ".join(str(x) for x in accuracies)}\n')
+        print(f'\n------------------- {n_games} games evaluated -------------------\n')
+
+        # plot evaluations per label
+        win_evaluations = np.round(self.win_evaluations / self.n_wins, decimals=3)
+        loss_evaluations = np.round(self.loss_evaluations / self.n_losses, decimals=3)
+        print(f'average evaluations: \n'
+              f'wins: {", ".join(str(x) for x in win_evaluations)}\n'
+              f'losses: {", ".join(str(x) for x in loss_evaluations)}\n')
+
+        # overall accuracy
+        accuracies = np.round(self.n_correct / self.n_evals, decimals=3)
+        print(f'overall accuracy: {", ".join(str(x) for x in accuracies)}\n')
+
+        # plot accuracies per length range {2-9, 10-19, 20-29, 30-39, 40-49, 50+}
+        for i in range(6):
+            accuracies_per_length = np.round(self.n_correct_per_length_range[i] / self.n_evals_per_length_range[i], 3)
+            print(f'accuracies length range {i}: {", ".join(str(x) for x in accuracies_per_length)}')
+        print()
+
+        # plot accuracies per rating
+        for i in range(4):
+            accuracies_per_rating = np.round(self.n_correct_per_rating_range[i] / self.n_evals_per_rating_range[i], 3)
+            print(f'accuracies rating range {i}: {", ".join(str(x) for x in accuracies_per_rating)}')
+        print()
+
 
     def _evaluate_state(self, state):
         # transform state into dict of tensors
@@ -175,15 +218,10 @@ class Tester:
         return evaluation, game_result
 
     def test_embeddings(self):
-        species_weights = self.model.species_embedding.weight
-        move_weights = self.model.move_embedding.weight
-        item_weights = self.model.item_embedding.weight
-        ability_weights = self.model.ability_embedding.weight
-
-        species_embedding = nn.Embedding.from_pretrained(species_weights)
-        move_embedding = nn.Embedding.from_pretrained(move_weights)
-        item_embedding = nn.Embedding.from_pretrained(item_weights)
-        ability_embedding = nn.Embedding.from_pretrained(ability_weights)
+        species_embedding = self.model.encoding.species_embedding
+        move_embedding = self.model.encoding.move_embedding
+        item_embedding = self.model.encoding.item_embedding
+        ability_embedding = self.model.encoding.ability_embedding
 
         def find_most_similar(target, embedding, category, n=10):
             target_tensor = torch.LongTensor([category.get(target)])
@@ -198,9 +236,12 @@ class Tester:
 
                 to_compare = torch.LongTensor([category.get(cat)])
                 compare_vec = embedding(to_compare).squeeze()
-
                 score = distance.cosine(target_vec, compare_vec)
-                comparisons.append((score, cat))
+
+                if np.isnan(score):
+                    continue
+
+                comparisons.append((round(score, 3), cat))
 
             comparisons.sort(key=lambda tup: tup[0], reverse=False)
 
@@ -212,7 +253,7 @@ class Tester:
         # categories to inspect
         species = 'charizard'
         move = 'flamethrower'
-        item = 'choicescarf'
+        item = 'figyberry'
         ability = 'flashfire'
 
         find_most_similar(species, species_embedding, SPECIES)
