@@ -152,6 +152,8 @@ async def start_standard_battle(ps_websocket_client: PSWebsocketClient, pokemon_
     battle.battle_type = constants.STANDARD_BATTLE
     battle.generation = pokemon_battle_type[:4]
 
+    await ps_websocket_client.send_message(battle.battle_tag, [config.greeting_message])
+
     if battle.generation in constants.NO_TEAM_PREVIEW_GENS:
         await read_messages_until_first_pokemon_is_seen(ps_websocket_client, battle, opponent_id, user_json)
     else:
@@ -198,7 +200,7 @@ async def start_battle(ps_websocket_client, pokemon_battle_type):
     else:
         battle = await start_standard_battle(ps_websocket_client, pokemon_battle_type)
 
-    await ps_websocket_client.send_message(battle.battle_tag, [config.greeting_message])
+    # await ps_websocket_client.send_message(battle.battle_tag, [config.greeting_message])
 
     if config.timer_on:
         await ps_websocket_client.send_message(battle.battle_tag, ['/timer on'])
