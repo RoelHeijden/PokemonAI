@@ -8,14 +8,15 @@ from model.network import ValueNet
 
 def main():
     model = ValueNet()
-    rating = '1500+'
-    folder = 'training_dump'
-    model_name = '1100+_epoch_24'
+    rating = '1000+'
+    folder = 'relevant_models'
+    model_name = 'ValueNet'
 
-    train(model, rating, folder, model_name, train_new=True)
+    # train(model, rating, folder, model_name, train_new=True)
     # train(model, rating, folder, model_name, train_new=False)
     # test(model, rating, folder, model_name, test_states=True)
-    # test(model, rating, folder, model_name, test_games=True)
+    test(model, rating, folder, model_name, test_games=True)
+    # test(model, rating, folder, model_name, test_embeddings=True)
 
 
 def train(model, rating, folder, model_name, train_new=True):
@@ -25,10 +26,10 @@ def train(model, rating, folder, model_name, train_new=True):
     data_folder = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/processed-ou-incomplete/training_states/'
     save_path = 'C:/Users/RoelH/Documents/Uni/Bachelor thesis/data/models/training_dump/'
 
-    n_epochs = 50
+    n_epochs = 100
     batch_size = 256
     lr = 2e-4
-    lr_decay = 0.96
+    lr_decay = 0.95
     lr_decay_steps = 1
     weight_decay = 0.0
 
@@ -42,9 +43,9 @@ def train(model, rating, folder, model_name, train_new=True):
         lr_decay=lr_decay,
         lr_decay_steps=lr_decay_steps,
         weight_decay=weight_decay,
-        update_every_n_batches=10,
+        update_every_n_batches=50,
         file_size=10000,
-        buffer_size=5000,
+        buffer_size=10000,
         num_workers=4,
         shuffle_data=True,
         shuffle_players=True,
